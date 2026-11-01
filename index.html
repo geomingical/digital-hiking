@@ -11,6 +11,7 @@
 </head>
 <body>
 <div id="app">
+  <canvas id="scene3d" aria-hidden="true" hidden></canvas>
   <canvas id="scene" aria-label="登山步道場景"></canvas>
 
   <div id="stage">
@@ -36,10 +37,10 @@
           <path id="risk-face-drop" d="M26 6 q3 4 0 6 q-3-2 0-6" fill="#8fd3f4" opacity="0"/>
         </svg>
         <div class="risk-body">
-          <div class="risk-top">出事風險 <b><span id="risk-num">0</span>%</b></div>
+          <div class="risk-top">風險點數 <b><span id="risk-num">0</span></b></div>
           <div class="risk-track">
             <span class="risk-scale" aria-hidden="true">0</span>
-            <div class="risk-bar" role="meter" aria-label="出事風險" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="risk-bar"><div class="risk-fill" id="risk-fill"></div></div>
+            <div class="risk-bar" role="meter" aria-label="風險點數" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="risk-bar"><div class="risk-fill" id="risk-fill"></div></div>
             <span class="risk-scale" aria-hidden="true">100</span>
           </div>
         </div>
@@ -87,6 +88,7 @@
           <h2 id="card-title"></h2>
           <p id="card-sit"></p>
           <p class="card-gear-note" id="card-gear-note" hidden></p>
+          <p class="card-seen" id="card-seen" hidden></p>
         </div>
         <div class="card-side">
           <div class="opts" id="card-opts"></div>
@@ -96,14 +98,18 @@
               <p class="fb-key-point"><b class="fb-key-label">保命重點</b><span id="fb-key-point"></span></p>
               <p class="fb-key-src" id="fb-key-src"></p>
             </div>
+            <div class="fb-world" id="fb-world" hidden></div>
             <div class="fb-gear" id="fb-gear" hidden></div>
-            <p id="fb-why"></p>
+            <details class="fb-more" id="fb-more">
+              <summary>看完整解說</summary>
+              <p id="fb-why"></p>
+            </details>
             <p class="fb-src" id="fb-src"></p>
           </div>
         </div>
       </div>
       <div class="card-foot" id="card-foot" hidden>
-        <button type="button" class="btn btn-primary" id="card-next">繼續前進</button>
+        <button type="button" class="btn btn-primary" id="card-next">回到山路</button>
       </div>
     </section>
 
@@ -111,7 +117,12 @@
       <div class="start-card">
         <p class="start-kicker">一趟走得完、也學得會的山徑</p>
         <h1>數位登山</h1>
-        <p class="start-sub">從登山口走到山頂再平安下山。<br>路上的每個選擇，都決定這趟路有多安全。</p>
+        <p class="start-sub">明天就要上山了。<br>今晚的每個決定，都會跟著你走上稜線。</p>
+        <fieldset class="hero-pick" id="hero-pick">
+          <legend>這趟誰上山？</legend>
+          <label class="hero-opt"><input type="radio" name="hero-gender" value="male"><span>男生</span></label>
+          <label class="hero-opt"><input type="radio" name="hero-gender" value="female"><span>女生</span></label>
+        </fieldset>
         <div class="start-btns">
           <button type="button" class="btn btn-primary btn-big" id="btn-start" disabled>整理背包中…</button>
           <button type="button" class="btn" id="btn-howto">操作說明</button>
@@ -129,7 +140,36 @@
       <div class="prep-panel" id="prep-panel"></div>
     </section>
 
+    <section id="observe" aria-label="觀察現場" hidden>
+      <div id="observe-spots"></div>
+      <div id="observe-panel">
+        <p id="observe-kicker">先別急著決定，看看現場</p>
+        <strong id="observe-title"></strong>
+        <ul id="observe-notes" aria-live="polite"></ul>
+        <button type="button" class="btn btn-primary" id="observe-go"></button>
+      </div>
+    </section>
+
+    <section id="photo-mode" aria-label="拍照" tabindex="-1" hidden>
+      <div id="photo-flash" aria-hidden="true"></div>
+      <div id="photo-view" hidden>
+        <canvas id="photo-frame" role="img"></canvas>
+        <p id="photo-count"></p>
+        <div class="photo-btns">
+          <button type="button" class="btn btn-primary" id="photo-again">再拍一張</button>
+          <button type="button" class="btn" id="photo-close">收起來</button>
+        </div>
+      </div>
+    </section>
+
+    <div id="cine-title" role="status" hidden>
+      <p id="cine-kicker"></p>
+      <strong id="cine-main"></strong>
+      <span id="cine-sub"></span>
+    </div>
+
     <section id="ending-screen" class="screen" hidden>
+      <canvas id="ending-bg" aria-hidden="true"></canvas>
       <div class="ending-panel">
         <div class="ending-scroll">
           <div class="ending-left">
@@ -137,9 +177,10 @@
             <p class="ending-kicker" id="ending-kicker"></p>
             <h2 id="ending-title"></h2>
             <p class="ending-trip" id="ending-trip" hidden></p>
+            <p id="ending-safety" hidden></p>
             <p id="ending-msg"></p>
             <div class="ending-stats">
-              <div><span>出事風險</span><b id="ending-risk"></b></div>
+              <div><span>風險點數</span><b id="ending-risk"></b></div>
               <div><span>答對</span><b id="ending-correct"></b></div>
               <div><span>經驗值</span><b id="ending-exp"></b></div>
             </div>
@@ -147,8 +188,16 @@
             <p class="ending-best" id="ending-best"></p>
           </div>
           <div class="ending-right">
+            <section class="ending-photos" id="ending-photos" hidden>
+              <h3>我的山景照</h3>
+              <canvas id="album-big" role="img"></canvas>
+              <div id="album-thumbs"></div>
+              <button type="button" class="btn" id="album-save">下載這張照片</button>
+            </section>
+            <section id="ending-review" hidden></section>
             <h3>學習總結</h3>
             <p class="summary-note" id="summary-note"></p>
+            <section class="ending-trail" id="ending-trail" hidden></section>
             <section class="ending-key" id="ending-key" hidden>
               <h4><svg viewBox="0 0 32 32" width="24" height="24" aria-hidden="true"><use href="#icon-lifebuoy"/></svg>本趟保命觀念<span id="ending-key-score"></span></h4>
               <ul id="ending-key-list"></ul>
@@ -159,7 +208,7 @@
         </div>
         <div class="ending-btns">
           <button type="button" class="btn btn-primary" id="btn-again">再玩一次</button>
-          <button type="button" class="btn" id="btn-share">分享</button>
+          <button type="button" class="btn" id="btn-share">分享成績卡</button>
           <button type="button" class="btn" id="btn-mountains" hidden>回到選山</button>
         </div>
       </div>
@@ -190,12 +239,19 @@
 </svg>
 <noscript><p style="position:fixed;top:40%;left:0;right:0;text-align:center">這個遊戲需要開啟 JavaScript 才能遊玩。</p></noscript>
 
+<script src="js/vendor/three.min.js"></script>
 <script src="js/fallback-data.js"></script>
 <script src="js/core.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/art.js"></script>
 <script src="js/world.js"></script>
+<script src="js/hero3d.js"></script>
 <script src="js/gear-art.js"></script>
+<script src="js/biomes3d.js"></script>
+  <script src="js/diorama3d.js"></script>
+  <script src="js/stage3d.js"></script>
+  <script src="js/photo.js"></script>
+  <script src="js/world3d.js"></script>
 <script src="js/prep-logic.js"></script>
 <script src="js/prep.js"></script>
 <script src="js/ui.js"></script>

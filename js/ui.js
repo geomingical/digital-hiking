@@ -82,7 +82,37 @@
   /* 捲動清單下面還有內容時，底部淡出提示；捲到底就恢復。 */
   const FADE_LISTS = '#card-scroll, #prep-body, #gear-scroll, .gear-left, .ending-scroll, .ending-left, .ending-right';
   function updateScrollFade(n) {
-    n.classList.toggle('has-more', n.scrollHeight - n.scrollTop - n.clientHeight > 6);
+    const scrollable = /auto|scroll/.test(getComputedStyle(n).overflowY);
+    n.classList.toggle('has-more', scrollable && n.scrollHeight - n.scrollTop - n.clientHeight > 6);
+    updateMoreHint();
+  }
+  /* 光靠淡出，玩家會以為下面的按鈕是停用的；明白寫出還能往下捲。全頁只有一顆，跟著目前可捲的清單走 */
+  const HINT_LISTS = ['#gear-scroll', '#prep-body', '.ending-left', '.ending-right'];
+  let moreHintEl = null;
+  function updateMoreHint() {
+    /* 捲過一次就知道能捲了，提示別再蓋住正在讀的字 */
+    const owner = HINT_LISTS.map((q) => document.querySelector(q)).find((n) => n && n.offsetParent && n.clientHeight > 100 && /auto|scroll/.test(getComputedStyle(n).overflowY) && n.classList.contains('has-more') && n.scrollTop < 24);
+    if (!owner) {
+      if (moreHintEl && !moreHintEl.hidden) moreHintEl.hidden = true;
+      return;
+    }
+    if (!moreHintEl) {
+      moreHintEl = el('button', 'more-hint', '往下還有 ▾');
+      moreHintEl.type = 'button';
+      moreHintEl.tabIndex = -1;
+      moreHintEl.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(moreHintEl);
+    }
+    moreHintEl.onclick = () => owner.scrollBy({ top: owner.clientHeight * 0.7, behavior: DH.art.reducedMotion() ? 'auto' : 'smooth' });
+    if (moreHintEl.hidden) moreHintEl.hidden = false;
+    const box = owner.getBoundingClientRect();
+    moreHintEl.style.left = `${box.left + box.width / 2}px`;
+    moreHintEl.style.top = `${box.bottom - 40}px`;
+    const hint = moreHintEl.getBoundingClientRect();
+    moreHintEl.hidden = Array.from(owner.querySelectorAll('h2, h3, h4, legend, #ending-safety')).some((n) => {
+      const r = n.getBoundingClientRect();
+      return r.bottom > hint.top && r.top < hint.bottom && r.right > hint.left && r.left < hint.right;
+    });
   }
   function setupScrollFade() {
     let queued = false;
@@ -115,6 +145,13 @@
       });
 
       $('btn-start').addEventListener('click', handlers.start);
+      const syncHeroPick = (gender) => {
+        const radio = document.querySelector(`#hero-pick input[value="${gender}"]`);
+        if (radio) radio.checked = true;
+      };
+      syncHeroPick(DH.player.gender);
+      DH.player.onChange = syncHeroPick;
+      $('hero-pick').addEventListener('change', (e) => DH.player.set(e.target.value));
       $('btn-again').addEventListener('click', handlers.again);
       $('btn-mountains').addEventListener('click', handlers.mountains);
       $('btn-howto').addEventListener('click', () => this.showHelp());
@@ -304,7 +341,10 @@
       const t = el('div', `toast ${kind || ''}`, message);
       const hud = $('hud');
       const stageTop = $('stage').getBoundingClientRect().top;
-      box.style.top = hud.hidden ? '12px' : `${hud.getBoundingClientRect().bottom - stageTop + 8}px`;
+      /* 開局時 HUD 的文字和提示同一刻更新，等排版完成再量高度 */
+      requestAnimationFrame(() => {
+        box.style.top = hud.hidden ? '12px' : `${hud.getBoundingClientRect().bottom - stageTop + 8}px`;
+      });
       box.textContent = '';
       box.appendChild(t);
       setTimeout(() => t.classList.add('out'), 2600);
@@ -315,8 +355,88 @@
       $('toasts').textContent = '';
     },
 
+    /* 觀察現場：標記釘在 3D 物件上，點開才知道看到什麼 */
+    setPlayControlsInert(on) {
+      ['hud', 'controls', 'hints', 'actions', 'prompt'].forEach((id) => { $(id).inert = on; });
+    },
+    trapFocus(e, id) {
+      const box = $(id);
+      const buttons = Array.from(box.querySelectorAll('button:not(:disabled), a[href], summary, input, select, textarea, [tabindex="0"]'))
+        .filter((n) => n.getClientRects().length && !n.closest('[hidden], [inert]'));
+      const at = buttons.indexOf(document.activeElement);
+      if (!buttons.length) { e.preventDefault(); box.focus({ preventScroll: true }); return; }
+      if (at < 0 || (!e.shiftKey && at === buttons.length - 1) || (e.shiftKey && at === 0)) {
+        e.preventDefault();
+        buttons[e.shiftKey ? buttons.length - 1 : 0].focus();
+      }
+    },
+    openObserve(stage, onClue, onGo) {
+      $('observe-title').textContent = stage.title;
+      $('observe-notes').textContent = '';
+      const spots = $('observe-spots');
+      spots.textContent = '';
+      stage.list.forEach((c, i) => {
+        const b = el('button', 'observe-spot');
+        b.type = 'button';
+        b.appendChild(el('span', 'observe-num', String(i + 1)));
+        b.appendChild(el('span', '', c.name));
+        b.addEventListener('click', () => onClue(i));
+        spots.appendChild(b);
+      });
+      const go = $('observe-go');
+      go.onclick = onGo;
+      $('observe').hidden = false;
+      $('observe-panel').scrollTop = 0;
+      this.updateObserve(0, Math.min(2, stage.list.length));
+      spots.firstChild.focus({ preventScroll: true });
+    },
+    noteClue(i, clue) {
+      const spot = $('observe-spots').children[i];
+      spot.classList.add('seen');
+      const li = el('li', '');
+      li.appendChild(el('b', '', clue.name));
+      li.appendChild(el('span', '', clue.text));
+      $('observe-notes').appendChild(li);
+    },
+    updateObserve(count, need) {
+      const go = $('observe-go');
+      const ready = count >= need;
+      go.textContent = ready ? '我看好了，做判斷' : `再看 ${need - count} 處`;
+      go.setAttribute('aria-disabled', String(!ready));
+      go.classList.toggle('is-waiting', !ready);
+      if (ready && count === need) go.focus();
+    },
+    placeObserve(points) {
+      const app = $('app').getBoundingClientRect();
+      const panel = $('observe-panel').getBoundingClientRect();
+      const placed = [];
+      const spots = $('observe-spots');
+      spots.classList.remove('as-list');
+      Array.from($('observe-spots').children).forEach((b, i) => {
+        const w = b.offsetWidth;
+        const x = Math.max(w / 2 + 8, Math.min(app.width - w / 2 - 8, points[i].x));
+        let y = Math.max(46, Math.min(panel.top - app.top - 34, points[i].y));
+        /* 標記不互相疊住，也不跑到說明面板底下 */
+        placed.forEach((q) => {
+          if (Math.abs(q.x - x) < (w + q.w) / 2 + 6 && Math.abs(q.y - y) < 42) y = q.y - 46;
+        });
+        y = Math.max(30, y);
+        placed.push({ x, y, w });
+        b.style.transform = `translate(${Math.round(x - w / 2)}px, ${Math.round(y - 20)}px)`;
+      });
+      const overlaps = placed.some((p, i) => placed.slice(0, i).some((q) => Math.abs(p.x - q.x) < (p.w + q.w) / 2 + 6 && Math.abs(p.y - q.y) < 46));
+      if (overlaps || panel.top - app.top < 180) {
+        spots.classList.add('as-list');
+        Array.from(spots.children).forEach((b) => { b.style.transform = ''; });
+      }
+    },
+    closeObserve() {
+      $('observe').hidden = true;
+    },
+
     openCard(ev, index, total) {
       const s = ev.scenario;
+      $('card').classList.remove('fb-brief');
       $('card').classList.toggle('is-key', !!s.key);
       $('card-key-strip').hidden = !s.key;
       $('card-key-name').textContent = s.key ? s.keyConcept : '';
@@ -326,10 +446,16 @@
       const fixedTitle = $('card-fixed-title');
       fixedTitle.textContent = s.title;
       fixedTitle.setAttribute('aria-label', `${s.title}，回到題目與選項`);
-      $('card-sit').textContent = s.situation;
+      const observed = !!(ev.seenNotes && ev.seenNotes.length && ev.ask);
+      $('card-sit').textContent = observed ? ev.ask : s.situation;
       const note = $('card-gear-note');
       note.hidden = !ev.gearNote;
       note.textContent = ev.gearNote || '';
+      const seen = $('card-seen');
+      seen.hidden = !(ev.seen && ev.seen.length);
+      seen.textContent = '';
+      if (!seen.hidden) seen.appendChild(el('b', '', '你在現場看到'));
+      (ev.seenNotes || []).forEach((note) => seen.appendChild(el('span', '', note)));
       const opts = $('card-opts');
       opts.textContent = '';
       ev.options.forEach((opt, i) => {
@@ -373,24 +499,43 @@
       if (chosen.correct) {
         head.appendChild(el('strong', '', '判斷正確！'));
         head.appendChild(el('span', 'fb-gain', '+10 經驗'));
-        if (shownRisk > 0) head.appendChild(el('span', 'fb-loss', `出事風險 +${shownRisk}`));
+        if (shownRisk > 0) head.appendChild(el('span', 'fb-loss', `風險點數 +${shownRisk}`));
       } else {
         head.appendChild(el('strong', '', '這樣有點危險'));
-        head.appendChild(el('span', 'fb-loss', `出事風險 +${shownRisk}`));
+        head.appendChild(el('span', 'fb-loss', `風險點數 +${shownRisk}`));
+        /* 捲到解說時看不到題目了，把自己選的那句留在最上面 */
+        head.appendChild(el('p', 'fb-chosen', `你選的是：${chosen.text}`));
       }
       this.showGearEffect(result);
+      const world = $('fb-world');
+      world.hidden = !ev.worldNote;
+      world.textContent = '';
+      if (ev.worldNote) {
+        world.appendChild(el('p', 'fb-world-text', ev.worldNote.text));
+        if (ev.worldNote.missed.length) world.appendChild(el('p', 'fb-world-missed', `你沒看到的線索：${ev.worldNote.missed.join(' ')}`));
+      }
       $('fb-why').textContent = ev.scenario.why;
       const src = ev.scenario.sources;
       const isKey = !!ev.scenario.key;
+      /* 保命題已經有「保命重點」，完整解說收起來，不重複講同一件事 */
+      const more = $('fb-more');
+      more.open = !isKey;
+      more.classList.toggle('is-plain', !isKey);
       $('fb-key').hidden = !isKey;
       fillKeyPoint($('fb-key-point'), isKey ? ev.scenario.keyPoint : '', ev.scenario.keyAct);
       fillSources($('fb-key-src'), '來源：', isKey ? src : null);
       fillSources($('fb-src'), '參考：', isKey ? null : src);
       $('card-fb').hidden = false;
       const next = $('card-next');
-      next.textContent = sos ? '風險破表，發出求救' : '繼續前進';
+      next.textContent = sos ? '風險破表，只能求救' : '回到山路';
       next.classList.toggle('btn-sos', !!sos);
       $('card-foot').hidden = false;
+      /* 手機直式：先把畫面留給現場的回應，想看解析再展開 */
+      if (ev.worldNote && matchMedia('(max-width: 760px) and (orientation: portrait)').matches) {
+        next.dataset.after = next.textContent;
+        next.textContent = '看解析';
+        $('card').classList.add('fb-brief');
+      }
       next.focus({ preventScroll: true });
       /* 卡片高度已隨 .answered 放大；只捲內層，把解說帶進視野 */
       const scroll = $('card-scroll');
@@ -398,6 +543,18 @@
       const fb = $('card-fb').getBoundingClientRect();
       const need = Math.min(fb.bottom - box.bottom, fb.top - box.top);
       if (need > 0) scroll.scrollTop += need;
+    },
+
+    /* 回傳 true 表示這一下是展開解析，不是繼續前進 */
+    expandBrief() {
+      const card = $('card');
+      if (!card.classList.contains('fb-brief')) return false;
+      card.classList.remove('fb-brief');
+      const next = $('card-next');
+      next.textContent = next.dataset.after;
+      $('card-scroll').scrollTop = 0;
+      $('card-fb').scrollIntoView({ block: 'start' });
+      return true;
     },
 
     showGearEffect(result) {
@@ -510,26 +667,51 @@
       $('ending-key-score').textContent = `答對 ${items.filter((k) => k.status === 'ok').length} / ${items.length}`;
     },
 
+    showRescueReview(review) {
+      const box = $('ending-review');
+      box.textContent = '';
+      box.hidden = !review || !(review.causes.length || review.fixes.length);
+      if (box.hidden) return;
+      /* 檢討排在右欄最上面，別被其他回顧蓋過去 */
+      box.parentElement.prepend(box);
+      const section = (title, items, cls) => {
+        if (!items.length) return;
+        box.appendChild(el('h4', '', title));
+        const list = el(cls === 'fixes' ? 'ol' : 'ul', cls);
+        items.forEach((t) => list.appendChild(el('li', '', t)));
+        box.appendChild(list);
+      };
+      box.classList.toggle('is-lesson', !!review.lesson);
+      section(review.lesson ? '這趟最值得改的決定' : '這趟為什麼走到這一步', review.causes, 'causes');
+      section(review.lesson ? '下一次這樣做' : '下一趟先改這幾件', review.fixes, 'fixes');
+    },
+
     showEnding(data) {
       const { grade, risk, answers, totalEvents, exp, best, freshBadges, isNewBest } = data;
       this.showTripEnding(data.trip || null);
       this.showKeyEnding(data.keyConcepts || []);
+      this.showTrail(data.trail);
       $('ending-screen').dataset.tier = grade.tier;
       $('ending-kicker').textContent = grade.kicker;
       $('ending-title').textContent = grade.title;
       $('ending-msg').textContent = grade.message;
+      const safety = $('ending-safety');
+      safety.hidden = !grade.safety;
+      safety.textContent = grade.safety || '';
+      this.showRescueReview(data.review);
       const riskEl = $('ending-risk');
-      riskEl.textContent = `${Math.round(risk)}%`;
+      riskEl.textContent = `${Math.round(risk)} / 100`;
       const right = answers.filter((a) => a.correct).length;
       $('ending-correct').textContent = `${right} / ${answers.length}`;
       $('ending-exp').textContent = String(exp);
-      $('ending-best').textContent = isNewBest
+      $('ending-best').textContent = grade.tier === 'bad' ? '' : isNewBest
         ? '這是你目前的最佳紀錄！'
-        : best ? `最佳紀錄：${best.title}（風險 ${best.risk}%）` : '';
+        : best ? `最佳紀錄：${best.title}（風險 ${best.risk} 點）` : '';
 
       const badgeBox = $('ending-badges');
       badgeBox.textContent = '';
-      freshBadges.forEach((id) => {
+      /* 動用救援的一趟不發獎勵，徽章留到平安下山再看 */
+      (grade.tier === 'bad' ? [] : freshBadges).forEach((id) => {
         const b = BADGES.find((x) => x.id === id);
         if (b) badgeBox.appendChild(el('span', 'badge-chip', `新徽章：${b.name}`));
       });
@@ -538,7 +720,7 @@
       const wrong = answers.filter((a) => !a.correct).length;
       const hint = wrong ? '答錯的題目已展開，答對的點開可看理由。' : '全部答對！點開任一題可複習理由。';
       $('summary-note').textContent = left > 0
-        ? `這趟在途中啟動求救，還有 ${left} 題沒遇到，下次再把它們走完。${hint}`
+        ? `這趟沒有走完，還有 ${left} 題沒遇到。${hint}`
         : `這趟遇到 ${answers.length} 個情境。${hint}`;
 
       const list = $('summary-list');
@@ -584,6 +766,128 @@
       $('btn-again').focus({ preventScroll: true });
     },
 
+    /* 這趟的足跡：海拔剖面上標出每個決定，讓「哪一步出事」一眼看見 */
+    showTrail(trail) {
+      const box = $('ending-trail');
+      box.textContent = '';
+      box.hidden = !trail;
+      if (!trail) return;
+      const W = 640;
+      const H = 170;
+      const alts = trail.samples.map((s) => s.alt);
+      const lo = Math.min(...alts);
+      const hi = Math.max(...alts);
+      const px = (x) => 14 + ((x - trail.startX) / (trail.endX - trail.startX)) * (W - 28);
+      const py = (alt) => H - 30 - ((alt - lo) / Math.max(1, hi - lo)) * (H - 66);
+      const NS = 'http://www.w3.org/2000/svg';
+      const node = (name, attrs, parent) => {
+        const n = document.createElementNS(NS, name);
+        Object.entries(attrs).forEach(([k, v]) => n.setAttribute(k, v));
+        parent.appendChild(n);
+        return n;
+      };
+      box.appendChild(el('h4', '', '這趟的足跡'));
+      const svg = document.createElementNS(NS, 'svg');
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+      svg.setAttribute('role', 'img');
+      const wrong = trail.stops.filter((s) => !s.correct).length;
+      svg.setAttribute('aria-label', `海拔剖面圖，從登山口 ${Math.round(alts[0])} 公尺到最高 ${Math.round(hi)} 公尺。沿途 ${trail.stops.length} 個決定，${wrong} 個判斷失誤。`);
+      const pts = trail.samples.map((s) => `${px(s.x).toFixed(1)},${py(s.alt).toFixed(1)}`);
+      node('polygon', { points: `${px(trail.startX)},${H - 22} ${pts.join(' ')} ${px(trail.endX)},${H - 22}`, class: 'trail-area' }, svg);
+      node('polyline', { points: pts.join(' '), class: 'trail-line' }, svg);
+      trail.stops.forEach((s) => {
+        const dot = node('circle', { cx: px(s.x), cy: py(s.alt), r: s.correct ? 6 : 8, class: s.correct ? 'trail-ok' : 'trail-ng' }, svg);
+        node('title', {}, dot).textContent = `${s.title}：${s.correct ? '判斷正確' : `風險 +${s.risk}`}`;
+      });
+      const label = (x, text, anchor) => {
+        const t = node('text', { x, y: H - 6, class: 'trail-label', 'text-anchor': anchor }, svg);
+        t.textContent = text;
+      };
+      label(14, '登山口', 'start');
+      label(W - 14, trail.stops.length && trail.stops[trail.stops.length - 1].x < trail.endX * 0.6 ? '未走完' : '下山', 'end');
+      box.appendChild(svg);
+      const legend = el('p', 'trail-legend');
+      legend.append(el('i', 'dot-ok'), '判斷正確', el('i', 'dot-ng'), '判斷失誤');
+      box.appendChild(legend);
+      if (trail.worst) {
+        const worst = el('p', 'trail-worst');
+        worst.appendChild(el('b', '', '這趟最險的一步'));
+        worst.appendChild(document.createTextNode(`${trail.worst.title}（海拔約 ${Math.round(trail.worst.alt).toLocaleString('en-US')} 公尺，風險 +${trail.worst.risk}）`));
+        box.appendChild(worst);
+      }
+      if (trail.body.length) {
+        const ul = el('ul', 'trail-body');
+        trail.body.forEach((b) => ul.appendChild(el('li', b.tone, b.text)));
+        box.appendChild(ul);
+      }
+    },
+
+    /* 分享用的直式成績卡：可下載或傳給朋友的 PNG */
+    async shareCardFile(end, trip, trail, url) {
+      const W = 1080;
+      const H = 1350;
+      const cv = document.createElement('canvas');
+      cv.width = W;
+      cv.height = H;
+      const c = cv.getContext('2d');
+      const font = (size, weight) => `${weight} ${size}px ${DH.art.FONT}`;
+      c.fillStyle = '#fff8e8';
+      c.fillRect(0, 0, W, H);
+      const painting = trip && DH.gearArt.paintings[`mtn-${trip.mountain.id}`];
+      if (painting) {
+        c.save();
+        c.beginPath();
+        c.rect(0, 0, W, 620);
+        c.clip();
+        DH.gearArt.drawCover(c, painting, W, 620);
+        c.restore();
+      } else {
+        c.fillStyle = '#a9ddf5';
+        c.fillRect(0, 0, W, 620);
+      }
+      if (trip) DH.art.drawHiker(c, DH.hero3d.active ? 875 : 540, 600, { t: 1, scale: 2.2, pose: 'wave', outfit: trip.selection, blinkSeed: 2 });
+      c.textAlign = 'left';
+      c.fillStyle = '#bd542b';
+      c.font = font(36, 700);
+      c.fillText(trip ? `${trip.mountain.name}｜${DH.prepLogic.seasonName(trip.season)}` : '數位登山', 70, 700);
+      c.fillStyle = '#2f6b52';
+      /* 長標題縮字，不要超出卡片 */
+      c.font = font(92, 800);
+      const titleSize = Math.min(92, Math.floor((92 * (W - 140)) / c.measureText(end.title).width));
+      c.font = font(titleSize, 800);
+      c.fillText(end.title, 70, 805);
+      c.fillStyle = '#4b4136';
+      c.font = font(40, 700);
+      const right = trail.stops.filter((s) => s.correct).length;
+      c.fillText(`風險點數 ${Math.round(end.risk)} / 100　　判斷正確 ${right} / ${trail.stops.length}`, 70, 880);
+      const alts = trail.samples.map((s) => s.alt);
+      const lo = Math.min(...alts);
+      const hi = Math.max(...alts);
+      const px = (x) => 70 + ((x - trail.startX) / (trail.endX - trail.startX)) * (W - 140);
+      const py = (alt) => 1170 - ((alt - lo) / Math.max(1, hi - lo)) * 210;
+      c.beginPath();
+      c.moveTo(px(trail.startX), 1190);
+      trail.samples.forEach((s) => c.lineTo(px(s.x), py(s.alt)));
+      c.lineTo(px(trail.endX), 1190);
+      c.closePath();
+      c.fillStyle = '#dcebd9';
+      c.fill();
+      trail.stops.forEach((s) => {
+        c.beginPath();
+        c.arc(px(s.x), py(s.alt), s.correct ? 11 : 15, 0, Math.PI * 2);
+        c.fillStyle = s.correct ? '#2f8f62' : '#d0482f';
+        c.fill();
+      });
+      c.fillStyle = '#6d6255';
+      c.font = font(32, 500);
+      c.fillText('《數位登山》你會帶什麼上山？', 70, 1270);
+      c.font = font(26, 500);
+      /* 本機網址給別人也開不了，不印在卡片上 */
+      if (!/^https?:\/\/(localhost|127\.|\[::1\])/.test(url)) c.fillText(url, 70, 1312);
+      const blob = await new Promise((resolve, reject) => cv.toBlob((b) => (b ? resolve(b) : reject(new Error('無法輸出圖片'))), 'image/png'));
+      return new File([blob], '數位登山成績卡.png', { type: 'image/png' });
+    },
+
     get modalOpen() { return !$('modal').hidden; },
 
     openModal(title, body) {
@@ -608,10 +912,10 @@
         ['走動', '方向鍵或 WASD；也可以點地面，登山客會自己走過去。手機用左下角搖桿。'],
         ['看周圍', '在畫面上按住拖曳，就能看看前後的風景。'],
         ['情境事件', '路上的圓形圖示就是事件，橘框是下一個。走近會自動開啟；出現「查看」時按 E、空白鍵或互動鈕，也可以提早查看。'],
-        ['回答', '點選項或按 1、2、3 回答，看完解說按「繼續前進」。'],
+        ['回答', '點選項或按 1、2、3 回答，看完解說按「回到山路」。'],
         ['保命觀念', '紅框救生圈的事件是一定要會的保命題，每趟都會遇到幾題，結局會列出哪些還要複習。'],
         ['小動作', '沒有事件時，按 1 揮手、2 喝水、3 拍照。'],
-        ['出事風險', '選錯會增加風險，天色也會跟著變差；累積到 100 就得發出求救。'],
+        ['風險點數', '選錯會增加點數，天色也會跟著變差；累積到 100，這趟就失敗，得動用救援。點數是遊戲的教學量表，不是真實的事故機率。'],
         ['音效', '預設靜音，按喇叭圖示或 M 鍵開關。'],
       ];
       const dl = el('dl', 'help-list');
@@ -629,7 +933,7 @@
       const d = store.data;
       const wrap = el('div', 'records');
       const stats = el('div', 'records-stats');
-      [['遊玩次數', d.plays], ['完成路線', d.finishes], ['求救結局', d.rescues]].forEach(([k, v]) => {
+      [['遊玩次數', d.plays], ['完成路線', d.finishes], ['動用救援', d.rescues]].forEach(([k, v]) => {
         const box = el('div');
         box.appendChild(el('span', '', k));
         box.appendChild(el('b', '', String(v)));
@@ -639,7 +943,7 @@
 
       const bestBox = el('div', 'records-best');
       bestBox.appendChild(el('span', '', '最佳紀錄'));
-      bestBox.appendChild(el('strong', '', d.best ? `${d.best.title}（風險 ${d.best.risk}%）` : '還沒有紀錄，先走一趟吧！'));
+      bestBox.appendChild(el('strong', '', d.best ? `${d.best.title}（風險 ${d.best.risk} 點）` : '還沒有紀錄，先走一趟吧！'));
       if (d.best && d.best.date) bestBox.appendChild(el('small', '', d.best.date));
       wrap.appendChild(bestBox);
 

@@ -319,9 +319,10 @@
     },
     {
       key: 'rescue', tier: 'bad', max: Infinity,
-      kicker: '求救結局',
-      title: '求救啟動',
-      message: '你做了正確的決定：風險累積到無法自行處理時，盡早求救不丟臉。撥打 119 或 112（可由他業者訊號轉接 119），說清楚位置與狀況，留在安全處保暖、節省手機電量等待救援。把下面的提醒看熟，下一趟會更穩。',
+      kicker: '這趟沒有走完',
+      title: '這場救援本來可以避免',
+      message: '風險累積到你自己處理不了，搜救人員和直升機只好進山來接你。他們要為此承擔風險，這些人力也沒辦法去處理別的緊急事件。這不是運氣不好，是準備不足和一次次判斷失誤疊出來的結果。',
+      safety: '要檢討的是準備不足，不是求救。真的出事要立刻撥 119 或 112，不要怕丟臉。',
     },
   ];
 
@@ -353,7 +354,6 @@
     { id: 'legend', name: '山神認證', desc: '風險低於 20 完成路線' },
     { id: 'zero', name: '零風險', desc: '風險 0 完成路線' },
     { id: 'streak5', name: '判斷連發', desc: '一趟中連續答對 5 題' },
-    { id: 'rescue', name: '勇於求救', desc: '經歷一次求救結局' },
     { id: 'scholar', name: '山岳百科', desc: '看過題庫裡的每一題' },
   ];
 
@@ -367,6 +367,8 @@
       try {
         const raw = localStorage.getItem(STORE_KEY);
         if (raw) this.data = Object.assign(emptyStore(), JSON.parse(raw));
+        /* 舊紀錄裡的「勇於求救」徽章已取消：動用救援不該拿到獎勵 */
+        this.data.badges = this.data.badges.filter((id) => id !== 'rescue');
       } catch (e) {
         this.data = emptyStore();
       }
@@ -378,7 +380,9 @@
       } catch (e) { /* 存不了就只留在這次遊玩 */ }
     },
     reset() {
-      this.data = emptyStore();
+      /* 清紀錄不等於換角色 */
+      const heroGender = this.data.heroGender;
+      this.data = Object.assign(emptyStore(), { heroGender });
       this.save();
     },
     recordStart() {
@@ -397,21 +401,36 @@
       if (completed) d.finishes++;
       else d.rescues++;
       const cur = { risk, title: grade.title, completed, date: new Date().toISOString().slice(0, 10) };
-      const isNewBest = !d.best
-        || (completed && !d.best.completed)
-        || (completed === d.best.completed && risk < d.best.risk);
+      /* 動用救援的一趟不算紀錄 */
+      const isNewBest = completed && (!d.best || !d.best.completed || risk < d.best.risk);
       if (isNewBest) d.best = cur;
       const earned = [];
       if (completed) earned.push('first');
       if (completed && risk < 20) earned.push('legend');
       if (completed && risk === 0) earned.push('zero');
-      if (bestStreak >= 5) earned.push('streak5');
-      if (!completed) earned.push('rescue');
-      if (bankIds.length && bankIds.every((id) => d.seen[id])) earned.push('scholar');
+      if (completed && bestStreak >= 5) earned.push('streak5');
+      if (completed && bankIds.length && bankIds.every((id) => d.seen[id])) earned.push('scholar');
       const fresh = earned.filter((id) => !d.badges.includes(id));
       d.badges.push(...fresh);
       this.save();
       return { fresh, isNewBest };
+    },
+  };
+
+  /* 玩家選的角色。其他 NPC 不看這裡 */
+  const HERO_GENDERS = ['male', 'female'];
+  DH.player = {
+    gender: 'male',
+    onChange: null,
+    load() {
+      if (HERO_GENDERS.includes(store.data.heroGender)) this.gender = store.data.heroGender;
+    },
+    set(gender) {
+      if (!HERO_GENDERS.includes(gender) || gender === this.gender) return;
+      this.gender = gender;
+      store.data.heroGender = gender;
+      store.save();
+      if (this.onChange) this.onChange(gender);
     },
   };
 

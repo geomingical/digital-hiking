@@ -1,4 +1,6 @@
 :root {
+  --pick: #d9743a;
+  --pick-soft: #fff0df;
   --ink: #4d4037;
   --ink-soft: #6b5c50;
   --paper: #fffdf6;
@@ -401,10 +403,11 @@ body.touch .act-btn kbd { display: none; }
   .hud-risk { flex: 1 1 0; padding: 5px 10px; }
   #risk-face { width: 30px; height: 30px; flex: none; }
 }
-/* 小手機的步道離操作區太近，把可有可無的小動作收起來 */
+/* 小手機仍保留動作選單，拍照也從這裡進入。 */
 @media (max-width: 760px) and (max-height: 640px) and (orientation: portrait) {
-  #actions { display: none; }
   #prompt { bottom: 148px; }
+  /* 螢幕太矮放不下兩個：走到題目前先留互動提示，動作選單讓位 */
+  #app:has(#prompt:not([hidden])) #actions { display: none; }
 }
 
 /* 事件卡片 ------------------------------------------------------- */
@@ -895,22 +898,7 @@ body.touch .act-btn kbd { display: none; }
 }
 .prep-foot .btn { flex: none; white-space: nowrap; }
 .prep-foot-note { flex: 1; min-width: 0; margin: 0; color: var(--ink-soft); font-size: 13.5px; line-height: 1.45; }
-.prep-need { margin: 0; color: #a24a24; font-size: 14px; font-weight: 700; line-height: 1.4; text-align: right; }
 .prep-note { margin: 10px 0 0; color: var(--ink-soft); font-size: 13px; line-height: 1.5; }
-.prep-ack {
-  flex: 1;
-  min-width: 0;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 15px;
-  font-weight: 700;
-  line-height: 1.4;
-  cursor: pointer;
-}
-.prep-ack.off { color: var(--ink-soft); font-weight: 500; cursor: default; }
-.prep-ack input { flex: none; width: 24px; height: 24px; margin: 0; accent-color: var(--brand); }
 
 /* 選山 */
 .mtn-chips { display: none; }
@@ -1053,7 +1041,7 @@ body.touch .act-btn kbd { display: none; }
   transition: background .14s ease, border-color .14s ease;
 }
 .gear-opt:hover { background: #fff8ec; }
-.gear-opt.on { border-color: var(--green); background: var(--green-soft); }
+.gear-opt.on { border-color: var(--pick); background: var(--pick-soft); }
 .gear-opt.flash { animation: gear-flash 1.4s ease 2; }
 @keyframes gear-flash { 50% { box-shadow: 0 0 0 4px rgba(240, 138, 87, .5); } }
 .gear-icon { flex: none; border-radius: 10px; background: var(--cream); }
@@ -1075,8 +1063,8 @@ body.touch .act-btn kbd { display: none; }
   font-size: 13px;
   font-weight: 900;
 }
-.gear-opt.on .gear-opt-mark { border-color: var(--green); background: var(--green); }
-.gear-opt.on .gear-opt-mark::before { content: '✓'; }
+.gear-opt.on .gear-opt-mark { width: auto; height: 22px; padding: 0 8px; border-color: var(--pick); border-radius: 999px; background: var(--pick); }
+.gear-opt.on .gear-opt-mark::before { content: '已選'; font-size: 12px; }
 .group-bars { display: grid; gap: 6px; }
 .group-row { display: grid; grid-template-columns: 74px minmax(0, 1fr) 48px; align-items: center; gap: 7px; font-size: 13.5px; }
 .group-score { white-space: nowrap; }
@@ -1187,10 +1175,7 @@ body.touch .act-btn kbd { display: none; }
   .prep-foot { padding: 7px 10px calc(8px + env(safe-area-inset-bottom)); gap: 8px; }
   .prep-foot-note { font-size: 12.5px; }
   .prep-foot .btn { padding: 8px 14px; font-size: 15px; }
-  .prep-ack { font-size: 14px; gap: 8px; }
   .prep-panel[data-step='mountain'] .prep-foot { flex-wrap: wrap; gap: 2px 8px; }
-  .prep-panel[data-step='mountain'] .prep-ack { flex: 1 0 100%; }
-  .prep-panel[data-step='mountain'] .prep-need { flex: 1; min-width: 0; font-size: 13px; text-align: left; }
   .prep-panel[data-step='mountain'] #prep-next { margin-left: auto; }
 
   .mtn-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
@@ -1381,3 +1366,239 @@ body.touch .act-btn kbd { display: none; }
   .card-fixed .key-badge small { font-size: 12px; }
   .card-fixed .key-badge b { font-size: 13.5px; }
 }
+
+/* 出發前夜的主視覺 */
+#start-screen { background: url("assets/art/key-art.jpg") 72% center / cover no-repeat; }
+.gear-eve { margin: 0 0 4px; color: var(--brand); font-size: 14px; font-weight: 800; }
+.meter-pending { margin: 6px 0 0; color: var(--ink-soft); font-size: 13.5px; line-height: 1.45; }
+#prep-next.is-pending { background: #6d7f72; box-shadow: 0 3px 0 #53635a; }
+.gear-slot:has(.gear-opt.on) > h4 { color: inherit; }
+.gear-rec[hidden] { display: none; }
+
+/* 選山：卡片本身可點，細節收進摺疊 */
+.mtn-card { cursor: pointer; }
+.mtn-banner { height: 132px; }
+.mtn-more { margin: 0 0 8px; font-size: 14px; line-height: 1.5; }
+.mtn-more summary { min-height: 32px; color: #4a7c63; font-weight: 800; cursor: pointer; }
+#prep-panel[data-step="mountain"] .prep-foot-note { color: var(--ink); }
+
+/* 結局：這趟的足跡 */
+.ending-trail { margin: 0 0 10px; padding: 10px 12px 12px; border: 2px solid #bcdcc7; border-radius: 15px; background: #fff; }
+.ending-trail h4 { margin: 0 0 4px; color: #2f6b52; font-size: 16px; }
+.ending-trail svg { display: block; width: 100%; height: auto; }
+.trail-area { fill: #e3f0df; }
+.trail-line { fill: none; stroke: #5fa781; stroke-width: 2.5; stroke-linejoin: round; }
+.trail-ok { fill: #2f8f62; stroke: #fff; stroke-width: 2; }
+.trail-ng { fill: #d0482f; stroke: #fff; stroke-width: 2; }
+.trail-label { fill: #6d6255; font-size: 13px; font-weight: 700; }
+.trail-legend { display: flex; align-items: center; gap: 6px; margin: 2px 0 0; color: var(--ink-soft); font-size: 13px; }
+.trail-legend i { width: 10px; height: 10px; border-radius: 50%; }
+.trail-legend i.dot-ng { margin-left: 8px; background: #d0482f; }
+.trail-legend i.dot-ok { background: #2f8f62; }
+.trail-worst { margin: 8px 0 0; padding: 7px 10px; border-radius: 10px; background: #fff1e8; font-size: 14.5px; line-height: 1.5; }
+.trail-worst b { display: block; color: #a92f28; font-size: 13px; }
+.trail-body { margin: 8px 0 0; padding: 0; list-style: none; font-size: 14px; line-height: 1.5; }
+.trail-body li { padding: 3px 0 3px 10px; border-left: 3px solid #d9d2c3; margin-bottom: 4px; }
+.trail-body li.warn { border-color: #e29a4f; }
+.trail-body li.good { border-color: #7dbf8b; }
+
+@media (max-width: 760px) {
+  /* 手機保留畫面右下角的登山客 */
+  #start-screen { background-position: 87% bottom; }
+}
+
+/* 3D 場景在最底層，2D 畫布只疊泡泡與浮字 */
+#scene3d { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#scene3d[hidden] { display: none; }
+#scene.overlay { background: transparent; }
+#app.is-3d #start-screen { background: none; }
+#app.is-3d.at-ending { background: linear-gradient(#7fb4e6, #ffe2c0); }
+#app.is-3d.at-ending #scene3d { visibility: hidden; }
+#app.is-3d.at-ending.cine #scene3d { visibility: visible; }
+
+/* 重要時刻：開場、登頂、結局。介面先退開，把畫面留給場景 */
+#cine-title {
+  position: absolute; left: 12px; right: 12px; top: 11%; z-index: 30; pointer-events: none; text-align: center;
+  color: #fff; text-shadow: 0 2px 18px rgba(30, 40, 50, .55), 0 1px 3px rgba(30, 40, 50, .5);
+  animation: cine-in .9s ease both;
+}
+#cine-title[hidden] { display: none; }
+#cine-title p { margin: 0 0 6px; font-size: clamp(16px, 2.2vw, 22px); font-weight: 800; letter-spacing: .08em; }
+#cine-title strong { display: block; font-size: clamp(40px, 7vw, 84px); font-weight: 800; line-height: 1.15; letter-spacing: .04em; }
+#cine-title span { display: block; margin-top: 8px; font-size: clamp(15px, 2vw, 20px); font-weight: 700; }
+@keyframes cine-in { from { opacity: 0; transform: translateY(14px); } }
+#app.moment #hud, #app.moment #controls, #app.moment #hints, #app.moment #actions { opacity: 0; pointer-events: none; }
+#hud, #controls, #hints, #actions { transition: opacity .35s ease; }
+#app.cine #ending-screen { background: transparent; cursor: pointer; }
+#app.cine .ending-panel { opacity: 0; pointer-events: none; transform: translateY(24px); }
+.ending-panel { transition: opacity .55s ease, transform .55s ease; }
+#ending-bg { display: none; }
+#app.is-3d #ending-bg { display: block; position: absolute; inset: 0; width: 100%; height: 100%; filter: blur(7px) saturate(1.05) brightness(1.04); transform: scale(1.04); }
+#app.cine #ending-bg { visibility: hidden; }
+#app.cine ~ .more-hint { display: none; }
+.ending-panel { position: relative; z-index: 1; }
+@media (prefers-reduced-motion: reduce) {
+  #cine-title { animation: none; }
+  .ending-panel, #hud, #controls, #hints, #actions { transition: none; }
+}
+
+/* 明白告訴玩家清單還能往下捲 */
+.more-hint {
+  position: fixed; z-index: 40; transform: translateX(-50%); min-height: 30px; padding: 4px 14px;
+  border: 0; border-radius: 999px; background: rgba(47, 107, 82, .92); color: #fff; font-size: 13.5px; font-weight: 800;
+  box-shadow: 0 3px 10px rgba(40, 50, 40, .22); cursor: pointer; font-family: inherit;
+}
+.more-hint[hidden] { display: none; }
+
+/* 裝備檢查：先給三件最有用的，其他收起來 */
+.check-top-title { margin: 0 0 8px; color: #b0491f; font-size: 16px; }
+.check-more { margin: 10px 0 0; }
+.check-more summary { min-height: 40px; padding: 9px 12px; border-radius: 12px; background: #f6efdd; font-size: 14.5px; font-weight: 800; cursor: pointer; }
+.check-more .check-list { margin-top: 8px; }
+
+/* 手機的換裝頁：把高度讓給要做選擇的清單 */
+@media (max-width: 760px) and (orientation: portrait) {
+  .gear-eve, .gear-brief span, .meter-pending, .gear-summary { display: none; }
+  .gear-left { padding: 6px 10px; gap: 4px; }
+  .gear-brief strong { font-size: 12.5px; }
+  .gear-stage { min-height: 0; height: 118px; }
+  .gear-meter { padding: 5px 10px; }
+}
+
+/* 答錯回饋：先看自己選了什麼，細節要看再展開 */
+.fb-chosen { flex-basis: 100%; margin: 2px 0 0; color: #7a3a2c; font-size: 14px; font-weight: 700; line-height: 1.45; }
+.fb-head { flex-wrap: wrap; }
+.fb-more summary { min-height: 36px; display: flex; align-items: center; color: #4a7c63; font-size: 14.5px; font-weight: 800; cursor: pointer; }
+.fb-more.is-plain summary { display: none; }
+.fb-more p { margin: 4px 0 0; }
+
+.essentials summary::after { content: '▾'; margin-left: 8px; font-size: 13px; }
+.essentials[open] summary::after { content: '▴'; }
+
+@media (max-width: 760px) and (orientation: portrait) {
+  /* 上面只隱藏說明段落；天氣仍要留著，選裝備要靠它判斷 */
+  .gear-brief span { display: inline; font-size: 12px; }
+  .gear-brief { display: block; line-height: 1.35; }
+  .gear-brief strong { display: block; }
+  .gear-brief span + span::before { content: '；'; }
+  /* 衣物選項也附上用途，手機玩家才有判斷依據 */
+  .gear-opts.is-short { grid-template-columns: 1fr; }
+  .is-short .gear-opt-teach { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 13px; line-height: 1.4; }
+  .gear-slot-note { display: none; }
+}
+
+/* 觀察現場：標記釘在場景物件上，說明面板在下方 */
+#observe { position: absolute; inset: 0; z-index: 28; pointer-events: auto; }
+#observe[hidden] { display: none; }
+#observe-spots { position: absolute; inset: 0; }
+#observe-spots.as-list { inset: 8px 8px auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+#observe-spots.as-list .observe-spot { position: relative; }
+.observe-spot {
+  position: absolute; left: 0; top: 0; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 4px 13px 4px 5px;
+  border: 2px solid #fff; border-radius: 999px; background: rgba(52, 44, 38, .9); color: #fff; font: inherit; font-size: 15px; font-weight: 800;
+  pointer-events: auto; cursor: pointer; box-shadow: 0 3px 12px rgba(20, 20, 20, .35); touch-action: manipulation;
+}
+.observe-spot::after { content: ''; position: absolute; inset: -5px; border: 2px solid rgba(255, 255, 255, .7); border-radius: inherit; pointer-events: none; animation: spot-pulse 1.7s ease-out infinite; }
+.observe-spot.seen { border-color: #d8cdbd; background: rgba(250, 245, 233, .94); color: #4c4037; }
+.observe-spot.seen::after { display: none; }
+.observe-num { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--pick); color: #fff; font-size: 14px; }
+.observe-spot.seen .observe-num { background: #b5a899; }
+@keyframes spot-pulse { from { opacity: .9; transform: scale(.94); } to { opacity: 0; transform: scale(1.22); } }
+#observe-panel {
+  position: absolute; left: 50%; bottom: 14px; width: min(560px, calc(100% - 20px)); transform: translateX(-50%);
+  padding: 12px 16px 14px; border-radius: 18px; background: rgba(255, 252, 243, .96); box-shadow: 0 8px 26px rgba(30, 30, 30, .28); pointer-events: auto;
+  max-height: calc(100% - 180px); overflow-y: auto; overscroll-behavior: contain;
+}
+#observe-kicker { margin: 0; color: #a6562a; font-size: 13.5px; font-weight: 800; }
+#observe-title { display: block; margin: 1px 0 6px; font-size: 21px; line-height: 1.25; }
+#observe-notes { margin: 0 0 9px; padding: 0; list-style: none; display: grid; gap: 5px; }
+#observe-notes:empty { display: none; }
+#observe-notes li { display: flex; gap: 8px; font-size: 15px; line-height: 1.45; animation: note-in .25s ease; }
+#observe-notes b { flex: none; color: #a6562a; }
+@keyframes note-in { from { opacity: 0; transform: translateY(5px); } }
+#observe-go { width: 100%; min-height: 46px; }
+#observe-go.is-waiting { background: #e3dacb; color: #6a5c50; box-shadow: none; cursor: default; }
+@media (prefers-reduced-motion: reduce) { .observe-spot::after { animation: none; } #observe-notes li { animation: none; } }
+
+.card-seen { margin: 7px 0 0; color: #7c6b5c; font-size: 13.5px; font-weight: 700; }
+.fb-world { margin: 8px 0; padding: 9px 12px; border-left: 4px solid var(--pick); border-radius: 6px; background: #fbf3e5; }
+.fb-world p { margin: 0; font-size: 15px; line-height: 1.5; }
+.fb-world-text { font-weight: 700; }
+.fb-world-missed { margin-top: 5px !important; color: #6b5c50; font-size: 14px !important; }
+
+.ess-gaps { margin: 12px 0 0; padding: 11px 13px; border: 2px solid #eec9a6; border-radius: 14px; background: #fff6ea; }
+.ess-gaps h4 { margin: 0 0 6px; color: #a6562a; font-size: 16px; }
+.ess-gaps ul { margin: 0 0 8px; padding: 0; list-style: none; display: grid; gap: 5px; }
+.ess-gaps li { display: grid; gap: 1px; font-size: 14.5px; line-height: 1.4; }
+.ess-gaps li span { color: #6b5c50; font-size: 13.5px; }
+.ess-gaps-ok { margin: 0; font-weight: 700; }
+.ess-gaps-fix { min-height: 42px; }
+
+.gear-mini-text { white-space: pre-line; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+
+/* 開場選角色：沿用裝備「已選」的顏色，不用性別色 */
+.hero-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 12px; padding: 0; border: 0; }
+.hero-pick legend { margin-bottom: 6px; padding: 0; font-size: 15px; font-weight: 800; color: #4c4037; }
+.hero-opt { position: relative; display: block; cursor: pointer; }
+.hero-opt input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.hero-opt span { display: grid; place-items: center; min-height: 44px; border: 2px solid var(--line); border-radius: 12px; background: #fff; font-weight: 800; font-size: 16px; }
+.hero-opt input:checked + span { border-color: var(--pick); background: var(--pick-soft); }
+.hero-opt input:focus-visible + span { outline: 3px solid #2f6b52; outline-offset: 2px; }
+.hero-switch { position: absolute; left: 6px; top: 6px; z-index: 2; min-height: 44px; padding: 4px 12px; font-size: 13.5px; }
+
+/* 動用救援的結局：檢討寫清楚，不給獎勵 */
+#ending-safety { margin: 0 0 12px; padding: 9px 12px; border-left: 4px solid #c9412f; border-radius: 6px; background: #fdeee9; color: #7d2a1c; font-size: 15px; font-weight: 800; line-height: 1.5; }
+#ending-safety[hidden], #ending-review[hidden] { display: none; }
+#ending-screen[data-tier='bad'] .ending-stats { grid-template-columns: repeat(2, 1fr); }
+#ending-screen[data-tier='bad'] .ending-stats > div:nth-child(3) { display: none; }
+#ending-review { margin: 0 0 12px; padding: 11px 14px; border: 2px solid #eec0ae; border-radius: 14px; background: #fff6f1; }
+#ending-review h4 { margin: 0 0 5px; color: #a3381f; font-size: 16px; }
+#ending-review ul, #ending-review ol { margin: 0 0 9px; padding-left: 20px; display: grid; gap: 4px; font-size: 14.5px; line-height: 1.5; }
+#ending-review ol:last-child, #ending-review ul:last-child { margin-bottom: 0; }
+@media (max-width: 760px) and (orientation: portrait) {
+  #ending-safety { margin: 6px 0 0; font-size: 14px; }
+}
+
+/* 拍照：相框蓋在推近的鏡頭上 */
+#photo-mode { position: absolute; inset: 0; z-index: 34; }
+#photo-mode[hidden] { display: none; }
+#photo-flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+#photo-flash.go { animation: photo-flash .42s ease-out; }
+@keyframes photo-flash { 0% { opacity: .95; } 100% { opacity: 0; } }
+#photo-view { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 10px; background: rgba(24, 28, 30, .58); animation: photo-in .32s ease both; }
+#photo-view[hidden] { display: none; }
+@keyframes photo-in { from { opacity: 0; } }
+#photo-frame { display: block; flex: 0 1 auto; width: auto; height: auto; max-width: min(100%, 560px); max-height: calc(100% - 96px); min-height: 0; border-radius: 12px; box-shadow: 0 14px 40px rgba(0, 0, 0, .4); animation: photo-pop .36s cubic-bezier(.2, 1.1, .4, 1) both; }
+@keyframes photo-pop { from { transform: scale(.94); } }
+#photo-count { margin: 0; color: #fff; font-size: 14px; font-weight: 700; }
+.photo-btns { display: flex; gap: 8px; }
+.photo-btns .btn { min-width: 120px; min-height: 44px; }
+@media (prefers-reduced-motion: reduce) { #photo-view, #photo-frame { animation: none; } }
+
+/* 結局頁的相簿 */
+.ending-photos { margin: 0 0 14px; }
+.ending-photos[hidden] { display: none; }
+.ending-photos h3 { margin: 0 0 8px; }
+#album-big { display: block; width: min(100%, 340px); height: auto; margin: 0 auto; border: 1px solid #e6dfd2; border-radius: 10px; }
+#album-thumbs { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 8px 0 0; }
+#album-thumbs[hidden] { display: none; }
+.album-thumb { padding: 0; width: 56px; height: 70px; border: 2px solid #e6dfd2; border-radius: 8px; overflow: hidden; background: none; cursor: pointer; }
+.album-thumb[aria-pressed='true'] { border-color: var(--pick); }
+.album-thumb canvas { display: block; width: 100%; height: 100%; }
+#album-save { display: block; width: min(100%, 340px); min-height: 44px; margin: 8px auto 0; }
+@media (max-width: 760px) and (orientation: portrait) {
+  .hero-switch { left: 3px; top: 3px; width: 44px; height: 44px; padding: 0; border-radius: 10px; font-size: 11.5px; line-height: 1.15; white-space: nowrap; }
+}
+
+/* 手機答完先看現場：卡片只留結果和一句回應 */
+.card.fb-brief { max-height: none !important; }
+.card.fb-brief .card-fixed-title, .card.fb-brief .card-main, .card.fb-brief #card-opts,
+.card.fb-brief #fb-key, .card.fb-brief #fb-gear, .card.fb-brief #fb-more, .card.fb-brief #fb-src,
+.card.fb-brief .fb-chosen, .card.fb-brief .fb-world-missed { display: none !important; }
+.card.fb-brief .card-scroll { overflow: visible; padding-bottom: 6px; }
+
+.card-seen { display: grid; gap: 2px; font-weight: 500; color: #4c4037; font-size: 14.5px; line-height: 1.45; }
+.card-seen[hidden] { display: none; }
+.card-seen b { color: #a6562a; font-size: 13px; }
+#ending-review.is-lesson { border-color: #eec9a6; background: #fff6ea; }
+#ending-review.is-lesson h4 { color: #a6562a; }

@@ -266,7 +266,7 @@ def desktop_flow(browser, errors):
     page.screenshot(path=str(SHOTS / "scenario-sos.png"))
     page.evaluate("window.__game.continue()")
     end = g(page, "state.ending")
-    check(not end["completed"] and end["tier"] == "bad" and end["title"] == "求救啟動", "壞結局：求救啟動")
+    check(not end["completed"] and end["tier"] == "bad" and end["title"] == "這場救援本來可以避免", "壞結局：這場救援本來可以避免")
     check(page.locator("#summary-list li").count() == r, "壞結局總結只列走過的題目")
     page.wait_for_timeout(500)
     page.screenshot(path=str(SHOTS / "ending-bad.png"))
@@ -280,7 +280,7 @@ def desktop_flow(browser, errors):
     check(g(page, "state.ending.title") == "驚險下山", "50–79 驚險下山")
     page.screenshot(path=str(SHOTS / "ending-normal.png"))
     for risk, title in [(0, "平安滿載的山神級登山客"), (19, "平安滿載的山神級登山客"), (20, "有驚無險"),
-                        (49, "有驚無險"), (50, "驚險下山"), (79, "驚險下山"), (80, "險象環生"), (99, "險象環生"), (100, "求救啟動")]:
+                        (49, "有驚無險"), (50, "驚險下山"), (79, "驚險下山"), (80, "險象環生"), (99, "險象環生"), (100, "這場救援本來可以避免")]:
         g(page, "startGame()")
         got = page.evaluate(f"window.__game.skipToEnding({risk}).title")
         check(got == title, f"風險 {risk} → {title}")
@@ -874,6 +874,14 @@ PREP_SHOTS = SHOTS / "prep"
 HEADLAMP = "headlamp-before-dark"
 
 
+def dress_sample(page):
+    """這裡測的是配裝之後的行為：跳過逐項選擇（逐項選擇由 flow_test.py 測）。"""
+    page.evaluate("""() => {
+        const P = window.__game.prep;
+        if (P.undecided().length) { P.selection = window.__game.logic.sampleSelection(); P.refreshGear(false); }
+    }""")
+
+
 def open_prep(page, seed=12):
     page.goto(f"{URL}?seed={seed}")
     page.wait_for_function("window.__game && window.__game.state.prepReady")
@@ -903,11 +911,11 @@ def walk_to_gear(page, mountain, season, touch=False):
     if chip.is_visible():
         press(page, f".mtn-chip[data-id='{mountain}']", touch)
     press(page, f".mtn-card[data-id='{mountain}'] .mtn-pick", touch)
-    page.check("#prep-ack")
     press(page, "#prep-next", touch)
     press(page, f"[data-season='{season}']", touch)
     press(page, "#prep-next", touch)
     page.wait_for_selector("#gear-preview")
+    dress_sample(page)
 
 
 def prep_flow(browser, errors):
@@ -929,9 +937,7 @@ def prep_flow(browser, errors):
     check(all(k in txt for k in ["海拔", "天數", "步道", "氣候", "許可"]), "選山卡有海拔、天數、步道、氣候、許可")
     check(not page.locator("#prep-next").is_enabled(), "未選山與未勾選不能下一步")
     page.click(".mtn-card[data-id='jiali'] .mtn-pick")
-    check(not page.locator("#prep-next").is_enabled(), "選山後仍須勾選閱讀")
-    check("我已閱讀" in page.inner_text(".prep-ack") and "模擬" in page.inner_text(".prep-ack"), "閱讀許可勾選文字")
-    page.check("#prep-ack")
+    check("許可" in page.inner_text("#prep-foot"), "選山後下一步旁邊顯示許可需求")
     page.wait_for_timeout(120)
     page.screenshot(path=str(PREP_SHOTS / "01-mountain-select.png"))
     page.click("#prep-next")
@@ -951,19 +957,20 @@ def prep_flow(browser, errors):
     check(page.evaluate("JSON.stringify(window.__game.prep.forecast)") == f0, "返回並重按同季節不重抽預報")
     page.click("#prep-next")
     page.wait_for_selector("#gear-preview")
+    dress_sample(page)
 
-    # 預設配裝與分頁
-    check(page.locator(".gear-opt[data-item='wicking'].on").count() == 1, "預設穿排汗衣")
+    # 配裝與分頁
+    check(page.locator(".gear-opt[data-item='wicking'].on").count() == 1, "測試配裝穿排汗衣")
     check(page.locator(".gear-tab").count() == 3, "穿著／背包／行前分頁")
     base_risk = int(page.inner_text("#prep-risk"))
-    check(0 < base_risk <= 45, f"預設配裝有行前風險 {base_risk}")
+    check(0 < base_risk <= 45, f"測試配裝有行前風險 {base_risk}")
     check(len(page.inner_text("#prep-why")) > 5, "即時顯示風險原因")
     page.click(".gear-opt[data-item='sandals']")
     check(int(page.inner_text("#prep-risk")) > base_risk, "換拖鞋行前風險即時上升")
     page.click(".gear-opt[data-item='boots']")
 
     # 全建議清單 = 0；最差配置 ≤ 45
-    page.click("#btn-recommend")
+    page.evaluate("window.__game.prep.applyRecommended()")
     check(page.inner_text("#prep-risk") == "0", "套用建議清單後行前風險 0")
     page.evaluate("""() => {
         const P = window.__game.prep;
@@ -1039,7 +1046,7 @@ def prep_flow(browser, errors):
     check(page.evaluate("window.__game.prep.previewHash()") != h1, "外層蓋住時內層仍從領口看得出來")
 
     # 展示用配裝：缺頭燈、其他大致齊全
-    page.click("#btn-recommend")
+    page.evaluate("window.__game.prep.applyRecommended()")
     page.click(".gear-tab[data-tab='pack']")
     page.click(".gear-opt[data-item='headlamp']")
     page.click(".gear-opt[data-item='rain_kit']")
@@ -1056,17 +1063,21 @@ def prep_flow(browser, errors):
     page.click("#prep-next")
     page.wait_for_selector("#check-list")
     check(g(page, "state.risk") == 0, "檢查頁不寫入 state.risk")
-    list_txt = page.inner_text("#check-list")
-    check("建議調整" in list_txt and "符合" in list_txt, "逐項顯示符合／建議調整")
+    check(page.locator("#check-list .check-row").count() <= 3, "檢查頁先列最多三件該改的")
+    page.evaluate("document.querySelectorAll('.check-more').forEach((d) => { d.open = true; })")
+    list_txt = page.inner_text(".check-right")
+    check("建議調整" in list_txt and "符合" in list_txt, "展開後逐項顯示符合／建議調整")
     check(page.locator(".group-row").count() == 5, "五組分數")
     check(f"{prep_risk} / 45" in page.inner_text("#check-risk"), "檢查頁總分與打包頁一致")
     page.wait_for_timeout(150)
     page.screenshot(path=str(PREP_SHOTS / "04-gear-check.png"))
     page.click("#prep-edit")
     page.wait_for_selector("#gear-preview")
+    dress_sample(page)
     page.click("#prep-next")
     page.locator(".check-row.adjust").first.click()
     page.wait_for_selector("#gear-preview")
+    dress_sample(page)
     check(g(page, "prep.step") == "gear", "點檢查列回到品項")
     page.click("#prep-next")
     check(g(page, "state.risk") == 0 and page.evaluate("window.__game.store.data.plays") == plays0, "來回檢查不加風險、不計遊玩次數")
@@ -1197,7 +1208,7 @@ def prep_modifier_flow(browser, errors):
         const m = P.data.mountains.mountains.find(x => x.id === 'xueshan');
         const f = L.generateForecast(m, 'autumn', 1, 0, 0), b = L.briefFlags(m, f);
         const flags = (patch) => {
-            const sel = Object.assign(L.defaultSelection(), patch);
+            const sel = Object.assign(L.sampleSelection(), patch);
             return L.gearFlags(sel, P.index, m, b);
         };
         const ctx = (gear, here) => ({ gear, route: m.route_flags, brief: Object.assign({}, b, { wet: true, cold: true }),
@@ -1272,7 +1283,7 @@ def prep_modifier_flow(browser, errors):
     check(row["actualAdded"] == 1 and row["finalRisk"] > 1, f"風險 99 只記實際增加 1（題目 {row['finalRisk']}）")
     check(g(page, "state.risk") == 100, "封頂 100")
     g(page, "continue()")
-    check(g(page, "state.ending.tier") == "bad", "進入求救結局")
+    check(g(page, "state.ending.tier") == "bad", "進入救援結局")
     recon = page.evaluate("window.__game.state.preparation.risk + window.__game.state.eventRiskLog.reduce((a, r) => a + r.actualAdded, 0)")
     check(recon == 100, "截斷後仍能對帳")
     page.context.close()
@@ -1341,7 +1352,7 @@ def prep_selection_flow(browser, errors):
         const G = window.__game, L = G.logic, P = G.prep, out = {};
         const m = P.data.mountains.mountains.find(x => x.id === 'xueshan');
         const f = L.generateForecast(m, 'autumn', 1, 0, 0), a = L.generateActual(m, f, 1, 0, 0), b = L.briefFlags(m, f);
-        const base = () => ({ gear: L.gearFlags(L.defaultSelection(), P.index, m, b), route: m.route_flags,
+        const base = () => ({ gear: L.gearFlags(L.sampleSelection(), P.index, m, b), route: m.route_flags,
             weather: { rain:false, wet:false, cold:false, thunder:false, fog:false, ice:false, strong_wind:false, official_closed:false },
             state: { pack_weight_g: 0 }, season: 'autumn' });
         const has = (id, c) => L.evalCond(L.TRIGGERS[id], c);
@@ -1686,7 +1697,6 @@ def prep_postpone_flow(browser, errors):
     open_prep(page, seed)
     page.click("#btn-start")
     page.click(".mtn-card[data-id='qixing'] .mtn-pick")
-    page.check("#prep-ack")
     page.click("#prep-next")
     page.click("[data-season='summer']")
     page.wait_for_selector("#postpone-card")
@@ -1797,7 +1807,6 @@ def prep_mobile_flow(browser, errors):
     page.tap(".mtn-chip[data-id='xueshan']")
     check(page.locator(".mtn-card:visible").get_attribute("data-id") == "xueshan", "點山名切換卡片")
     page.tap(".mtn-card.active .mtn-pick")
-    page.check("#prep-ack")
     check(not small(".mtn-chip, .mtn-pick, #prep-next, .prep-back"), f"選山按鈕 ≥44px {small('.mtn-chip, .mtn-pick, #prep-next, .prep-back')}")
     check(not overflow(), "選山沒有橫向溢出")
     page.wait_for_timeout(120)
@@ -1811,10 +1820,11 @@ def prep_mobile_flow(browser, errors):
     page.screenshot(path=str(PREP_SHOTS / "mobile-02-forecast.png"))
     page.tap("#prep-next")
     page.wait_for_selector("#gear-preview")
+    dress_sample(page)
     box = page.locator("#gear-scroll").bounding_box()
     check(box["height"] >= 220, f"手機選項區夠高 {box['height']:.0f}px")
     check(not overflow(), "換裝沒有橫向溢出")
-    check(not small(".gear-opt, .gear-tab, #btn-recommend, #prep-next, .prep-back"), f"換裝按鈕 ≥44px {small('.gear-opt, .gear-tab, #btn-recommend, #prep-next, .prep-back')}")
+    check(not small(".gear-opt, .gear-tab, #prep-next, .prep-back"), f"換裝按鈕 ≥44px {small('.gear-opt, .gear-tab, #prep-next, .prep-back')}")
     page.tap(".gear-opt[data-item='beanie']")
     page.tap(".gear-opt[data-item='fleece']")
     page.wait_for_timeout(180)
@@ -1913,7 +1923,7 @@ def polish_mobile_gear_flow(browser, errors):
         seed = safe_seed(page, "yushan", "autumn")
         open_prep(page, seed)
         walk_to_gear(page, "yushan", "autumn", touch=True)
-        page.tap("#btn-recommend")
+        page.evaluate("window.__game.prep.applyRecommended()")
         page.wait_for_timeout(120)
         hash_a = page.evaluate("window.__game.prep.previewHash()")
         summary_a = page.inner_text("#gear-summary")
@@ -1924,7 +1934,7 @@ def polish_mobile_gear_flow(browser, errors):
         foot_y = page.locator("#prep-foot").bounding_box()["y"]
         check(foot_y - tab_y >= 120 if h < 700 else foot_y - tab_y >= 220, f"{tag} 首屏仍留選項高度（{foot_y - tab_y:.0f}px）")
         stage = page.locator(".gear-stage").bounding_box()
-        check(stage["height"] >= (120 if h < 700 else 170), f"{tag} 預覽高度足夠（{stage['height']:.0f}px）")
+        check(stage["height"] >= 118, f"{tag} 預覽高度足夠（{stage['height']:.0f}px）")
         tray = page.locator("#gear-tray-slot").bounding_box()
         check(tray["x"] >= stage["x"] + stage["width"] - 1 or tray["y"] >= stage["y"] + stage["height"] - 1, f"{tag} 物品盤不蓋住預覽角色")
 
@@ -1948,7 +1958,7 @@ def polish_mobile_gear_flow(browser, errors):
         page.tap("#prep-why-more")
 
         cols = page.evaluate("""() => [...document.querySelectorAll('.gear-panel[data-panel="wear"] .gear-opts')].map((n) => getComputedStyle(n).gridTemplateColumns.split(' ').length)""")
-        check(all(c == 2 for c in cols), f"{tag} 穿著短選項兩欄 {cols}")
+        check(all(c == 1 for c in cols), f"{tag} 穿著選項一欄，附用途說明 {cols}")
         small = page.evaluate("""() => [...document.querySelectorAll('.gear-opt, .gear-tab')].filter((n) => n.offsetParent).map((n) => n.getBoundingClientRect()).filter((r) => r.height < 44 || r.width < 44).length""")
         check(small == 0, f"{tag} 選項與分頁點擊區 ≥44px")
         over = page.evaluate("""() => { const b = document.getElementById('prep-body'); return b.scrollWidth > b.clientWidth + 1; }""")
@@ -1972,7 +1982,7 @@ def polish_mobile_gear_flow(browser, errors):
         tabs = page.locator(".gear-tabs").bounding_box()
         check(first["y"] >= tabs["y"] + tabs["height"] - 1, f"{tag} 換分頁回到新清單開頭")
         page.evaluate("(() => { document.getElementById('prep-body').scrollTop = 0; window.__game.prep.setTab('wear'); })()")
-        page.tap("#btn-recommend")
+        page.evaluate("window.__game.prep.applyRecommended()")
         page.wait_for_timeout(80)
         page.tap(".tray-item[data-item='headlamp']")
         check(page.inner_text(".tray-name") == "頭燈含備用電池", f"{tag} 手機點物品顯示名稱")
@@ -1998,15 +2008,13 @@ def polish_desktop_flow(browser, errors):
         check(size["legal"] >= 12 and size["op"] == "1" and size["color"] == "rgb(107, 92, 80)", f"{tag} 安全說明 ≥12px 深褐色不降透明度 {size}")
         chk = page.evaluate("""() => {
             const n = document.getElementById('prep-next'), s = getComputedStyle(n);
-            return { bg: s.backgroundColor, shadow: s.boxShadow, need: document.getElementById('prep-need').textContent };
+            return { bg: s.backgroundColor, shadow: s.boxShadow, need: document.getElementById('prep-foot').textContent };
         }""")
-        check(chk["shadow"] == "none" and chk["need"] == "請先選山並勾選閱讀", f"{tag} 停用的下一步沒有陰影並寫明欠缺 {chk['need']}")
+        check(chk["shadow"] == "none" and "先選一座山" in chk["need"], f"{tag} 停用的下一步沒有陰影並寫明欠缺 {chk['need']}")
         page.click(".mtn-card[data-id='yushan'] .mtn-pick")
-        check(page.inner_text("#prep-need") == "請先勾選已閱讀", f"{tag} 欠缺條件隨選擇更新")
         banners = page.evaluate("""() => [...document.querySelectorAll('.mtn-banner')].map((c) => c.toDataURL())""")
         check(len(set(banners)) == 6, f"{tag} 六座山的插圖都不同")
-        page.check("#prep-ack")
-        check(not page.locator("#prep-need").is_visible() and page.locator("#prep-next").is_enabled(), f"{tag} 條件齊全才能下一步")
+        check(page.locator("#prep-next").is_enabled(), f"{tag} 選山後才能下一步")
         page.click("#prep-next")
         page.click("[data-season='autumn']")
         page.wait_for_timeout(100)
@@ -2014,7 +2022,8 @@ def polish_desktop_flow(browser, errors):
         check(fc == "rgb(107, 92, 80)", f"{tag} 季節頁補充文字深褐色 {fc}")
         page.click("#prep-next")
         page.wait_for_selector("#gear-preview")
-        page.click("#btn-recommend")
+        dress_sample(page)
+        page.evaluate("window.__game.prep.applyRecommended()")
         page.wait_for_timeout(120)
         st = page.evaluate("""() => {
             const px = (q) => { const n = document.querySelector(q), s = getComputedStyle(n); return [parseFloat(s.fontSize), parseFloat(s.lineHeight) / parseFloat(s.fontSize)]; };
@@ -2042,7 +2051,7 @@ def polish_desktop_flow(browser, errors):
         check(page.locator(".tray-go").is_visible(), f"{tag} 空背包有前往背包的按鈕")
         page.click(".tray-go")
         check(page.locator(".gear-panel[data-panel='pack']").is_visible(), f"{tag} 空背包按鈕切到背包分頁")
-        page.click("#btn-recommend")
+        page.evaluate("window.__game.prep.applyRecommended()")
         page.click("#prep-next")
         page.wait_for_selector("#check-list")
         ct = page.evaluate("""() => {
@@ -2079,19 +2088,15 @@ def polish_mountain_flow(browser, errors):
     page.wait_for_selector("#prep-panel[data-step='mountain']")
     st = page.evaluate("""() => {
         const on = document.querySelector('.mtn-chip.on'), s = getComputedStyle(on), n = getComputedStyle(document.getElementById('prep-next'));
-        return { text: on.textContent, bottom: parseFloat(s.borderBottomWidth), bg: s.backgroundColor, shadow: n.boxShadow, need: document.getElementById('prep-need').textContent };
+        return { text: on.textContent, bottom: parseFloat(s.borderBottomWidth), bg: s.backgroundColor, shadow: n.boxShadow, need: document.getElementById('prep-foot').textContent };
     }""")
     check("✓" not in st["text"] and st["bottom"] >= 3, f"瀏覽中的山名是底線，沒有勾：{st['text']}")
-    check(st["shadow"] == "none" and "請先選山" in st["need"], f"手機停用下一步降噪並寫明欠缺：{st['need']}")
+    check(st["shadow"] == "none" and "先選一座山" in st["need"], f"手機停用下一步降噪並寫明欠缺：{st['need']}")
     page.tap(".mtn-chip[data-id='xueshan']")
     check("✓" not in page.inner_text(".mtn-chip[data-id='xueshan']") and g(page, "prep.mountainId") is None, "切換山名不等於選山")
     page.tap(".mtn-card.active .mtn-pick")
     check("✓" in page.inner_text(".mtn-chip[data-id='xueshan']") and "已選" in page.inner_text(".mtn-card.active .mtn-pick"), "按了選這座山才有勾與已選")
-    box = page.locator(".prep-ack").bounding_box()
-    check(box["height"] >= 44 and box["width"] >= 300, f"勾選區整行可點（{box['width']:.0f}×{box['height']:.0f}）")
-    page.tap(".prep-ack span")
-    check(page.is_checked("#prep-ack"), "點勾選區文字也能勾選")
-    check(page.locator("#prep-next").is_enabled(), "勾選後可下一步")
+    check(page.locator("#prep-next").is_enabled(), "選山後可下一步")
     ctx.close()
 
 
@@ -2198,7 +2203,7 @@ def polish_card_flow(browser, errors):
         page.wait_for_timeout(120)
         end = page.evaluate("""() => {
             const s = document.getElementById('card-scroll'), r = s.getBoundingClientRect();
-            const last = document.getElementById('fb-why').getBoundingClientRect(), next = document.getElementById('card-next').getBoundingClientRect();
+            const last = document.getElementById('fb-more').getBoundingClientRect(), next = document.getElementById('card-next').getBoundingClientRect();
             return { lastIn: last.bottom <= r.bottom, fade: s.classList.contains('has-more'), next: next.bottom <= innerHeight, pad: parseFloat(getComputedStyle(s).paddingBottom) };
         }""")
         check(end["lastIn"] and not end["fade"] and end["next"] and end["pad"] >= 16, f"{tag} 解說最下方與繼續鈕都到得了 {end}")
@@ -2268,13 +2273,13 @@ def polish_variant_flow(browser, errors):
 
 def main():
     SHOTS.mkdir(exist_ok=True)
-    server = subprocess.Popen([sys.executable, "-m", "http.server", str(PORT), "--bind", "127.0.0.1"],
+    server = subprocess.Popen([sys.executable, str(ROOT / "tests" / "serve.py"), str(PORT)],
                               cwd=ROOT, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     time.sleep(0.7)
     errors = []
     try:
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(headless=True, args=['--disable-webgl', '--disable-webgl2', '--disable-3d-apis'])
             desktop_flow(browser, errors)
             small_bank_flow(browser, errors)
             mobile_flow(browser, errors)

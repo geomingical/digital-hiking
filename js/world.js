@@ -323,13 +323,15 @@
     }
   }
 
-  function sun(c, L, w, horizon, risk) {
+  function sun(c, L, w, horizon, risk, fx) {
     const px = w[0] * 0.8 + w[1] * 0.74 + w[2] * 0.66 + w[3] * 0.32 + w[4] * 0.76;
     const py = w[0] * 0.24 + w[1] * 0.2 + w[2] * 0.26 + w[3] * 0.78 + w[4] * 0.74;
     const big = 36 + (w[3] + w[4]) * 20;
     const x = L.vw * px;
     const y = horizon * py;
-    const dim = 1 - smooth(30, 90, risk) * 0.82;
+    /* 下雨起霧時雲層遮住太陽，不只看風險 */
+    const covered = fx ? Math.max(fx.rain, fx.fog * 0.7) : 0;
+    const dim = (1 - smooth(30, 90, risk) * 0.82) * (1 - covered * 0.92);
     const core = [255, 236 - w[4] * 62 - w[3] * 22, 170 - w[4] * 60 - w[3] * 30];
     c.globalAlpha = 0.62 * dim;
     const size = big * 6;
@@ -811,7 +813,7 @@
     c.fillRect(-40, -40, L.vw + 80, L.vh + 400);
 
     const horizon = L.base - 34;
-    sun(c, L, w, horizon, g.riskView);
+    sun(c, L, w, horizon, g.riskView, g.fx);
     clouds(c, L, g, pal, horizon);
     const tallness = Math.max(1, L.vh / 640);
     mountains(c, L, camX, 0.08, 1.3, horizon, 210 * tallness, pal.far, pal.sky2, true);
@@ -888,6 +890,7 @@
         const depth = 0.92 + p.d * 0.12;
         A.drawHiker(c, e.sx, e.y, {
           t, scale: depth * (g.heroScale || 1), dir: p.dir, risk: g.riskView, phase: p.phase, moving: p.moving, pose: p.pose, jump: p.jump, outfit: g.outfit,
+          body: g.body,
         });
       }
     }

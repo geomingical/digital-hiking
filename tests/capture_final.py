@@ -28,19 +28,19 @@ def run(p):
         chip = pg.locator(".mtn-chip[data-id='yushan']")
         if chip.is_visible(): (chip.tap() if mobile else chip.click()); pg.wait_for_timeout(300); pg.screenshot(path=str(OUT/f"{tag}-02b-mountain-picked.png"))
         pg.locator(".mtn-card[data-id='yushan'] .mtn-pick").tap() if mobile else pg.click(".mtn-card[data-id='yushan'] .mtn-pick")
-        pg.check("#prep-ack"); pg.wait_for_timeout(200); pg.screenshot(path=str(OUT/f"{tag}-02c-ack.png")); pg.click("#prep-next")
+        pg.wait_for_timeout(200); pg.screenshot(path=str(OUT/f"{tag}-02c-ack.png")); pg.click("#prep-next")
         pg.click("[data-season='autumn']"); pg.wait_for_timeout(300)
         pg.screenshot(path=str(OUT/f"{tag}-03-season.png"))
         pg.click("#prep-next"); pg.wait_for_selector("#gear-preview"); pg.wait_for_timeout(400)
         pg.screenshot(path=str(OUT/f"{tag}-04-forecast-dress-default.png"))
         for name, sel in OUTFITS.items():
             if sel is None:
-                pg.click("#btn-recommend")
+                pg.evaluate("window.__game.prep.applyRecommended()")
             else:
                 pg.evaluate("sel => { const P = window.__game.prep; Object.assign(P.selection, sel); P.setTab('wear'); P.refreshGear(false); }", sel)
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(OUT/f"{tag}-05-dress-{name}.png"))
-        pg.click("#btn-recommend"); pg.wait_for_timeout(200)
+        pg.evaluate("window.__game.prep.applyRecommended()"); pg.wait_for_timeout(200)
         pg.click("#prep-next"); pg.wait_for_selector("#check-list"); pg.wait_for_timeout(300)
         pg.screenshot(path=str(OUT/f"{tag}-06-gearcheck.png"))
         ctx.close()

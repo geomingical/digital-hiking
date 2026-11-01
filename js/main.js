@@ -27,6 +27,15 @@
 
   const canvas = document.getElementById('scene');
   const ctx = canvas.getContext('2d');
+  /* 支援 WebGL 就用 3D 場景；否則留在原本的 2D 畫面 */
+  const canvas3d = document.getElementById('scene3d');
+  const scene3d = DH.hero3d.supported() ? DH.world3d : null;
+  if (scene3d) {
+    DH.hero3d.active = true;
+    canvas3d.hidden = false;
+    canvas.classList.add('overlay');
+    document.getElementById('app').classList.add('is-3d');
+  }
   const endingCanvas = document.getElementById('ending-art');
   const endingCtx = endingCanvas.getContext('2d');
   let layout = null;
@@ -34,6 +43,7 @@
   let endingKey = '';
 
   store.load();
+  DH.player.load();
 
   const state = {
     screen: 'loading',
@@ -142,6 +152,9 @@
       const [mountains, gear] = await Promise.all([get('data/mountains.json'), get('data/gear.json')]);
       prepLogic.validateData(mountains, gear, bank);
       prep.init({ mountains, gear, seed: seedValue, handlers: prepHandlers });
+      DH.gearArt.loadPaintings(() => {
+        if (state.screen === 'prep') prep.onResize();
+      });
       state.prepReady = true;
     } catch (err) {
       console.warn('裝備資料讀取失敗，改用原版模式：', err.message);
@@ -151,6 +164,12 @@
 
   /* 流程 ---------------------------------------------------------- */
   function setScreen(name) {
+    if (name !== 'play') {
+      endMoment();
+      closeObserve();
+      closePhoto();
+      stopSceneInput();
+    }
     state.screen = name;
     ui.setScreen(name);
   }
@@ -231,6 +250,12 @@
   /* trip 由準備流程帶入；不帶就是原版流程，行前風險 0 */
   function startGame(trip) {
     if (!state.bankReady) return false;
+    pendingToast = null;
+    endMoment();
+    closeObserve();
+    closePhoto();
+    stopSceneInput();
+    DH.photo.showAlbum([]);
     ui.closeModal();
     state.trip = trip && trip.mountain ? trip : null;
     if (state.trip) {
@@ -246,10 +271,15 @@
     /* 行前風險只在這裡寫入一次，檢查頁來回不會累加 */
     state.preparation = state.trip ? state.trip.preparation : null;
     state.eventRiskLog = [];
+    state.bodyLog = [];
+    view.body = null;
+    view.bodySaid = new Set();
     state.gearImpact = { added: 0, avoided: 0 };
     state.eventIndex = 0;
     state.current = null;
     state.answers = [];
+    state.photos = [];
+    state.autoPhoto = null;
     state.ending = null;
     state.risk = state.trip ? state.preparation.risk : 0;
     state.riskView = state.risk;
@@ -261,12 +291,21 @@
     lastRiskStep = 0;
     endingKey = '';
     resetPlayer(START_X);
+    if (scene3d) {
+      scene3d.leaveEnding();
+      if (!scene3d.ready) scene3d.init(canvas3d);
+      scene3d.setBiome(state.trip ? state.trip.mountain.id : 'default', state.trip ? state.trip.season : 'summer');
+      scene3d.sync(view.decor, view.npcs, state.events);
+      view.snap3d = true;
+    }
     view.cam.x = START_X + 80;
     view.pan = 0;
     view.lift = 0;
     view.walkTarget = null;
     view.particles = [];
     view.heroScale = 1;
+    view.summitDone = false;
+    endMoment();
     world.clearAroundEvents(view.decor, view.npcs, state.events);
     pendingToast = null;
     input.keys.clear();
@@ -275,11 +314,139 @@
     setScreen('play');
     resize();
     audio.pop();
+    if (scene3d && !reducedMotion()) {
+      const m = state.trip && state.trip.mountain;
+      startMoment('intro', 3.4, m
+        ? { kicker: `${prepLogic.seasonName(state.trip.season)}｜${m.days[0] === m.days[1] ? m.days[0] : `${m.days[0]}–${m.days[1]}`} 天`, main: m.name, sub: `海拔 ${m.summit_m.toLocaleString()} 公尺` }
+        : { kicker: '今天的路線', main: '出發', sub: '' });
+    }
     return true;
   }
 
   function nextEvent() {
     return state.events[state.eventIndex] || null;
+  }
+
+  /* 開場與登頂：幾秒鐘的鏡頭，玩家一動就讓路 */
+  function showCineTitle(t) {
+    const box = document.getElementById('cine-title');
+    box.hidden = !t;
+    if (!t) return;
+    document.getElementById('cine-kicker').textContent = t.kicker;
+    document.getElementById('cine-main').textContent = t.main;
+    document.getElementById('cine-sub').textContent = t.sub;
+  }
+  function startMoment(kind, seconds, title) {
+    view.moment = { kind, left: seconds, total: seconds };
+    document.getElementById('app').classList.add('moment');
+    showCineTitle(title);
+  }
+  function endMoment() {
+    if (!view.moment) return;
+    view.moment = null;
+    document.getElementById('app').classList.remove('moment');
+    showCineTitle(null);
+    if (pendingToast && state.screen === 'play') {
+      ui.toast(pendingToast.message, pendingToast.kind);
+      pendingToast = null;
+    }
+  }
+  function updateMoment(dt) {
+    const mo = view.moment;
+    if (!mo) return;
+    mo.left -= dt;
+    if (mo.left <= 0 || state.screen !== 'play' || state.player.moving || view.walkTarget) endMoment();
+  }
+  const SUMMIT_LOOSE_AT = 1.2;
+  function reachSummit() {
+    const m = state.trip && state.trip.mountain;
+    view.walkTarget = null;
+    state.player.moving = false;
+    setPose('cheer', 3.2);
+    jumpV = 230;
+    audio.fanfare();
+    scene3d.burst('cheer');
+    keepSummitPhoto();
+    startMoment('summit', 4, { kicker: '你站上了山頂', main: m ? m.name : '山頂', sub: m ? `海拔 ${m.summit_m.toLocaleString()} 公尺｜平安下山才算走完` : '平安下山才算走完' });
+  }
+
+  /* 結局：先給幾秒全螢幕的畫面，按任何鍵或點一下就跳過 */
+  const CINE_SECONDS = 4.2;
+  function startEndingCine(grade) {
+    if (!scene3d || !scene3d.ready || reducedMotion()) {
+      leaveEndingCine();
+      return;
+    }
+    view.endCine = CINE_SECONDS;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+    document.getElementById('app').classList.add('cine');
+    const m = state.trip && state.trip.mountain;
+    const home = grade.tier === 'good' ? '回到登山口，向留守人報平安' : '';
+    showCineTitle({ kicker: grade.kicker, main: grade.title, sub: [m && m.name, home].filter(Boolean).join('｜') });
+  }
+  function leaveEndingCine() {
+    view.endCine = 0;
+    if (scene3d && scene3d.ready) {
+      renderEndingFull(0);
+      scene3d.snapshotTo(document.getElementById('ending-bg'));
+    }
+    document.getElementById('app').classList.remove('cine');
+    showCineTitle(null);
+  }
+  function endingShot() {
+    return { tier: state.ending.tier, t: artTime(), outfit: view.outfit, player: state.player };
+  }
+  function renderEndingFull(sweep) {
+    scene3d.renderEnding(null, Math.max(1, canvas.clientWidth), Math.max(1, canvas.clientHeight), Object.assign(endingShot(), { cine: sweep }));
+  }
+
+  /* 走到有現場的題目：先停下來看，看過至少兩處才能下判斷 */
+  const CLUES_TO_SEE = 2;
+  function arriveAt(ev) {
+    endMoment();
+    const stage = scene3d && scene3d.ready ? scene3d.stageOf(ev) : null;
+    if (!stage || !stage.list.length || ev.seen) {
+      openEvent(ev);
+      return;
+    }
+    view.walkTarget = null;
+    stopSceneInput();
+    state.player.moving = false;
+    ev.seen = [];
+    ev.seenNotes = [];
+    ev.ask = DH.stage3d.askOf(ev.scenario.id);
+    view.npcSpeech = null;
+    view.observe = { ev, stage };
+    ui.setPlayControlsInert(true);
+    document.getElementById('app').classList.add('moment');
+    ui.clearToasts();
+    audio.pop();
+    ui.openObserve(stage, seeClue, finishObserve);
+  }
+  function seeClue(i) {
+    const { ev, stage } = view.observe;
+    const clue = stage.list[i];
+    if (!clue || ev.seen.includes(clue.name)) return;
+    ev.seen.push(clue.name);
+    ev.seenNotes.push(`${clue.name}：${clue.text}`);
+    audio.pop();
+    ui.noteClue(i, clue);
+    ui.updateObserve(ev.seen.length, Math.min(CLUES_TO_SEE, stage.list.length));
+  }
+  function finishObserve() {
+    if (!view.observe) return;
+    const { ev, stage } = view.observe;
+    if (ev.seen.length < Math.min(CLUES_TO_SEE, stage.list.length)) return;
+    closeObserve();
+    openEvent(ev);
+  }
+  function closeObserve() {
+    if (!view.observe) return;
+    view.observe = null;
+    ui.setPlayControlsInert(false);
+    document.getElementById('app').classList.remove('moment');
+    ui.closeObserve();
   }
 
   function openEvent(ev) {
@@ -349,6 +516,7 @@
       if (!reducedMotion()) {
         jumpV = 230;
         burstFlowers();
+        if (scene3d) scene3d.burst('cheer');
       }
       floatExp(10);
       audio.correct();
@@ -357,10 +525,16 @@
       /* 答錯的焦點只留表情與風險條，風險數字已經寫在卡片上 */
       state.streak = 0;
       setPose('stumble', 0.8);
+      if (scene3d) scene3d.burst('stumble');
       if (!reducedMotion()) view.shakeTime = 0.18;
       audio.wrong();
       ui.bumpRisk();
     }
+    const stage = scene3d && scene3d.ready ? scene3d.stageOf(ev) : null;
+    ev.worldNote = stage ? {
+      text: DH.stage3d.reaction(s.id, opt.correct),
+      missed: stage.list.filter((c) => !(ev.seen || []).includes(c.name)).map((c) => c.text),
+    } : null;
     ui.showAnswer(ev, displayIndex, state.risk >= 100, result);
     answerLockUntil = performance.now() + 220;
     announceRisk();
@@ -370,14 +544,14 @@
   function announceRisk() {
     const step = state.risk >= 80 ? 2 : state.risk >= 50 ? 1 : 0;
     if (step > lastRiskStep && state.risk < 100) {
-      notify(step === 2 ? '天色很差，再出錯就得求救了' : '起霧了，風險正在升高', 'warn');
+      notify(step === 2 ? '天色很差，再出錯就要動用救援了' : '起霧了，風險正在升高', 'warn');
     }
     lastRiskStep = Math.max(lastRiskStep, step);
   }
 
   /* 卡片開著時先不跳提示，免得蓋住角色；關卡片後再講，同時只留最新一則 */
   function notify(message, kind) {
-    if (state.screen === 'card') pendingToast = { message, kind };
+    if (state.screen === 'card' || view.moment || view.observe || view.photoMode) pendingToast = { message, kind };
     else ui.toast(message, kind);
   }
 
@@ -385,6 +559,7 @@
     const ev = state.current;
     if (!ev || !ev.done) return false;
     if (performance.now() < answerLockUntil) return false;
+    if (ui.expandBrief()) return true;
     state.current = null;
     state.eventIndex++;
     if (state.risk >= 100) {
@@ -417,6 +592,7 @@
     view.particles = [];
     state.player.say = '';
     setScreen('ending');
+    ensureTripPhoto(grade.tier);
     ui.showEnding({
       grade,
       risk: state.risk,
@@ -427,6 +603,8 @@
       freshBadges: fresh,
       isNewBest,
       trip: tripEnding(completed),
+      review: grade.tier === 'bad' ? rescueReview(tripEnding(completed)) : lessonReview(),
+      trail: trailLog(),
       keyConcepts: state.events.filter((ev) => ev.scenario.key).map((ev) => ({
         id: ev.scenario.id,
         concept: ev.scenario.keyConcept,
@@ -434,9 +612,53 @@
         status: !ev.done ? 'skip' : ev.correct ? 'ok' : 'ng',
       })),
     });
+    DH.photo.showAlbum(state.photos);
     sizeEndingCanvas();
+    endMoment();
     if (grade.tier === 'bad') audio.siren();
     else audio.fanfare();
+    startEndingCine(grade);
+  }
+
+  /* 動用救援的一趟：只用這趟實際發生的數字，說清楚風險從哪裡來、下一趟先改什麼 */
+  function rescueReview(trip) {
+    const wrong = state.answers.filter((a) => !a.correct).sort((a, b) => b.risk - a.risk);
+    const causes = [];
+    if (state.preparation && state.preparation.risk > 0) causes.push(`行前就帶著 ${state.preparation.risk} 點風險出發。`);
+    state.eventRiskLog.filter((r) => r.gearDelta > 0).sort((a, b) => b.gearDelta - a.gearDelta).slice(0, 2)
+      .forEach((r) => causes.push(`裝備不足，讓「${r.title}」這題多加了 ${r.gearDelta} 點。`));
+    if (wrong.length) {
+      /* 風險封頂 100，這裡的加總要和畫面上的總分對得起來 */
+      const prepared = state.preparation ? state.preparation.risk : 0;
+      const sum = Math.min(wrong.reduce((total, a) => total + a.risk, 0), Math.round(state.risk) - prepared);
+      causes.push(`判斷錯了 ${wrong.length} 題，一共加了 ${sum} 點，最重的是「${wrong[0].title}」（+${wrong[0].risk}）。`);
+    }
+    const gear = (trip ? trip.improvements : []).map((text) => `出發前先改：${text}`);
+    const judgement = wrong.map((a) => `再遇到「${a.title}」：${a.answer}`);
+    const fixes = gear.slice(0, 2).concat(judgement.slice(0, 2), gear.slice(2), judgement.slice(2)).slice(0, 3);
+    return { causes, fixes };
+  }
+
+  /* 走完的一趟：照片之前先講一件最值得帶走的事 */
+  function lessonReview() {
+    const worst = state.answers.filter((a) => !a.correct).sort((a, b) => b.risk - a.risk)[0];
+    if (!worst) return null;
+    return {
+      lesson: true,
+      causes: [`「${worst.title}」這題讓風險多了 ${worst.risk} 點。`],
+      fixes: [worst.answer],
+    };
+  }
+
+  /* 足跡圖的資料：整條路線的海拔，加上每個決定發生在哪裡 */
+  function trailLog() {
+    const samples = [];
+    for (let x = START_X; x <= FINISH_X; x += (FINISH_X - START_X) / 80) samples.push({ x, alt: core.altitudeAt(x) });
+    const stops = state.events.filter((ev) => ev.done).map((ev, i) => ({
+      x: ev.x, alt: core.altitudeAt(ev.x), title: ev.scenario.title, correct: ev.correct, risk: state.answers[i].risk,
+    }));
+    const worst = stops.reduce((top, s) => (!top || s.risk > top.risk ? s : top), null);
+    return { samples, stops, worst: worst && worst.risk > 0 ? worst : null, startX: START_X, endX: FINISH_X, body: state.bodyLog };
   }
 
   /* 結局卡片要用的摘要；對帳 preparation.risk + Σ actualAdded = state.risk */
@@ -457,7 +679,7 @@
     const sel = trip.selection;
     const names = prepLogic.selectedIds(sel).map((id) => index[id].name);
     return {
-      summary: `${trip.mountain.name}｜${prepLogic.seasonName(trip.season)}｜行前風險 ${p.risk}｜累積風險 ${Math.round(state.risk)}｜${completed ? '完成下山' : '提前求援'}`,
+      summary: `${trip.mountain.name}｜${prepLogic.seasonName(trip.season)}｜行前風險 ${p.risk}｜累積風險 ${Math.round(state.risk)}｜${completed ? '完成下山' : '沒走完，動用救援'}`,
       preparation: p,
       improvements: p.findings.filter((x) => x.hit).sort((a, b) => b.points - a.points).slice(0, 3).map((x) => x.text),
       gearText: `${names.join('、')}（可選物估重 ${(trip.weight / 1000).toFixed(1)} 公斤）`,
@@ -473,10 +695,10 @@
       if (state.current && state.current.done) continueAfterAnswer();
       return;
     }
-    if (state.screen !== 'play') return;
+    if (state.screen !== 'play' || view.observe || view.photoMode) return;
     const ev = nextEvent();
     if (ev && Math.abs(ev.x - state.player.x) < HINT_RANGE) {
-      openEvent(ev);
+      arriveAt(ev);
     } else {
       say(ev ? '前面還有路，繼續走吧' : '往終點牌樓走吧！', 1.5);
     }
@@ -492,8 +714,90 @@
     sayTimer = seconds;
   }
 
+  /* 拍照：介面退開、鏡頭推近，快門後跳出相框。相片只留在這一趟的記憶體裡。 */
+  const PHOTO_ZOOM_MS = 550;
+  const PHOTO_SIZE = 1024;
+  const CAMERA_POSE = 'cheer';
+  function photoInfo(plain) {
+    const p = state.player;
+    const m = state.trip && state.trip.mountain;
+    const peak = m ? m.summit_m : 0;
+    const raw = core.altitudeAt(p.x);
+    return {
+      mountain: m ? m.name : '台灣山徑',
+      season: state.trip ? prepLogic.seasonName(state.trip.season) : '',
+      altitude: peak && (raw >= peak - 3 || core.sectionAt(p.x).key === 'summit') ? peak : Math.round(raw / 10) * 10,
+      section: core.sectionAt(p.x).key,
+      plain: !!plain,
+    };
+  }
+  function photoSource(pose) {
+    if (scene3d && scene3d.ready) return scene3d.capturePhoto({ x: state.player.x, d: state.player.d, pose, size: PHOTO_SIZE });
+    return canvas;
+  }
+  function addPhoto(photo) {
+    state.photos.push(photo);
+    if (state.photos.length > DH.photo.LIMIT) state.photos.shift();
+    return photo;
+  }
+  function shootPhoto() {
+    return addPhoto({ canvas: DH.photo.compose(photoSource(CAMERA_POSE), photoInfo()), info: photoInfo() });
+  }
+  function startPhoto() {
+    endMoment();
+    stopSceneInput();
+    ui.setPlayControlsInert(true);
+    view.walkTarget = null;
+    state.player.moving = false;
+    state.player.say = null;
+    view.npcSpeech = null;
+    ui.clearToasts();
+    document.getElementById('app').classList.add('moment');
+    DH.photo.showMode(true);
+    document.getElementById('photo-view').hidden = true;
+    const still = reducedMotion();
+    view.photoMode = { phase: 'zoom', start: performance.now(), mix: still ? 1 : 0, wait: still ? 0 : PHOTO_ZOOM_MS };
+  }
+  function updatePhoto() {
+    const mode = view.photoMode;
+    if (!mode || mode.phase !== 'zoom') return;
+    const elapsed = performance.now() - mode.start;
+    mode.mix = mode.wait ? Math.min(1, elapsed / mode.wait) : 1;
+    if (mode.mix < 1) return;
+    mode.phase = 'show';
+    audio.shutter();
+    if (!reducedMotion()) DH.photo.flash();
+    const photo = shootPhoto();
+    DH.photo.openViewer(photo, { index: state.photos.length, again: startPhoto, close: () => {
+      closePhoto();
+      document.getElementById('btn-interact').focus({ preventScroll: true });
+    } });
+  }
+  function closePhoto() {
+    if (!view.photoMode) return;
+    view.photoMode = null;
+    if (scene3d && scene3d.ready) scene3d.restoreShot();
+    ui.setPlayControlsInert(false);
+    document.getElementById('app').classList.remove('moment');
+    DH.photo.showMode(false);
+  }
+  /* 這趟沒拍也留一張：登頂時悄悄記下，其他情況就用結束當下的位置 */
+  function keepSummitPhoto() {
+    if (!scene3d || !scene3d.ready || state.autoPhoto) return;
+    state.autoPhoto = { canvas: DH.photo.compose(photoSource(CAMERA_POSE), photoInfo()), info: photoInfo() };
+  }
+  function ensureTripPhoto(tier) {
+    if (state.photos.length) return;
+    const plain = tier === 'bad';
+    if (state.autoPhoto && !plain) {
+      addPhoto(state.autoPhoto);
+      return;
+    }
+    addPhoto({ canvas: DH.photo.compose(photoSource(plain ? 'idle' : CAMERA_POSE), photoInfo(plain)), info: photoInfo(plain) });
+  }
+
   function doAction(name) {
-    if (state.screen !== 'play') return;
+    if (state.screen !== 'play' || view.observe || view.photoMode || ui.modalOpen) return;
     if (name === 'wave') {
       setPose('wave', 1.3);
       say('嗨～山友！', 1.4);
@@ -503,10 +807,7 @@
       say('補水休息一下', 1.6);
       audio.pop();
     } else if (name === 'photo') {
-      setPose('photo', 1.1);
-      say('喀嚓！記下這片風景', 1.6);
-      view.flash = reducedMotion() ? 0 : 0.7;
-      audio.shutter();
+      startPhoto();
     }
   }
 
@@ -563,13 +864,23 @@
 
   function updatePlayer(dt) {
     const p = state.player;
+    /* 登頂那幾秒先站定慶祝，不然一路按著前進鍵會直接走過去 */
+    if (view.moment && view.moment.kind === 'summit' && view.moment.left > SUMMIT_LOOSE_AT) {
+      p.moving = false;
+      return;
+    }
+    if (view.observe || view.photoMode) {
+      p.moving = false;
+      return;
+    }
     const vec = moveVector();
     let vx = 0;
     let vy = 0;
     if (vec) {
       view.walkTarget = null;
-      vx = vec.x * SPEED;
-      vy = vec.y * SPEED * 0.62;
+      /* 3D 鏡頭在身後：往上是前進、左右是橫移。2D 側視：往右是前進。 */
+      vx = (scene3d ? -vec.y : vec.x) * SPEED;
+      vy = (scene3d ? vec.x : vec.y) * SPEED * 0.62;
     } else if (view.walkTarget) {
       const dx = view.walkTarget.x - p.x;
       const dy = (view.walkTarget.d - p.d) * world.PATH_H;
@@ -596,12 +907,14 @@
       if (stepClock <= 0) {
         stepClock = 0.31;
         audio.step();
+        if (scene3d) scene3d.burst('step');
       }
       view.pan *= Math.pow(0.02, dt);
     }
   }
 
   function updateEvents() {
+    if (view.observe || view.photoMode) return;
     const p = state.player;
     const ev = nextEvent();
     state.nearEvent = false;
@@ -609,7 +922,7 @@
       const dist = Math.abs(ev.x - p.x);
       state.nearEvent = dist < HINT_RANGE;
       if (dist < AUTO_RANGE) {
-        openEvent(ev);
+        arriveAt(ev);
         return;
       }
       const touch = document.body.classList.contains('touch');
@@ -637,10 +950,29 @@
       if (currentSection && state.screen === 'play') {
         /* 區域名稱與海拔已在 HUD 上，換區時讓那裡亮一下就好 */
         ui.flashStage();
-        audio.jingle();
+        if (scene3d && sec.key === 'summit' && !view.summitDone) {
+          view.summitDone = true;
+          if (reducedMotion()) keepSummitPhoto();
+          else reachSummit();
+        } else {
+          audio.jingle();
+        }
       }
+      if (state.trip) updateBody(sec.key);
       audio.setAmbience(sec.key);
       currentSection = sec;
+    }
+  }
+
+  /* 換區時用當地天氣對一次身上的裝備；同一句話一趟只講一次 */
+  function updateBody(stage) {
+    const effects = prepLogic.bodyEffects(state.trip.gear, prepLogic.actualFlags(state.trip.actual, stage));
+    view.body = { soaked: effects.soaked, chilled: effects.chilled };
+    const note = effects.notes.find((n) => !view.bodySaid.has(n.id));
+    if (note) {
+      view.bodySaid.add(note.id);
+      state.bodyLog.push({ id: note.id, stage, text: note.text, tone: note.tone });
+      notify(note.text, note.tone);
     }
   }
 
@@ -791,6 +1123,7 @@
 
   function update(dt) {
     updateCommon(dt);
+    updatePhoto();
     if (state.screen === 'play') {
       updatePlayer(dt);
       updateNpcSpeech();
@@ -852,6 +1185,57 @@
     endingKey = `${w}x${h}`;
   }
 
+  /* 3D 畫面之上再蓋一層 2D：對話泡泡、浮字、拍照閃光 */
+  function drawScene3D(dt) {
+    if (!scene3d.ready) scene3d.init(canvas3d);
+    const w = Math.max(1, canvas.clientWidth);
+    const h = Math.max(1, canvas.clientHeight);
+    scene3d.render({
+      w, h, dt, t: artTime(), screen: state.screen, player: state.player, section: core.sectionAt(state.player.x).key,
+      riskView: state.riskView, fx: view.fx, body: view.body, outfit: view.outfit, pan: view.pan, events: state.events, eventIndex: state.eventIndex,
+      nearEvent: state.nearEvent && state.screen === 'play', card: state.screen === 'card', current: state.current, snap: view.snap3d,
+      cardRect: state.screen === 'card' ? document.getElementById('card').getBoundingClientRect() : null,
+      intro: view.moment && view.moment.kind === 'intro' ? view.moment.left / view.moment.total : 0,
+      orbit: view.moment && view.moment.kind === 'summit' ? view.moment.left / view.moment.total : 0,
+      observing: view.observe ? view.observe.stage : null,
+      photo: view.photoMode ? view.photoMode.mix : 0,
+      hudBottom: document.getElementById('hud').getBoundingClientRect().bottom,
+    });
+    view.snap3d = false;
+    if (view.observe) ui.placeObserve(view.observe.stage.list.map((c) => scene3d.project(c.pos)));
+    audio.setWeather(view.fx.rain, view.fx.wind, state.riskView);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    if (state.screen !== 'play' && state.screen !== 'card') return;
+    const p = state.player;
+    if (state.screen === 'play' && view.npcSpeech) {
+      const at = scene3d.npcHead(view.npcSpeech);
+      if (at) art.speech(ctx, clamp(at.x, 110, w - 110), at.y, view.npcSpeech.say);
+    }
+    const head = scene3d.heroHead();
+    if (p.say) art.speech(ctx, clamp(head.x, 90, w - 90), head.y, p.say);
+    view.particles.forEach((q) => {
+      if (q.kind !== 'text') return;
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, q.life / 0.4);
+      ctx.font = `700 ${q.size}px ${art.FONT}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = 'rgba(255,253,246,.95)';
+      const y = head.y - (EXP_LIFE - q.life) * 22;
+      ctx.strokeText(q.text, clamp(head.x, 90, w - 90), y);
+      ctx.fillStyle = q.color;
+      ctx.fillText(q.text, clamp(head.x, 90, w - 90), y);
+      ctx.restore();
+    });
+    if (view.flash > 0) {
+      ctx.fillStyle = `rgba(255,255,255,${view.flash})`;
+      ctx.fillRect(0, 0, w, h);
+    }
+  }
+
   function drawScene() {
     ctx.setTransform(dpr * layout.z, 0, 0, dpr * layout.z, 0, 0);
     world.render(ctx, layout, {
@@ -874,6 +1258,7 @@
       npcSpeech: state.screen === 'play' && !state.player.say ? view.npcSpeech : null,
       topSafe: (document.getElementById('hud').getBoundingClientRect().bottom + 22) / layout.z,
       outfit: view.outfit,
+      body: view.body,
       fx: view.fx,
     });
   }
@@ -886,7 +1271,16 @@
     if (endingKey !== `${w}x${h}`) sizeEndingCanvas();
     endingCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     art.viewZ = 1;
-    art.endings[state.ending.tier](endingCtx, w, h, artTime());
+    if (scene3d && scene3d.ready) {
+      scene3d.renderEnding(endingCtx, w, h, endingShot());
+      if (state.ending.tier === 'bad') {
+        const head = scene3d.heroHead();
+        art.speech(endingCtx, clamp(head.x, 90, w - 90), Math.max(34, head.y), '是我準備不足。');
+      }
+      if (state.ending.tier === 'good') art.speech(endingCtx, clamp(w * 0.5, 90, w - 90), h * 0.14, '已向留守人報平安！');
+      return;
+    }
+    art.endings[state.ending.tier](endingCtx, w, h, artTime(), view.outfit);
   }
 
   /* 結局畫面蓋住場景時不用重畫，省電 */
@@ -896,16 +1290,27 @@
 
   function frame(now) {
     rafId = requestAnimationFrame(frame);
-    const dt = Math.min(0.05, (now - lastTime) / 1000 || 0);
+    const elapsed = (now - lastTime) / 1000 || 0;
+    const dt = Math.min(0.05, elapsed);
+    /* 鏡頭段落照實際時間走，慢的裝置上才不會被拉長 */
+    const realDt = Math.min(0.5, elapsed);
     lastTime = now;
     if (!layout) return;
+    updateMoment(realDt);
     update(dt);
-    if (state.screen === 'ending') {
-      if (needsRedraw) {
+    document.getElementById('app').classList.toggle('at-ending', state.screen === 'ending');
+    if (state.screen === 'ending' && view.endCine > 0) {
+      view.endCine -= realDt;
+      if (view.endCine <= 0) leaveEndingCine();
+      else renderEndingFull(view.endCine / CINE_SECONDS);
+    } else if (state.screen === 'ending') {
+      if (needsRedraw && !scene3d) {
         drawScene();
         needsRedraw = false;
       }
       drawEnding();
+    } else if (scene3d) {
+      drawScene3D(dt);
     } else {
       drawScene();
     }
@@ -944,13 +1349,43 @@
     }
   }
 
+  /* 結局鏡頭放映中，第一下操作只用來跳過，不能順手按到「再玩一次」 */
+  const skipEndingCine = (e) => {
+    if (state.screen !== 'ending' || !(view.endCine > 0)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    leaveEndingCine();
+  };
+  window.addEventListener('keydown', skipEndingCine, true);
+  window.addEventListener('pointerdown', skipEndingCine, true);
+
   window.addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (view.moment && view.moment.kind === 'intro') endMoment();
     if (ui.modalOpen) {
       if (e.code === 'Escape') ui.closeModal();
       return;
     }
     if (e.code === 'KeyM' && !e.repeat) toggleSound();
+    if (view.photoMode) {
+      if (e.code === 'Tab') { ui.trapFocus(e, 'photo-mode'); return; }
+      /* 按著方向鍵不放的重複訊號不算；空白與 Enter 留給焦點所在的按鈕 */
+      if (e.repeat || view.photoMode.phase !== 'show' || e.code === 'Enter' || e.code === 'Space' || e.code.startsWith('Shift') || e.code === 'KeyM') return;
+      if (e.code === 'Digit3' || e.code === 'Numpad3') {
+        startPhoto();
+        return;
+      }
+      closePhoto();
+      document.getElementById('btn-interact').focus({ preventScroll: true });
+      if (!KEY_DIRS[e.code]) return;
+    }
+    if (view.observe) {
+      if (e.code === 'Tab') { ui.trapFocus(e, 'observe'); return; }
+      /* 空白與 Enter 留給瀏覽器按下目前焦點的按鈕 */
+      if (e.code in NUM_KEYS && !e.repeat) seeClue(NUM_KEYS[e.code]);
+      if (e.code === 'KeyE' && !e.repeat) finishObserve();
+      return;
+    }
 
     if (state.screen === 'card') {
       const ev = state.current;
@@ -959,12 +1394,14 @@
         e.preventDefault();
         answer(NUM_KEYS[e.code]);
       } else if (ev && ev.done && !e.repeat && (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter')) {
+        if (e.code !== 'KeyE' && e.target.closest('button, summary, a, input, select, textarea')) return;
         e.preventDefault();
         continueAfterAnswer();
       }
       return;
     }
     if (state.screen !== 'play') return;
+    if ((e.code === 'Space' || e.code === 'Enter') && e.target.closest('button, summary, a, input, select, textarea')) return;
 
     if (KEY_DIRS[e.code]) {
       input.keys.add(KEY_DIRS[e.code]);
@@ -987,9 +1424,20 @@
 
   /* 點地面走過去、拖曳看周圍 */
   const drag = { id: null, x: 0, y: 0, moved: false, startPan: 0 };
+  function stopSceneInput() {
+    input.keys.clear();
+    releaseJoy();
+    view.walkTarget = null;
+    if (drag.id !== null && canvas.hasPointerCapture(drag.id)) canvas.releasePointerCapture(drag.id);
+    drag.id = null;
+  }
+  function canUseWorldPointer() {
+    return state.screen === 'play' && !view.observe && !view.photoMode && !ui.modalOpen;
+  }
   canvas.addEventListener('pointerdown', (e) => {
+    if (view.moment && view.moment.kind === 'intro') endMoment();
     if (e.pointerType === 'touch') document.body.classList.add('touch');
-    if (state.screen !== 'play') return;
+    if (!canUseWorldPointer()) return;
     drag.id = e.pointerId;
     drag.x = e.clientX;
     drag.y = e.clientY;
@@ -998,15 +1446,23 @@
     canvas.setPointerCapture(e.pointerId);
   });
   canvas.addEventListener('pointermove', (e) => {
-    if (e.pointerId !== drag.id) return;
+    if (e.pointerId !== drag.id || !canUseWorldPointer()) return;
     const dx = e.clientX - drag.x;
     if (!drag.moved && Math.hypot(dx, e.clientY - drag.y) > 10) drag.moved = true;
-    if (drag.moved) view.pan = clamp(drag.startPan - dx / layout.z, -700, 700);
+    if (drag.moved) view.pan = clamp(drag.startPan - (scene3d ? dx : dx / layout.z), -700, 700);
   });
   function endDrag(e) {
     if (e.pointerId !== drag.id) return;
     drag.id = null;
-    if (e.type !== 'pointerup' || drag.moved || state.screen !== 'play') return;
+    if (e.type !== 'pointerup' || drag.moved || !canUseWorldPointer()) return;
+    if (scene3d) {
+      const hit = scene3d.pick(e.clientX, e.clientY, state.player.x);
+      if (hit) {
+        view.walkTarget = hit;
+        view.pan = 0;
+      }
+      return;
+    }
     const left = view.cam.x - layout.vw / 2;
     const wx = clamp(e.clientX / layout.z + left, 30, MAX_X);
     const wy = e.clientY / layout.z + view.lift;
@@ -1046,6 +1502,7 @@
     knob.style.transform = '';
   }
   joy.addEventListener('pointerdown', (e) => {
+    if (!canUseWorldPointer()) return;
     joyId = e.pointerId;
     joy.setPointerCapture(e.pointerId);
     joyMove(e);
@@ -1062,12 +1519,33 @@
     const end = state.ending;
     if (!end) return;
     const where = state.trip ? `走了一趟${state.trip.mountain.name}` : '走完一趟山徑';
-    const text = `我在《數位登山》${where}，稱號是「${end.title}」，出事風險 ${Math.round(end.risk)}%。你也來試試自己的登山判斷！`;
+    const text = end.tier === 'bad'
+      ? `我在《數位登山》${state.trip ? `挑戰${state.trip.mountain.name}` : '走山徑'}，因為準備不足和判斷失誤，風險點數累積到 ${Math.round(end.risk)}，動用了救援。出發前你會帶什麼上山？`
+      : `我在《數位登山》${where}，稱號是「${end.title}」，風險點數 ${Math.round(end.risk)}。你也來試試自己的登山判斷！`;
     const url = location.href.split('?')[0];
-    if (navigator.share) {
+    const file = await ui.shareCardFile(end, state.trip, trailLog(), url).catch((e) => {
+      console.warn('成績卡產生失敗，改分享文字', e);
+      return null;
+    });
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ title: '數位登山', text, url, files: [file] });
+      } catch (e) { /* 使用者取消分享 */ }
+      return;
+    }
+    if (navigator.share && !file) {
       try {
         await navigator.share({ title: '數位登山', text, url });
       } catch (e) { /* 使用者取消分享 */ }
+      return;
+    }
+    if (file) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(file);
+      a.download = file.name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+      ui.toast('成績卡已下載', 'good');
       return;
     }
     try {
@@ -1084,6 +1562,7 @@
   window.__game = {
     state,
     view,
+    takePhoto: () => doAction('photo'),
     store,
     rng,
     prep,
@@ -1120,6 +1599,7 @@
     },
     continue() {
       answerLockUntil = 0;
+      ui.expandBrief();
       return continueAfterAnswer();
     },
     /* 不帶參數：以目前風險直接結束。可帶 'good'｜'normal'｜'bad' 或數字指定風險。 */

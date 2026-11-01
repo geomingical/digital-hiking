@@ -185,11 +185,22 @@
   }
 
   /* 裝備選擇 ---------------------------------------------------------- */
-  function defaultSelection() {
+  /* null 代表玩家還沒決定；連「不穿」都要自己選過才算 */
+  function emptySelection() {
+    return { hat: null, base: null, mid: null, shell: null, pants: null, shoes: null, gloves: null, socks: null, water: null, pack: [] };
+  }
+
+  /* 資料驗證與測試用的一份完整配裝，不會出現在玩家面前 */
+  function sampleSelection() {
     return {
       hat: 'no_hat', base: 'wicking', mid: 'no_mid', shell: 'no_shell', pants: 'quick_pants',
       shoes: 'boots', gloves: 'no_gloves', socks: 'hiking_socks', water: 'water_1', pack: [],
     };
+  }
+
+  /* 依 gear.json 的順序列出還沒決定的欄位 */
+  function undecidedSlots(sel, gear) {
+    return gear.slots.filter((s) => s.id !== 'pack' && !sel[s.id]);
   }
 
   function makeItemIndex(gear) {
@@ -200,7 +211,7 @@
 
   function selectedIds(sel) {
     const out = sel.pack.slice();
-    Object.keys(sel).forEach((k) => { if (k !== 'pack') out.push(sel[k]); });
+    Object.keys(sel).forEach((k) => { if (k !== 'pack' && sel[k]) out.push(sel[k]); });
     return out;
   }
 
@@ -258,6 +269,27 @@
       water_level: waterL,
       water_target_l: target,
       water_low: waterL < target,
+    };
+  }
+
+  /* 走到某一段時，身上的裝備遇到當下天氣的結果。只影響畫面與旁白，不改風險點數。 */
+  const BODY_RULES = [
+    { id: 'soaked_cotton', when: (g, h) => h.rain && !g.has_rain_shell && g.cotton_base, soaked: true, tone: 'warn', text: '雨落下來了。棉T吸飽水貼在身上，風一吹就冷。' },
+    { id: 'soaked', when: (g, h) => h.rain && !g.has_rain_shell && !g.light_rain_only, soaked: true, tone: 'warn', text: '雨落下來了。身上沒有雨具，衣服開始濕透。' },
+    { id: 'poncho', when: (g, h) => h.rain && g.light_rain_only, soaked: true, tone: 'warn', text: '雨變大了。輕便雨衣被風掀開，袖子和褲腳都濕了。' },
+    { id: 'dry', when: (g, h) => h.rain && g.has_rain_shell, tone: 'good', text: '雨落下來了。你穿上雨具，身體還是乾的。' },
+    { id: 'chilled', when: (g, h) => h.cold && !g.has_insulation, chilled: true, tone: 'warn', text: '越走越冷。身上和背包都沒有保暖層，只能靠走路撐著。' },
+    { id: 'warm', when: (g, h) => h.cold && g.has_insulation, tone: 'good', text: '氣溫掉下來了。你加上保暖層，手腳還靈活。' },
+    { id: 'slippery', when: (g, h) => h.wet && g.sandals, tone: 'warn', text: '濕滑的路上，拖鞋幾乎抓不住地，每一步都要小心。' },
+  ];
+
+  function bodyEffects(gear, here) {
+    const hits = BODY_RULES.filter((r) => r.when(gear, here));
+    return {
+      soaked: hits.some((r) => r.soaked),
+      chilled: hits.some((r) => r.chilled),
+      /* 同一種天氣只留最具體的一句：表的順序就是優先序 */
+      notes: hits.filter((r, i) => !(r.id === 'soaked' && hits[i - 1] && hits[i - 1].id === 'soaked_cotton')),
     };
   }
 
@@ -843,7 +875,7 @@
     const m = mountains.mountains[0];
     const f = generateForecast(m, 'spring', 1, 0, 0);
     const brief = briefFlags(m, f);
-    const sel = defaultSelection();
+    const sel = sampleSelection();
     const ctx = { gear: gearFlags(sel, index, m, brief), weather: brief, route: m.route_flags, state: { pack_weight_g: 0 } };
     gear.preparation_rules.forEach((r) => {
       evalCond(r.when, ctx);
@@ -855,8 +887,8 @@
   DH.prepLogic = {
     SEASONS, GROUP_KEYS, GROUP_NAMES, TRIGGERS, ROUTE_EXCLUDE,
     seasonName, isPrepId, evalCond, pickSeason, generateForecast, generateActual, briefFlags, actualFlags, tripWeather,
-    stageTemp, postponeReasons, windLabel, formatDays, defaultSelection, makeItemIndex, selectedIds, packWeight,
-    gearFlags, recommendedSelection, waterTarget, assessPreparation, essentialStatus, selectScenarios,
+    stageTemp, postponeReasons, windLabel, formatDays, emptySelection, sampleSelection, undecidedSlots, bodyEffects, waterTarget, makeItemIndex, selectedIds, packWeight,
+    gearFlags, recommendedSelection, assessPreparation, essentialStatus, selectScenarios,
     exclusionReason, matchingRules, resolveAnswer, describeResult, scenarioVariant, applyVariants, altitudeProfile, validateData,
   };
 })();
