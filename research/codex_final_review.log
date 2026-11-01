@@ -1,0 +1,1050 @@
+Reading additional input from stdin...
+OpenAI Codex v0.164.0
+--------
+workdir: /workspace/digital-hiking
+model: gpt-6.1-sol
+provider: openai
+approval: never
+sandbox: danger-full-access
+reasoning effort: none
+reasoning summaries: none
+session id: 01a19550-4b97-7390-8412-10b83f9e06a2
+--------
+user
+你是資深遊戲 UI/美術審核。請「看」下列截圖（用你能開啟圖片的方式，路徑在 /workspace/digital-hiking/screenshots/final/）：
+d-* 為桌機 1440x900，m-* 為手機 390x844。依序：01 開始、02 選山（02b 手機選中、02c 勾選）、03 季節、04 預報+換裝預設、05 三種穿搭(A 建議/B 棉T牛仔涼鞋/C 羽絨全副武裝)、06 裝備檢查、07 保命題題卡(含保命徽章)、07b 手機作答後、08 走路、09 結局。
+參考風格：sansatemple.com（可愛 Q 版、廟宇線上拜拜遊戲，色彩溫暖、角色圓潤、UI 精緻）。
+請用繁體中文給「具體、依優先序(P0/P1/P2)的修正清單」：版面遮擋/溢出、字級與對比、Q 版一致性、穿搭預覽角色是否清楚且可愛、不同穿搭是否看得出差別、保命徽章是否醒目不刺眼、手機可用性、留白與層次。每項要指出哪張圖、什麼問題、建議怎麼改（CSS/元素層級）。最後給整體 1-10 分。把結果寫入 /workspace/digital-hiking/research/codex_final_review.md（只寫這個檔，不要改其他檔案）。
+codex
+我會先開啟桌機與手機截圖，並查看參考網站的視覺風格，再把依 P0／P1／P2 排序的具體建議寫入指定檔案。
+exec
+/bin/bash -lc "pwd && rg --files -g 'AGENTS.md' -g '*' screenshots/final research | head -100" in /workspace/digital-hiking
+ succeeded in 0ms:
+/workspace/digital-hiking
+research/key_brief_codex.md
+research/final_review_brief.md
+research/fix_brief.md
+research/claude_fix.log
+research/codex_final_review.log
+research/scenarios.factchecked.json
+research/scenarios.factcheck.patch
+research/codex_gear.log
+research/claude_brief.md
+research/gear_spec.md
+research/codex_aesthetic.md
+research/claude_polish.log
+research/gear_brief_codex.md
+research/rewrite_fixes.json
+research/rewrite_factcheck.md
+research/scenarios_merged.json
+research/codex_b.log
+research/key_impl_brief.md
+research/fc2_brief.md
+research/key_concepts.md
+research/key_scenarios.json
+research/codex_aesthetic.err
+research/schema.txt
+research/codex_a.log
+research/scenarios_b.json
+research/scenarios_sample.json
+research/claude_gear_impl.log
+research/codex_factcheck.log
+research/codex_key.log
+research/gear_data_draft/scenario_triggers.json
+research/gear_data_draft/new_scenarios.json
+research/gear_data_draft/schemas.json
+research/gear_data_draft/build_drafts.py
+research/gear_data_draft/mountains.json
+research/gear_data_draft/generated_tables.md
+research/gear_data_draft/build_schemas.py
+research/gear_data_draft/validate_drafts.py
+research/gear_data_draft/gear.json
+research/polish_brief.md
+research/claude_key_impl.log
+research/scenarios_a.json
+research/codex_fc2.log
+research/factcheck_changes.json
+research/factcheck_report.md
+research/gear_impl_brief.md
+research/claude_build.log
+screenshots/final/m-02-mountain.png
+screenshots/final/m-01-start.png
+screenshots/final/m-05-dress-C-full-winter.png
+screenshots/final/d-08-walking-ridge.png
+screenshots/final/d-09-ending.png
+screenshots/final/m-08-walking-forest.png
+screenshots/final/d-02-mountain.png
+screenshots/final/m-02c-ack.png
+screenshots/final/d-01-start.png
+screenshots/final/d-05-dress-A-recommended.png
+screenshots/final/m-07-key-scenario.png
+screenshots/final/m-02b-mountain-picked.png
+screenshots/final/d-03-season.png
+screenshots/final/d-07-key-scenario.png
+screenshots/final/m-05-dress-B-cotton-sneakers.png
+screenshots/final/d-05-dress-C-full-winter.png
+screenshots/final/m-05-dress-A-recommended.png
+screenshots/final/d-05-dress-B-cotton-sneakers.png
+screenshots/final/m-07b-answered.png
+screenshots/final/d-02c-ack.png
+screenshots/final/m-09-ending.png
+screenshots/final/d-06-gearcheck.png
+screenshots/final/m-06-gearcheck.png
+screenshots/final/m-03-season.png
+screenshots/final/m-04-forecast-dress-default.png
+screenshots/final/d-04-forecast-dress-default.png
+
+exec
+/bin/bash -lc 'find .. -name AGENTS.md -print; rg --files screenshots/final | sort' in /workspace/digital-hiking
+ succeeded in 0ms:
+../profile-interview-social/node_modules/@supabase/postgrest-js/AGENTS.md
+../profile-interview-social/node_modules/@supabase/functions-js/AGENTS.md
+../profile-interview-social/node_modules/@supabase/supabase-js/AGENTS.md
+../profile-interview-social/node_modules/@supabase/storage-js/AGENTS.md
+../profile-interview-social/node_modules/@supabase/realtime-js/AGENTS.md
+../profile-interview-social/node_modules/@supabase/auth-js/AGENTS.md
+../session-bridge/app/AGENTS.md
+../session-bridge/smoke-2026-11-01/repo/AGENTS.md
+../profile-interview/node_modules/@supabase/postgrest-js/AGENTS.md
+../profile-interview/node_modules/@supabase/functions-js/AGENTS.md
+../profile-interview/node_modules/@supabase/supabase-js/AGENTS.md
+../profile-interview/node_modules/@supabase/storage-js/AGENTS.md
+../profile-interview/node_modules/@supabase/realtime-js/AGENTS.md
+../profile-interview/node_modules/@supabase/auth-js/AGENTS.md
+../pi-photo/node_modules/@supabase/postgrest-js/AGENTS.md
+../pi-photo/node_modules/@supabase/functions-js/AGENTS.md
+../pi-photo/node_modules/@supabase/supabase-js/AGENTS.md
+../pi-photo/node_modules/@supabase/storage-js/AGENTS.md
+../pi-photo/node_modules/@supabase/realtime-js/AGENTS.md
+../pi-photo/node_modules/@supabase/auth-js/AGENTS.md
+../pi-editorial/node_modules/@supabase/postgrest-js/AGENTS.md
+../pi-editorial/node_modules/@supabase/functions-js/AGENTS.md
+../pi-editorial/node_modules/@supabase/supabase-js/AGENTS.md
+../pi-editorial/node_modules/@supabase/storage-js/AGENTS.md
+../pi-editorial/node_modules/@supabase/realtime-js/AGENTS.md
+../pi-editorial/node_modules/@supabase/auth-js/AGENTS.md
+../digital-card-poc/AGENTS.md
+screenshots/final/d-01-start.png
+screenshots/final/d-02-mountain.png
+screenshots/final/d-02c-ack.png
+screenshots/final/d-03-season.png
+screenshots/final/d-04-forecast-dress-default.png
+screenshots/final/d-05-dress-A-recommended.png
+screenshots/final/d-05-dress-B-cotton-sneakers.png
+screenshots/final/d-05-dress-C-full-winter.png
+screenshots/final/d-06-gearcheck.png
+screenshots/final/d-07-key-scenario.png
+screenshots/final/d-08-walking-ridge.png
+screenshots/final/d-09-ending.png
+screenshots/final/m-01-start.png
+screenshots/final/m-02-mountain.png
+screenshots/final/m-02b-mountain-picked.png
+screenshots/final/m-02c-ack.png
+screenshots/final/m-03-season.png
+screenshots/final/m-04-forecast-dress-default.png
+screenshots/final/m-05-dress-A-recommended.png
+screenshots/final/m-05-dress-B-cotton-sneakers.png
+screenshots/final/m-05-dress-C-full-winter.png
+screenshots/final/m-06-gearcheck.png
+screenshots/final/m-07-key-scenario.png
+screenshots/final/m-07b-answered.png
+screenshots/final/m-08-walking-forest.png
+screenshots/final/m-09-ending.png
+
+web search: 
+web search: https://sansatemple.com
+exec
+/bin/bash -lc 'ls -a; cat package.json' in /workspace/digital-hiking
+ exited 1 in 0ms:
+.
+..
+README.md
+data
+final_tmp
+index.html
+js
+research
+screenshots
+style.css
+tests
+cat: package.json: No such file or directory
+
+codex
+已看完 26 張截圖。最需要優先處理的是手機保命題卡上方內容被截斷、風險提示文字遭省略，以及 A／C 穿搭角色幾乎相同。角色本身已清楚可愛；我會再核對 CSS 與元素名稱，讓建議能直接對應修改位置。
+exec
+/bin/bash -lc "cat /home/box/.codex/plugins/cache/pstack-claude/pstack/0.9.114/skills/technical-writing/SKILL.md; rg -n 'overflow|sticky|fixed|risk|scenario|outfit|avatar|ending|badge|modal|gear|footer' style.css | head -110; rg -n 'class=|className' js/ui* | head -60" in /workspace/digital-hiking
+ succeeded in 0ms:
+---
+name: technical-writing
+description: "Layered technical-writing standard: Diátaxis structure, Google developer style sentences, STE instruction rules, Global English syntax. Use for /technical-writing or when writing or reviewing docs, RFCs, readmes, PR descriptions, or commit messages."
+---
+
+# Technical writing
+
+Write so a tired engineer understands on the first read. Apply all four layers.
+
+Three rules sit above the layers:
+
+- **Cut every word that does no work.** If the sentence survives without a word, the word goes. "In order to" is "to". "It is important to note that" is nothing.
+- **Use the short, everyday word.** "Use", not "utilize". "Help", not "facilitate". "Do", not "perform". A long word has to buy its length with precision.
+- **When a rule makes a sentence worse, fix the sentence another way or leave it alone.** A sentence that follows every rule and sounds like a machine wrote it has failed.
+
+The codebase is the word list. Write the real symbol, file, flag, or command name, not a synonym or a description of it.
+
+Don't invent jargon. Use the words a developer would say out loud: "move", "delete", "a budget that only decreases", not "evacuate", "ratchet", or "endgame". A named pattern is fine when the doc says what it means the first time. Propose a new offender and its replacement as an addition to `unslop`'s abstract-metaphor rule in your reply, with the diff. Don't edit that skill.
+
+## Vary the rhythm
+
+A doc can obey every layer and still read machine-written: every sentence clipped short, no view anywhere, nothing specific.
+
+- Mix sentence lengths on purpose. Short sentences land a point. Longer ones carry a fact with its condition or consequence.
+- One thought per sentence does not mean one length per sentence. Split the sentence that carries two thoughts. Keep the long sentence that carries one.
+- Have a view where the mode allows it. Explanation weighs trade-offs, so say what you make of them instead of listing pros and cons. Reference stays dry.
+- Be specific over sterile. Not "schema changes can cause issues" but "a column rename fails the build".
+
+## Pick the mode first (Diátaxis)
+
+One document, one mode. Two questions pick it: does the content inform action (doing) or understanding (thinking), and does it serve learning or work?
+
+- Action + learning: **tutorial**.
+- Action + work: **how-to**.
+- Understanding + work: **reference**.
+- Understanding + learning: **explanation**.
+
+Use the compass on a whole document or on one sentence.
+
+**Tutorial: learning by doing.** The learner's success is your job, not theirs. Open by saying what the learner will build, not what they will "learn". Every step produces a visible result, early and often. Tell them what they should see: the expected output, the prompt change, the log line. Cut explanation to one clause and a link. Stay concrete. Write as "we", in commands: "First, do x. Now, do y."
+
+**How-to: steps to a goal.** Solve a problem a person has, not an operation the machine can perform. Assume competence and skip teaching. Action only: no digressions, no background, no completeness for its own sake. Link those instead. Allow forks and judgment: "If you want x, do y." Name the guide by the task: "How to calibrate the radar array", not "Radar array calibration".
+
+**Reference: facts for lookup.** Only describe. No instruction, no persuasion, no opinion. Be dry, complete, and sure. State facts, options, limits, and errors with no hedging. Mirror the structure of the thing described, so code and docs can be navigated together. Put material where readers expect it. Generate from code where possible.
+
+**Explanation: understanding and why.** One bounded topic, readable away from the product. Each title should tolerate an implicit "About..." in front. Anchor on a real why question. Give context: design decisions, history, constraints, alternatives. Opinion is allowed here and nowhere else.
+
+Don't mix modes: no reference tables inside a tutorial, no tutorial hand-holding inside reference, no arguing inside a how-to. Split and link instead.
+
+## Write sentences to the reader (Google developer style)
+
+- Talk to the reader as "you", in the present tense. "Will" only for things that genuinely happen later.
+- Say who does what: "the compiler checks", not "is checked". Passive is fine only when the actor is unknown or beside the point.
+- Write instructions as commands: "Click Submit." State facts plainly. Never "should be done".
+- Put the condition before the instruction: "To delete the document, click Delete."
+- Put the common case first. Exceptions after.
+- Sound like a knowledgeable friend. No buzzwords, no figurative language, no "please" in instructions, and never "simply", "easy", or "quickly" in a procedure. If it were simple, the reader would not be here.
+- Don't pre-announce ("we will soon support...") and don't start consecutive sentences with the same phrase.
+- Link with words that say where the link goes: the page title or a short description. Never "click here". Prefer a sentence of context on the page over a link off it.
+- Headings carry the point, not just the topic ("Pick the mode first", not "Modes"). Sentence case. A task heading is a bare verb phrase ("Create an instance"). A concept heading is a noun phrase. One h1 per page, no skipped levels.
+- Numbered lists for sequences, bullets for everything else. Introduce a list with a complete sentence. Keep items parallel.
+- Code goes in code font. UI elements go in bold. Use serial commas. Drop "etc." and say up front that a list is partial.
+
+## Make statements load one at a time (STE rules)
+
+- One instruction per sentence. One thought per sentence everywhere else.
+- Split instructions longer than about 20 words and other sentences longer than about 25.
+- Put the warning or condition before the step it guards: "If hot oil touches your skin, injuries can occur."
+- Keep "the" and "a": "Remove backup file" reads two ways. "Remove the backup file" reads one.
+- Give each word one meaning and one job, then keep it. If "check" means inspect, don't also use it for restrain.
+- Pick one word per action and stick to it: "start", not "start" here and "initiate" there.
+- Write procedures as direct commands, never as narration and never in the passive: "Install the component", not "the component must be installed".
+- Avoid "-ing" words where you can.
+
+## Leave no sentence open to two readings (Global English)
+
+- Keep words like "only" and "not" next to the word they change: "only fails on growth" and "fails only on growth" say different things.
+- Break up long noun strings: "the proto import budget check script" becomes "the script that checks the proto-import budget".
+- Make every "it", "they", and "this" point at one obvious thing. Repeat the noun when in doubt. Never use "this" or "which" to point at a whole clause.
+- Don't drop verbs: "Phase 1 moves the converters and Phase 2 the runtime" leaves Phase 2 without one. Give it one.
+- Keep the small words that show structure, such as "that" in "Ensure that the switch is off". Never trade clarity for word count.
+- Repeat the article in a series when it prevents a misread: "the client and the host", not "the client and host", when they are two things.
+- Say which parts "and" or "or" joins when a sentence can group two ways. "Both...and", "either...or", and "if...then" are free disambiguators.
+- Use periods, not semicolons. Replace an em dash with a new sentence.
+- Make text in parentheses a full grammatical unit or its own sentence. Never form plurals with "(s)".
+- No slashes: write "a, b, or both" instead of "a/b" or "and/or".
+- Call each thing by one name, everywhere. A doc that says "the gate", "the ratchet", and "the budget check" for one thing teaches three things. Don't churn what didn't change.
+- Skip idioms, colloquialisms, Latin abbreviations, and metaphors.
+
+## Voice and repo specifics
+
+- Apply the **unslop** skill to every doc this skill touches. That skill owns the slop-pattern catalog: AI vocabulary, filler, hedging, formatting tells.
+- PR descriptions and commit messages are writing too. Every layer except Diátaxis applies to them. A PR body is a briefing that a reviewer can read in under a minute. Do not paste swarm logs, SHA lists, or metric tables. Link them.
+- Product UI strings are not documentation. Use your product's copy guidelines for those.
+- Indent code snippets with tabs. Write real paths. Make every count or tree claim true at the commit that lands it, and include the command that regenerates it.
+
+## Worked example
+
+Before:
+
+> Configuration of the proto import ratchet budget script parameters is performed via budget.json. Note that it's important to remember that running with --write, which updates the committed budget to reflect the current count, should only be done when lowering it. If exceeded, CI fails.
+
+After:
+
+> `budget.mjs` reads the committed budget from `budget.json` and counts the files that import protos. If the count exceeds the budget, CI fails. Run `budget.mjs --write` only to lower the budget.
+27:  overflow: hidden;
+37:  position: fixed;
+143:.hud-route, .hud-risk {
+169:.hud-risk {
+178:.risk-body { flex: 1; min-width: 0; }
+179:.risk-top { font-size: 14px; line-height: 1.25; color: var(--ink); white-space: nowrap; }
+180:.risk-top b { font-size: 18px; font-variant-numeric: tabular-nums; }
+181:.risk-track { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+182:.risk-scale { flex: none; font-size: 12px; line-height: 1; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+183:.risk-bar { position: relative; flex: 1; min-width: 0; height: 14px; border-radius: 7px; background: #eadfc8; overflow: hidden; }
+184:.risk-bar::after { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; background: rgba(90, 70, 50, .32); }
+185:.risk-fill { height: 100%; width: 0; border-radius: 7px; }
+189:.hud-risk.is-warn {
+193:  animation: risk-wobble 4.2s ease-in-out infinite;
+195:.hud-risk.is-warn .risk-top b { color: #b5322a; }
+196:.hud-risk.bump { animation: bump .5s ease; }
+204:@keyframes risk-wobble {
+215:  .hud-risk { padding: 5px 14px; }
+216:  #risk-face { width: 40px; height: 40px; flex: none; }
+217:  .risk-top { font-size: 15px; }
+218:  .risk-top b { font-size: 22px; }
+219:  .risk-bar { height: 16px; }
+220:  .risk-scale { font-size: 13px; }
+380:  .hud-risk { flex: 1 1 0; padding: 5px 10px; }
+381:  #risk-face { width: 30px; height: 30px; flex: none; }
+420:  overflow-y: auto;
+522:  .card-main { position: sticky; top: 0; align-self: start; }
+532:  .hud-risk { padding: 2px 10px; }
+533:  .risk-body { display: flex; align-items: center; gap: 8px; }
+534:  .risk-top { flex: none; font-size: 13px; }
+535:  .risk-top b { font-size: 15px; }
+536:  .risk-track { flex: 1; margin-top: 0; }
+537:  .risk-bar { height: 12px; }
+538:  #risk-face { width: 26px; height: 26px; flex: none; }
+564:  overflow-y: auto;
+601:#ending-screen[data-tier='bad'] { background: rgba(255, 233, 206, .8); }
+602:#ending-screen {
+610:.ending-panel {
+620:  overflow: hidden;
+622:.ending-scroll { display: contents; }
+623:.ending-left { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; padding: 18px 22px 6px; overflow-y: auto; min-height: 0; }
+624:#ending-art { flex: none; width: 100%; height: clamp(180px, 34vh, 250px); border-radius: 18px; display: block; }
+625:.ending-kicker { margin: 12px 0 0; color: var(--brand); font-size: 14px; font-weight: 700; }
+626:.ending-left h2 { margin: 0; font-size: 28px; line-height: 1.3; }
+627:#ending-msg { margin: 4px 0 12px; font-size: 16px; }
+628:.ending-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+629:.ending-stats > div { padding: 6px 4px; border-radius: 13px; background: var(--cream); text-align: center; }
+630:.ending-stats span { display: block; color: var(--ink-soft); font-size: 13px; }
+631:.ending-stats b { font-size: 24px; line-height: 1.3; font-variant-numeric: tabular-nums; }
+632:.ending-best { margin: 8px 0 0; color: var(--ink-soft); font-size: 14px; }
+633:.ending-best:empty { display: none; }
+634:.ending-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+635:.ending-badges:empty { display: none; }
+636:.badge-chip { padding: 3px 12px; border-radius: 999px; background: #fff0c9; color: #7f5512; font-size: 14px; font-weight: 700; }
+637:.ending-btns { grid-column: 1; grid-row: 2; display: grid; grid-template-columns: 2fr 1fr; gap: 10px; padding: 10px 22px 16px; background: var(--paper); }
+639:.ending-right { grid-column: 2; grid-row: 1 / 3; display: flex; flex-direction: column; min-height: 0; padding: 18px 20px; background: #fbf7ea; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
+640:.ending-right h3 { margin: 0; font-size: 21px; }
+685:  #ending-screen { padding: 0; }
+686:  .ending-panel { display: flex; flex-direction: column; width: 100%; height: 100%; border: 0; border-radius: 0; }
+687:  .ending-scroll { display: block; flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
+688:  .ending-left, .ending-right { overflow: visible; }
+689:  .ending-left { padding: 12px 14px; }
+690:  .ending-right { padding: 14px; }
+691:  #ending-art { height: clamp(170px, 27vh, 230px); }
+692:  .ending-btns { flex: none; padding: 10px 14px calc(12px + env(safe-area-inset-bottom)); border-top: 2px solid var(--cream); }
+696:  #ending-screen { padding: 0; }
+697:  .ending-panel { width: 100%; height: 100%; border: 0; border-radius: 0; }
+698:  .ending-left { padding: 8px 14px 2px; }
+699:  #ending-art { height: 112px; }
+700:  .ending-kicker { margin-top: 4px; font-size: 13px; }
+701:  .ending-left h2 { order: 1; font-size: 21px; }
+703:  .ending-stats { order: 2; margin-top: 4px; }
+704:  .ending-stats > div { padding: 2px 4px; }
+705:  .ending-stats span { line-height: 1.3; white-space: nowrap; }
+706:  .ending-stats b { display: block; font-size: 19px; line-height: 1.2; }
+707:  .ending-badges { order: 3; margin-top: 6px; }
+708:  #ending-msg { order: 4; font-size: 14px; line-height: 1.45; margin: 6px 0 0; }
+709:  .ending-best { order: 5; margin-top: 4px; }
+710:  .ending-btns { padding: 6px 14px 8px; }
+711:  .ending-btns .btn { min-height: 44px; padding: 4px 12px; }
+712:  .ending-right { padding: 8px 12px; }
+716:.modal {
+725:.modal-box {
+729:  overflow-y: auto;
+738:.modal-box h2 { margin: 0 44px 10px 0; font-size: 23px; }
+739:.modal-x {
+767:.badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-bottom: 13px; }
+768:.badge { padding: 8px 12px; border: 2px dashed var(--line); border-radius: 13px; color: var(--ink-soft); }
+769:.badge strong { display: block; font-size: 15px; }
+770:.badge span { font-size: 13px; line-height: 1.4; display: block; }
+771:.badge.on { border: 2px solid #efc76a; background: #fff6da; color: var(--ink); }
+795:  overflow: hidden;
+816:  overflow-y: auto;
+917:.prep-panel[data-step='gear'] .prep-body { padding: 0; overflow: hidden; display: flex; }
+918:.gear-layout { flex: 1; min-width: 0; display: grid; grid-template-columns: 340px minmax(0, 1fr); min-height: 0; }
+919:.gear-left { display: flex; flex-direction: column; gap: 9px; min-height: 0; padding: 12px 14px; border-right: 2px solid var(--cream); overflow-y: auto; background: #fbf7ea; }
+920:.gear-brief { display: flex; flex-direction: column; font-size: 13.5px; line-height: 1.4; }
+921:.gear-brief strong { font-size: 14.5px; }
+922:.gear-preview { flex: 1 1 280px; width: 100%; min-height: 230px; max-height: 390px; display: block; border-radius: 16px; }
+923:.gear-meter { padding: 8px 12px 9px; border-radius: 14px; background: #fff; }
+927:.meter-bar { position: relative; height: 10px; border-radius: 5px; background: #eadfc8; overflow: hidden; }
+929:.gear-meter > .meter-bar { margin-top: 3px; }
+933:.gear-rec { width: 100%; min-height: 44px; flex: none; }
+934:.gear-right { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+935:.gear-tabs { flex: none; display: grid; grid-template-columns: repeat(3, 1fr); padding: 8px 14px 0; gap: 6px; border-bottom: 2px solid var(--cream); }
+936:.gear-tab {
+947:.gear-tab.on { border-color: var(--cream); background: #fff5e6; color: var(--brand); }
+948:.gear-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; padding: 10px 14px 14px; }
+949:.gear-slot { margin-bottom: 12px; }
+950:.gear-slot h4 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin: 0 0 5px; color: #4a7c63; font-size: 15.5px; }
+8:    if (cls) n.className = cls;
+335:      box.className = 'fb-gear';
+
+codex
+報告會採用 technical-writing 技能整理成可執行清單。參考網站目前只取得需 JavaScript 的入口文字，未能確認其實際畫面，因此風格比較會以你指定的「溫暖、圓潤 Q 版、精緻 UI」為準，並註明這項限制。
+exec
+/bin/bash -lc "cat /home/box/.codex/plugins/cache/pstack-claude/pstack/0.9.114/skills/unslop/SKILL.md; sed -n '400,450p' style.css; sed -n '950,1090p' style.css; rg -n 'key-|life|critical|meter-reasons|card-body|card-scroll|disclaimer' style.css | tail -65; rg -n 'canvas|draw|wear' js/gear* | head -25" in /workspace/digital-hiking
+ succeeded in 0ms:
+---
+name: unslop
+description: Cut AI tells from any writing.
+---
+
+# Unslop
+
+Edit text to remove AI patterns. Scan for the patterns below, then rewrite. Preserve meaning and match the intended tone.
+
+## Patterns to detect and fix
+
+Rule numbers are stable ids that other skills cite. A removed rule leaves a gap.
+
+### Content
+
+3. **Superficial -ing phrases.** "highlighting...", "ensuring...", "reflecting...", "showcasing...", "fostering...". Delete or expand with real sources.
+5. **Vague attributions.** "Experts believe", "Industry reports suggest", "Some critics argue". Name the source or delete.
+
+### Language
+
+7. **AI vocabulary.** Additionally, crucial, delve, enduring, enhance, fostering, garner, interplay, intricate, landscape (abstract), pivotal, showcase, tapestry (abstract), testament, underscore, vibrant. Replace with plain words.
+8. **Fancy ways to say "is".** "serves as", "stands as", "boasts", "features". Say "is" or "has".
+9. **"Not just X, but Y."** State the point directly instead.
+10. **Rule of three.** Don't force ideas into groups of three. Use the natural number.
+11. **Synonym cycling.** Protagonist, main character, central figure, hero all in one paragraph. Pick one, repeat it.
+12. **False ranges.** "from X to Y" where X and Y aren't on a meaningful scale. List topics directly.
+
+### Style
+
+13. **Em dash overuse.** Avoid em dashes entirely. Use periods or commas only (no parentheses, no en dashes, no hyphen-as-dash substitutes). If a thought needs separation, end the sentence or use a comma.
+14. **Colon overuse.** Colons are fine before a list or example, not as mid-sentence connectors. "If you're coming from traditional automation: instead of registering event handlers, you describe conditions" adds nothing with the colon. Rewrite to let the point stand on its own without comparison framing. "Describing when the scheduler should fire works best as plain English." Same meaning, no crutch punctuation.
+15. **Boldface overuse.** Don't bold every proper noun or acronym.
+16. **Inline-header lists.** The tell is a bold label and colon that restates the line: "**Performance:** Performance improved...". Convert those to prose. A bold lead-in that ends in a period, names the item, and is followed by genuinely new detail ("**Schema in TypeScript.** Tables live in one file.") is fine, not a tell.
+17. **Title case headings.** Use sentence case.
+18. **Decorative emojis.** Remove from headings and bullets.
+19. **Curly quotes.** Use straight quotes.
+
+### Communication artifacts
+
+20. **Chatbot phrases.** "I hope this helps!", "Let me know if...", "Of course!", "Certainly!", "Found the smoking gun!" Remove.
+22. **Sycophantic tone.** "Great question! You're absolutely right!" Respond directly.
+
+### Filler
+
+23. **Filler phrases.** "In order to" becomes "To". "Due to the fact that" becomes "Because". Delete "It is important to note that".
+24. **Excessive hedging.** "could potentially possibly be argued that it might" becomes "may".
+25. **Generic conclusions.** "The future looks bright." State specific plans or facts.
+
+### Jargon
+
+26. **Abstract metaphor nouns.** Substrate (base), wedge, wedge in (add), vector (way, method), locus, vantage, nexus, primitive as a noun, harness as a metaphor, surface as in "API surface", bedrock, scaffolding as a metaphor, modality, paradigm, gold-plating (more than the job needs), ratchet as a metaphor (the mechanism's real name, or a limit that only tightens), evacuate for moving code (move out), endgame (the last phase), north star, flywheel. These read as technical but usually have a plainer concrete word. Pick the concrete word.
+
+### Plain speech
+
+27. **Say what it does, not how it feels.** "the database stays close at hand", "SQL you can read", "types that follow your schema" name a feeling. The fix names the mechanism or a number: "`.toSQL()` returns the exact string sent to the database", "a column rename fails the build". Ask what the sentence tells the reader to do or know, then write that. If you can't restate it as a concrete instruction, fact, or number, cut it. One more check: if the sentence could appear unchanged in another project's docs, it says nothing about this one. Cut it.
+28. **Shorten or split dense sentences.** If the reader has to backtrack to parse a sentence, break it in two or drop clauses. One idea per sentence.
+29. **Active voice.** Prefer it. Catch "is/are/was/were + past participle" and name the actor: "queries are validated" becomes "the compiler validates queries", "the file is parsed by the loader" becomes "the loader parses the file". Passive is fine only when the actor is unknown or genuinely doesn't matter.
+30. **Cut adverbs, or use a stronger verb.** "runs quickly" becomes "is fast" or the number, and "significantly improves" becomes the measured delta. An adverb propping up a weak verb means the verb is wrong.
+31. **Prefer the plain word.** "utilize" and "leverage" become "use", "facilitate" becomes "help", "numerous" becomes "many", "in the event that" becomes "if". The fancier synonym is rarely clearer.
+32. **Mannered prose.** Metaphor or flourish where a literal phrase exists: aphorisms ("wire it or delete it"), rhetorical fragments for effect, personified code ("the plan holds it"), figurative verbs ("rides along", "stands on"), stock framing phrases. "A dial worth turning" becomes "a parameter worth varying". Say what you mean. Rule 26 covers the metaphor nouns.
+33. **Over-compression.** Dropped articles, verbless fragments, symbol-speak, and abbreviations that make the reader decode instead of read. "Parser rejects bad date → exit 2, no write" becomes "The parser rejects a bad date, exits with code 2, and writes nothing." Write whole sentences with their articles and verbs, and spell out arrows and abbreviations.
+  border: 3px solid #fff;
+  border-radius: 24px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  animation: card-in .28s cubic-bezier(.2, 1.3, .5, 1);
+}
+.card.is-right { border-color: #9fdcb0; }
+.card.is-wrong { border-color: #f4a79f; }
+.card.shake { animation: card-shake .18s ease; }
+
+@keyframes card-in { from { transform: translateX(var(--card-x, -50%)) translateY(30px) scale(.97); opacity: 0; } }
+@keyframes card-shake {
+  25% { transform: translateX(calc(var(--card-x, -50%) - 3px)); }
+  75% { transform: translateX(calc(var(--card-x, -50%) + 3px)); }
+  100% { transform: translateX(var(--card-x, -50%)); }
+}
+
+.card-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 16px 18px 14px;
+}
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.tag {
+  display: inline-block;
+  padding: 2px 11px;
+  border-radius: 999px;
+  background: #e2f2ea;
+  color: #2f6e50;
+  font-size: 13px;
+  font-weight: 700;
+}
+.card-count { color: var(--ink-soft); font-size: 13px; font-variant-numeric: tabular-nums; }
+.card h2 { margin: 7px 0 3px; font-size: 24px; line-height: 1.35; font-weight: 700; }
+#card-sit { margin: 0 0 11px; font-size: 17px; line-height: 1.6; }
+
+.opts { display: grid; gap: 8px; }
+.opt {
+  min-height: 52px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 13px 8px 9px;
+  border: 2px solid var(--line);
+  border-radius: 15px;
+  background: #fff;
+  font-size: 16px;
+.gear-slot h4 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin: 0 0 5px; color: #4a7c63; font-size: 15.5px; }
+.gear-target { color: var(--ink-soft); font-size: 12.5px; font-weight: 500; }
+.gear-opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(245px, 1fr)); gap: 7px; }
+.gear-opt {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 9px 5px 6px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background .14s ease, border-color .14s ease;
+}
+.gear-opt:hover { background: #fff8ec; }
+.gear-opt.on { border-color: var(--green); background: var(--green-soft); }
+.gear-opt.flash { animation: gear-flash 1.4s ease 2; }
+@keyframes gear-flash { 50% { box-shadow: 0 0 0 4px rgba(240, 138, 87, .5); } }
+.gear-icon { flex: none; border-radius: 10px; background: var(--cream); }
+.gear-opt-text { flex: 1; min-width: 0; line-height: 1.32; }
+.gear-opt-name { display: flex; align-items: baseline; justify-content: space-between; gap: 6px; }
+.gear-opt-name b { font-size: 15px; }
+.gear-opt-name small { flex: none; color: var(--ink-soft); font-size: 12px; }
+.gear-opt-teach { display: block; color: #6b5c50; font-size: 12.5px; line-height: 1.38; }
+.gear-opt-mark {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+}
+.gear-opt.on .gear-opt-mark { border-color: var(--green); background: var(--green); }
+.gear-opt.on .gear-opt-mark::before { content: '✓'; }
+.group-bars { display: grid; gap: 6px; }
+.group-row { display: grid; grid-template-columns: 74px minmax(0, 1fr) 48px; align-items: center; gap: 7px; font-size: 13.5px; }
+.group-score { white-space: nowrap; }
+.group-name { font-weight: 700; }
+.group-score { text-align: right; font-variant-numeric: tabular-nums; }
+.group-cap { grid-column: 2 / -1; margin-top: -3px; color: #a24a24; font-size: 12px; }
+.review-reasons { margin-top: 12px; }
+.review-reasons h4 { margin: 0 0 4px; color: #4a7c63; font-size: 15.5px; }
+.review-reasons ul { margin: 0; padding-left: 0; list-style: none; font-size: 14px; line-height: 1.5; }
+.review-reasons li { padding: 4px 0; border-bottom: 1px dashed var(--line); }
+.review-ok { margin: 0; color: #237a45; font-size: 14px; }
+.essentials { margin-top: 12px; }
+.essentials summary { min-height: 44px; display: flex; align-items: center; color: #4a7c63; font-size: 15.5px; font-weight: 800; cursor: pointer; }
+.essentials ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 5px; margin: 0; padding: 0; list-style: none; }
+.essentials li { display: grid; grid-template-columns: auto 1fr; gap: 0 7px; align-items: center; padding: 5px 9px; border-radius: 11px; background: var(--cream); font-size: 14px; line-height: 1.35; }
+.essentials small { grid-column: 1 / -1; color: var(--ink-soft); font-size: 12.5px; }
+.ess-tag { padding: 0 7px; border-radius: 999px; font-size: 12.5px; }
+.ess-done .ess-tag { background: var(--green); color: #fff; }
+.ess-part .ess-tag { background: #f4c34a; color: #5a4a2a; }
+.ess-none .ess-tag { border: 1px dashed #a4907a; color: #7c6c5f; }
+.ess-name { font-weight: 700; }
+
+/* 裝備檢查 */
+.check-wrap { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 16px; align-items: start; }
+.check-left { display: grid; gap: 10px; position: sticky; top: 0; }
+.check-total { padding: 10px 14px; border-radius: 16px; background: #fff5e6; text-align: center; }
+.check-total span { display: block; font-size: 14px; font-weight: 700; }
+.check-total strong { display: block; font-size: 38px; line-height: 1.15; color: var(--brand); font-variant-numeric: tabular-nums; }
+.check-total small { display: block; color: var(--ink-soft); font-size: 13px; line-height: 1.4; }
+.check-preview { width: 100%; height: 230px; display: block; border-radius: 16px; }
+.check-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.check-row {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 11px 6px 8px;
+  border: 2px solid var(--line);
+  border-radius: 13px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+.check-row.adjust { border-color: #f0c08f; background: #fff8ee; }
+.check-row:hover { border-color: var(--orange); }
+.check-mark { flex: none; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; font-weight: 900; color: #fff; background: var(--green); font-size: 14px; }
+.check-row.adjust .check-mark { background: #d98b2b; }
+.check-text { flex: 1; min-width: 0; font-size: 14.5px; line-height: 1.42; }
+.check-text b { display: block; color: var(--ink-soft); font-size: 12.5px; }
+.check-row.adjust .check-text b { color: #a24a24; }
+.check-pts { flex: none; color: #a24a24; font-size: 15px; font-weight: 800; }
+
+/* 遊戲中的山岳與裝備資訊 */
+.hud-trip { margin: 5px 0 -5px; overflow: hidden; color: var(--ink-soft); font-size: 12.5px; line-height: 1.35; white-space: nowrap; text-overflow: ellipsis; }
+.card-gear-note { margin: -4px 0 10px; padding: 4px 10px; border-radius: 10px; background: #fff3dc; color: #7f5512; font-size: 14px; line-height: 1.45; }
+.fb-gear { margin: 7px 0 4px; padding: 7px 11px; border-left: 4px solid var(--orange); border-radius: 4px 10px 10px 4px; background: rgba(255, 253, 246, .85); font-size: 15px; line-height: 1.5; }
+.fb-gear.less, .fb-gear.tip { border-left-color: var(--green); }
+.fb-gear p { margin: 2px 0 0; }
+.fb-gear-main { font-weight: 700; }
+.fb-gear details { margin-top: 3px; font-size: 13.5px; }
+.fb-gear summary { min-height: 32px; display: flex; align-items: center; color: var(--ink-soft); cursor: pointer; }
+
+/* 結局的山岳摘要與回顧卡 */
+.ending-trip { margin: 4px 0 2px; padding: 4px 10px; border-radius: 10px; background: #e2f2ea; color: #2f6e50; font-size: 14px; font-weight: 700; line-height: 1.45; }
+#ending-prep { display: grid; gap: 8px; margin-bottom: 10px; }
+#ending-prep[hidden] { display: none; }
+.trip-card { border: 2px solid #f0c08f; border-radius: 15px; background: #fff; }
+.trip-card summary { min-height: 44px; display: flex; align-items: center; gap: 8px; padding: 7px 12px; list-style: none; cursor: pointer; }
+.trip-card summary::-webkit-details-marker { display: none; }
+.trip-card summary::after { content: ''; flex: none; width: 8px; height: 8px; margin: -3px 3px 0 2px; border-right: 2px solid var(--ink-soft); border-bottom: 2px solid var(--ink-soft); transform: rotate(45deg); }
+.trip-card[open] summary::after { margin-top: 3px; transform: rotate(-135deg); }
+.trip-score { flex: none; color: #a24a24; font-size: 14px; font-weight: 700; }
+.trip-body { padding: 0 13px 11px; font-size: 14.5px; line-height: 1.5; }
+.trip-body h4 { margin: 8px 0 2px; font-size: 14.5px; color: #4a7c63; }
+.trip-body p { margin: 3px 0; }
+.trip-body ul { margin: 0; padding-left: 18px; }
+.trip-groups { display: flex; flex-wrap: wrap; gap: 3px 12px; padding: 0 !important; list-style: none; font-weight: 700; }
+.trip-total { font-weight: 700; }
+.trip-note { color: var(--ink-soft); font-size: 13px; }
+.trip-log { padding: 0 !important; list-style: none; }
+.trip-log li { padding: 4px 0; border-bottom: 1px dashed var(--line); }
+.trip-log b { display: block; }
+.trip-recon { margin-top: 7px !important; padding: 4px 9px; border-radius: 9px; background: var(--cream); font-weight: 700; }
+.ending-btns.has-trip { grid-template-columns: 1fr 1fr; }
+.ending-btns.has-trip #btn-again { grid-column: 1 / -1; }
+
+@media (min-width: 761px) and (min-height: 521px) {
+  /* 內容少的步驟不留一大片空白 */
+  .prep-panel[data-step='forecast'] { height: auto; max-height: 100%; }
+}
+
+/* 手機：單欄，一次一張主要卡片 */
+@media (max-width: 760px) {
+  #prep-screen { padding: 0; background: var(--paper); }
+  .prep-panel { width: 100%; height: 100%; border: 0; border-radius: 0; }
+  .prep-head { padding: calc(6px + env(safe-area-inset-top)) 10px 6px; gap: 8px; }
+  .prep-back { padding: 4px 10px; font-size: 13.5px; }
+  .prep-title h2 { font-size: 18px; }
+417:.card-scroll {
+503:  .card-scroll { padding: 12px 14px 12px; }
+521:  .card-scroll { display: grid; grid-template-columns: 2fr 3fr; gap: 14px; padding: 10px 14px; }
+1196:.key-strip { flex: none; padding: 8px 14px 7px; border-radius: 21px 21px 0 0; background: linear-gradient(90deg, #ffe3d3, #fff2e4); border-bottom: 2px solid #f8c9b4; }
+1197:.key-badge {
+1208:.key-ring { flex: none; display: block; }
+1209:.key-badge-text { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 7px; min-width: 0; line-height: 1.3; }
+1210:.key-badge small { font-size: 12.5px; font-weight: 800; letter-spacing: .04em; }
+1211:.key-badge b { font-size: 15px; font-weight: 800; }
+1214:.fb-key-point { font-size: 15.5px; line-height: 1.55; font-weight: 600; color: #6e332a; }
+1215:.fb-key-point b { display: inline-block; margin-right: 6px; padding: 0 8px; border-radius: 999px; background: #c9362f; color: #fff; font-size: 13px; font-weight: 800; line-height: 1.6; }
+1216:.fb-key-src { margin-top: 3px !important; font-size: 13px; line-height: 1.5; color: #6b5c50; }
+1217:.fb-key-src a, .fb-src a, .sum-src a { color: #8a4326; text-underline-offset: 2px; }
+1222:.ending-key-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; padding: 3px 5px 3px 11px; border-radius: 10px; background: #fff; font-size: 15px; font-weight: 600; line-height: 1.35; }
+1223:.ending-key-name { min-width: 0; }
+1224:.ending-key-status { flex: none; padding: 1px 10px; border-radius: 999px; font-size: 13px; font-weight: 800; }
+1225:.ending-key-item.ok .ending-key-status { background: var(--green-soft); color: #1f7040; }
+1226:.ending-key-item.ng .ending-key-status { background: #c9362f; color: #fff; }
+1227:.ending-key-item.skip .ending-key-status { background: var(--cream); color: var(--ink-soft); }
+1230:  .key-strip { padding: 4px 12px 3px; border-radius: 15px 15px 0 0; }
+1231:  .key-ring { width: 22px; height: 22px; }
+2:   角色骨架沿用 art.js 的 drawHiker，這裡只負責把配裝畫上去。 */
+38:  function drawPack(c, out, bob) {
+60:  function drawLeg(c, out, fx, ly, bob) {
+103:  function drawTorso(c, out, bob) {
+137:  function drawHand(c, out, x, y, r) {
+146:  function drawFront(c, out, bob) {
+177:  function drawHeadwear(c, out) {
+283:    rain_kit(c) { box(c, -10, -6, 20, 13, 6, '#5c9bd6'); line(c, -4, -6, -4, 7, '#4a86bf', 1.4); line(c, 4, -6, 4, 7, '#4a86bf', 1.4); drawDrop(c, 7, -9); },
+299:  function drawDrop(c, x, y) { A.drop(c, x, y, 0.8); }
+306:  function drawIcon(c, id, x, y, size) {
+331:  function drawTray(c, sel, x, y, w, h) {
+345:      drawIcon(c, id, x + 6 + cell * (col + 0.5), y + 6 + cell * (row + 0.5), size);
+349:  function drawPreview(c, w, h, sel, opts) {
+357:      A.drawHiker(c, w * 0.2, h * 0.94, { t: o.t || 0, scale, outfit: sel, pose: o.pose, blinkSeed: 2 });
+358:      drawTray(c, sel, w * 0.42, 10, w * 0.58 - 10, h - 20);
+362:      A.drawHiker(c, w * 0.52, h - trayH - 16, { t: o.t || 0, scale, outfit: sel, pose: o.pose, blinkSeed: 2 });
+363:      drawTray(c, sel, 10, h - trayH - 6, w - 20, trayH);
+368:  function drawMountainBanner(c, w, h, m, fx) {
+433:  DH.gearArt = { resolve, drawPack, drawLeg, drawTorso, drawHand, drawFront, drawHeadwear, drawIcon, drawPreview, drawMountainBanner, ICONS };
+
+exec
+/bin/bash -lc "sed -n '1090,1140p' style.css; sed -n '920,935p' style.css; sed -n '385,403p' style.css; sed -n '1190,1218p' style.css; sed -n '100,138p' js/gear-art.js" in /workspace/digital-hiking
+ succeeded in 0ms:
+  .prep-title h2 { font-size: 18px; }
+  .prep-step { font-size: 12px; }
+  .prep-dots { display: none; }
+  .prep-body { padding: 8px 10px; }
+  .prep-foot { padding: 7px 10px calc(8px + env(safe-area-inset-bottom)); gap: 8px; }
+  .prep-foot-note { font-size: 12.5px; }
+  .prep-foot .btn { padding: 8px 14px; font-size: 15px; }
+  .prep-ack { font-size: 13.5px; gap: 8px; }
+
+  .mtn-chips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+  .mtn-chip {
+    min-height: 44px;
+    padding: 2px;
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .mtn-chip.on { border-color: var(--brand); background: #fdf0e6; color: var(--brand); }
+  .mtn-grid { display: block; }
+  .mtn-card { display: none; }
+  .mtn-card.active { display: flex; }
+  .mtn-banner { height: 104px; }
+  .mtn-top h3 { font-size: 20px; }
+  .mtn-intro { font-size: 14.5px; }
+  .mtn-facts { font-size: 14.5px; gap: 4px 8px; }
+
+  .fc-wrap { display: block; }
+  .fc-art { height: 84px; }
+  .fc-mtn { margin-top: 5px; font-size: 18px; }
+  .fc-sub { margin-bottom: 5px; }
+  .season-grid { grid-template-columns: repeat(5, 1fr); gap: 5px; margin-bottom: 8px; }
+  .season-btn { min-height: 48px; padding: 2px; border-radius: 11px; }
+  .season-btn strong { font-size: 14.5px; }
+  .season-btn small { display: none; }
+  .season-btn:last-child { grid-column: auto; }
+  .fc-card { padding: 9px 11px; }
+  .fc-title strong { font-size: 17px; }
+  .fc-notice { font-size: 12.5px; line-height: 1.4; }
+  .fc-row { padding: 3px 0; }
+  .fc-label { font-size: 13.5px; }
+  .fc-value b { font-size: 16px; }
+  .fc-value small { font-size: 12px; }
+  .fc-tips { font-size: 13px; padding: 5px 9px; line-height: 1.45; }
+
+  .gear-layout { display: flex; flex-direction: column; width: 100%; }
+  .gear-left { flex: none; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 8px; padding: 6px 10px; border-right: 0; border-bottom: 2px solid var(--cream); overflow: visible; }
+  .gear-brief { grid-column: 1 / -1; font-size: 12px; line-height: 1.32; }
+  .gear-brief strong { font-size: 13px; }
+.gear-brief { display: flex; flex-direction: column; font-size: 13.5px; line-height: 1.4; }
+.gear-brief strong { font-size: 14.5px; }
+.gear-preview { flex: 1 1 280px; width: 100%; min-height: 230px; max-height: 390px; display: block; border-radius: 16px; }
+.gear-meter { padding: 8px 12px 9px; border-radius: 14px; background: #fff; }
+.meter-top { display: flex; align-items: baseline; gap: 3px; font-size: 14px; font-weight: 700; }
+.meter-num { margin-left: 6px; font-size: 27px; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--brand); }
+.meter-cap { color: var(--ink-soft); }
+.meter-bar { position: relative; height: 10px; border-radius: 5px; background: #eadfc8; overflow: hidden; }
+.meter-bar i { display: block; height: 100%; border-radius: 5px; transition: width .2s ease; }
+.gear-meter > .meter-bar { margin-top: 3px; }
+.meter-why { margin: 6px 0 0; padding: 0; list-style: none; font-size: 13px; line-height: 1.45; }
+.meter-why li { padding: 1px 0; }
+.meter-why li.ok { color: #237a45; }
+.gear-rec { width: 100%; min-height: 44px; flex: none; }
+.gear-right { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.gear-tabs { flex: none; display: grid; grid-template-columns: repeat(3, 1fr); padding: 8px 14px 0; gap: 6px; border-bottom: 2px solid var(--cream); }
+  #actions { display: none; }
+  #prompt { bottom: 144px; }
+}
+
+/* 事件卡片 ------------------------------------------------------- */
+.card {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  width: min(640px, calc(100% - 20px));
+  max-height: calc(100% - 92px - env(safe-area-inset-top));
+  display: flex;
+  flex-direction: column;
+  transform: translateX(var(--card-x, -50%));
+  z-index: 5;
+  border: 3px solid #fff;
+  border-radius: 24px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+
+/* 保命觀念：題卡徽章、作答重點、結局清單 */
+.card.is-key { border-color: #f7b9a4; }
+.card.is-key.is-right { border-color: #9fdcb0; }
+.card.is-key.is-wrong { border-color: #f4a79f; }
+.key-strip { flex: none; padding: 8px 14px 7px; border-radius: 21px 21px 0 0; background: linear-gradient(90deg, #ffe3d3, #fff2e4); border-bottom: 2px solid #f8c9b4; }
+.key-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  padding: 2px 13px 2px 3px;
+  border: 2px solid #f3a48c;
+  border-radius: 999px;
+  background: #fffaf4;
+  color: #a92f28;
+}
+.key-ring { flex: none; display: block; }
+.key-badge-text { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 7px; min-width: 0; line-height: 1.3; }
+.key-badge small { font-size: 12.5px; font-weight: 800; letter-spacing: .04em; }
+.key-badge b { font-size: 15px; font-weight: 800; }
+.fb-key { margin: 7px 0 4px; padding: 8px 11px; border: 2px solid #f3a48c; border-radius: 12px; background: #fff6ee; }
+.fb-key p { margin: 0; }
+.fb-key-point { font-size: 15.5px; line-height: 1.55; font-weight: 600; color: #6e332a; }
+.fb-key-point b { display: inline-block; margin-right: 6px; padding: 0 8px; border-radius: 999px; background: #c9362f; color: #fff; font-size: 13px; font-weight: 800; line-height: 1.6; }
+.fb-key-src { margin-top: 3px !important; font-size: 13px; line-height: 1.5; color: #6b5c50; }
+.fb-key-src a, .fb-src a, .sum-src a { color: #8a4326; text-underline-offset: 2px; }
+.ending-key { margin: 0 0 10px; padding: 9px 12px 11px; border: 2px solid #f3a48c; border-radius: 15px; background: #fff6ee; }
+    }
+  }
+
+  function drawTorso(c, out, bob) {
+    const y = -48 - bob;
+    const { base, mid, shell } = out.sel;
+    const b = BASE[base];
+    box(c, -17, y, 34, 30, 12, b.body);
+    box(c, -17, y + 23, 34, 7, 3, b.dark);
+    if (base === 'cotton') box(c, -2, y + 11, 8, 8, 2, '#6d9bd1');
+    if (MID[mid]) {
+      const m = MID[mid];
+      const puff = mid === 'down' ? 1.6 : 0;
+      box(c, -17 - puff, y - puff * 0.6, 34 + puff * 2, 30 + puff, 12, m.body);
+      if (mid === 'down') {
+        [9, 16, 23].forEach((dy) => line(c, -16, y + dy, 17, y + dy, m.arm, 1.8));
+      } else {
+        line(c, 2, y + 5, 2, y + 28, '#b9622c', 1.8);
+        box(c, -17, y + 25, 34, 5, 2.5, m.arm);
+      }
+    }
+    if (SHELL[shell]) {
+      const s = SHELL[shell];
+      box(c, -17.5, y - 0.5, 35, 30.5, 12, s.body);
+      box(c, -17.5, y + 24, 35, 6, 3, s.arm);
+      line(c, 2, y + 4, 2, y + 29, shell === 'windbreaker' ? '#8fa9d4' : '#b98a14', 1.9);
+      if (shell === 'rain_shell') {
+        /* 連帽邊 */
+        ell(c, -12, y + 2, 9, 5, s.arm);
+      }
+    }
+    /* 領口露出內層顏色 */
+    if (MID[mid] || SHELL[shell]) ell(c, 2, y + 1.6, 9, 3.4, b.body);
+    /* 背帶 */
+    line(c, -8, y + 2, -6, y + 23, out.pack.has('rain_kit') ? '#4a86bf' : '#3c978b', 3);
+  }
+
+  function drawHand(c, out, x, y, r) {
+    if (out.sel.gloves === 'warm_gloves') {
+
+apply patch
+patch: completed
+/workspace/digital-hiking/research/codex_final_review.md
+diff --git a/research/codex_final_review.md b/research/codex_final_review.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..ab433a1b87b864d7a1863a71180d096782037f80
+--- /dev/null
++++ b/research/codex_final_review.md
+@@ -0,0 +1,168 @@
++# 數位登山：最終 UI／美術審核
++
++已逐張開啟 `screenshots/final/` 的 26 張 PNG，涵蓋桌機與手機全部提供狀態。以下以實際畫面為判斷依據，並核對 `style.css`、`js/gear-art.js` 的相關元素。僅提供修正建議，沒有修改產品檔案。
++
++尺寸依使用者提供的 CSS 視窗理解；手機 PNG 為 780×1688，以下字級與間距都指 CSS px，不把雙倍像素當成實際字級。另 `d-08-walking-ridge.png` 實際為 1280×720，不能拿它與其餘桌機圖直接比較元件大小。
++
++參考網站 [sansatemple.com](https://sansatemple.com/) 本次僅取得需 JavaScript 的入口文字，未能取得可供目視比較的遊戲畫面。風格標準採用題目指定的「溫暖配色、圓潤 Q 版、精緻 UI」，不宣稱已完成與該站的逐項視覺比對。截圖無法證明點擊、捲動、焦點及動畫是否正常；以下會區分可見問題與需實機驗收的風險。
++
++目前最好的部分是角色的大頭比例、圓臉、腮紅與柔和山景，已經有親切的遊戲感。主要落差在資訊密度與狀態表達：桌機準備流程像密集清單，手機換裝又把太多高度留給摘要；A／C 換裝沒有足夠的視覺回饋。
++
++P0 是會讓關鍵安全訊息不完整、或失去題目脈絡的問題。P1 是影響理解與主要操作的問題。P2 是美術與細節打磨。各級內按建議執行順序排列。
++
++## P0：先讓關鍵內容完整可讀
++
++1. **手機風險說明被省略，連「0 分不代表安全」也沒顯示完整。**
++
++   圖片：`m-05-dress-A-recommended.png`、`m-05-dress-C-full-winter.png`，次及 `m-04-forecast-dress-default.png`、`m-05-dress-B-cotton-sneakers.png`。
++
++   A／C 的綠字停在「0 分不代表登…」，B 的改善建議停在「改穿合腳且鞋…」。預設畫面只露出第一條風險原因。這些內容正好是玩家選裝備時需要理解的回饋。
++
++   修改：手機 `.meter-why` 取消固定單行高度、`white-space: nowrap`、`text-overflow: ellipsis` 與裁切。讓警語至少自然換行兩行，完整保留「0 分不代表登山沒有風險」。多條原因另設「查看其餘 N 項」展開鈕，不默默隱藏。若摘要變高，改用下方 P1 的版面重排，不縮字硬塞。
++
++   驗收：390×844 下，A／C 完整顯示安全限定語；B 完整顯示可採取的修正行動，其他原因有清楚入口。
++
++2. **手機保命題卡的徽章與題目脈絡分離。**
++
++   圖片：`m-07-key-scenario.png`，對照 `d-07-key-scenario.png`。
++
++   手機畫面保留「保命觀念 高山症」條，但條下只剩一截選項邊框，題目「喘到走不穩」、情境與前兩個選項均不在可見區。這張其實已是答對後狀態，不能當成完整的未作答畫面。可能是內部捲動位置所致，截圖不足以斷言它們永久消失；但眼前的資訊確實失去脈絡。
++
++   修改：將 `.card-head` 與簡短題名組成題卡內的固定摘要，和 `.key-strip` 一起放在 `.card-scroll` 外；情境、選項與解說在單一 `.card-scroll` 捲動。保持 `.card` 為 column flex、捲動區 `min-height: 0; overflow-y: auto`，上下區塊 `flex: none`。換題時重設捲動位置；作答後移到回饋起點，保留「回看題目」入口。卡片高度依實際 HUD 與底部安全區計算。
++
++   驗收：未作答、答對、答錯三態都能知道在答哪一題；可回看全部選項，最下方解說與繼續鈕都可到達。
++
++## P1：改善換裝辨識與主要操作
++
++3. **A 建議穿搭與 C 羽絨穿搭，角色幾乎完全一樣。**
++
++   圖片：`d-05-dress-A-recommended.png`、`d-05-dress-C-full-winter.png`、`m-05-dress-A-recommended.png`、`m-05-dress-C-full-winter.png`。
++
++   能看出選單由刷毛換成羽絨，但角色都是紅帽、黃外套、同樣的身形，風險也同為 0。玩家無法從預覽確認剛才換了什麼。核對 `drawTorso()` 可見，中層先畫，外層再以固定寬度覆蓋，中層的羽絨蓬度與車線因此被遮住。
++
++   修改：在 `js/gear-art.js` 的 `drawTorso()` 讓外套輪廓隨中層厚度調整，羽絨增加肩胸蓬度，袖子也同步變厚；在領口與下襬露出合理的中層色。不要把羽絨車線直接畫到雨衣表面。預覽旁增加「內層／保暖／外層」三個文字摘要，換裝後短暫標出改變部位。若外觀仍不足，提供可切換的「看內層」視圖。
++
++   驗收：不讀右側選單，也能辨認 A／C；色彩之外還有輪廓及文字差異。
++
++4. **B 的休閒穿搭有差異，但牛仔褲與鞋款讀不清。**
++
++   圖片：`d-05-dress-B-cotton-sneakers.png`、`m-05-dress-B-cotton-sneakers.png`，對照 A。
++
++   白棉 T、沒戴帽、粉紅鞋能辨認，這部分有效。但腿部只露出很短一截，牛仔褲近似短褲或襪口；腳上的粉紅色較像拖鞋，與使用者描述的涼鞋、檔名的 sneakers、畫面回饋的拖鞋有命名落差。
++
++   修改：先統一實際選項名稱、資料 ID 與預覽標籤。若是涼鞋，畫出前掌與後跟固定帶；若是拖鞋，就明確命名拖鞋。調整 `drawLeg()` 與軀幹下襬遮擋，保留完整長褲輪廓、褲縫與鞋口。預覽摘要直接寫出「棉 T／牛仔長褲／實際鞋款」。不為呈現錯誤穿搭而刻意把角色畫醜。
++
++5. **手機換裝首屏幾乎只能操作帽子，選裝備與看角色容易分離。**
++
++   圖片：`m-04-forecast-dress-default.png`、三張 `m-05-dress-*`。
++
++   預報、預覽、風險與分頁在首屏佔去接近半頁，下面又將所有選項排成單欄。滑到外套、褲子與鞋時，預覽不在同一操作區；若上半部固定，則可選清單高度更少。截圖本身不能確認捲動後行為。
++
++   修改：手機 `.gear-layout` 改為整頁單一主要捲動區。完整預覽高度約 140–160px，捲動後收成約 64–80px 的摘要，保留小角色與當前配裝；分類分頁置頂。帽子、內層等短選項用兩欄 `.gear-opts`，較長解說按需展開。每個點擊區至少 44px 高，不靠縮字換密度。`.gear-rec` 移為分頁旁的次要操作，減少目前獨立大按鈕的佔位。
++
++6. **桌機選山與換裝的字太密，小字承擔太多閱讀工作。**
++
++   圖片：`d-02-mountain.png`、`d-02c-ack.png`、`d-04-forecast-dress-default.png`、三張 `d-05-dress-*`、`d-06-gearcheck.png`。
++
++   六張山卡各自塞入步道、氣候與許可長文；換裝說明約 12.5px，換行後成為細碎文字塊。白卡之間的邊框很清楚，文字層次卻不足，閱讀感偏表單。
++
++   修改：桌機山卡只先露出海拔、天數、難度與兩個特徵，選中後用共用詳情區完整列出許可、住宿要求，再勾確認。`.gear-opt-teach`、`.check-text` 等主要說明調至 14–16px，行高約 1.5；選項名稱 16px，分類 17–18px。`.gear-opts` 可減成兩欄，優先保留可讀性。次要來源才使用 12–13px。
++
++7. **可捲動清單被切到半張卡，卻沒有明確的捲動提示。**
++
++   圖片：`d-04-forecast-dress-default.png`、三張 `d-05-dress-*`、`d-06-gearcheck.png`、`m-06-gearcheck.png`、`d-09-ending.png`、`m-09-ending.png`。
++
++   換裝底部露出半個「鞋子」標題；檢查清單在固定操作列上方被截斷；結局回顧底部也有未讀完文字。這不等於內容無法到達，但目前像被裁掉，玩家缺乏「下方還有內容」的提示。手機結局這張已在回顧段，無法據此認定結局標題真的缺失。
++
++   修改：各捲動容器增加底部 padding 與 `scroll-padding-bottom`，保留可見捲軸或局部淡出提示。固定操作列若與內容重疊，padding 必須包含其實際高度與 `env(safe-area-inset-bottom)`；若已在 flex flow 內，不要再重複補一整列。檢查頁增加「尚有 N 項」或分類導覽；結局以清楚的「結局／學習回顧」頁籤提供定位。
++
++8. **手機選山的「瀏覽」與「已選」視覺容易混淆。**
++
++   圖片：`m-02-mountain.png`、`m-02b-mountain-picked.png`、`m-02c-ack.png`。
++
++   前兩張上方山名已用橘框，但下方仍要按「選這座山」；直到 02c 才多出大卡橘框與已選文字。玩家可能以為切換上方山名就已完成選山。底部停用的「下一步」仍有深色實心與厚陰影，很像可按。
++
++   修改：`.mtn-chip.on` 使用較淡背景與底線表示目前瀏覽；只有真正選中者加勾與「已選」。或將切換山名直接定義為選擇，保留單一「閱讀要求並確認」步驟。停用 CTA 降低底色與陰影，旁邊明寫欠缺條件；勾選區讓整行 label 可點，維持至少 44px 高。
++
++9. **保命徽章夠醒目且沒有螢光感，但紅色層級過多。**
++
++   圖片：`d-07-key-scenario.png`、`m-07-key-scenario.png`、`d-09-ending.png`、`m-09-ending.png`，另見兩張 08 的路標。
++
++   救生圈、深紅字、淺杏底的組合很好，能立即辨識保命題。手機則同時有徽章外框、整條底色、重點框、紅底小標與多行深紅粗字；結局連續紅色「需複習」又形成另一排焦點。視覺負擔主要來自重複強調，無須再加大徽章或加入閃爍。
++
++   修改：保留 `.key-ring` 約 22–26px、徽章深紅字與奶油底。`.key-strip` 移除一層巢狀邊框，`.fb-key` 用單側珊瑚色線；粗體只標必做行動。結局 `.ending-key-status` 的「需複習」可用淺紅底深紅字，強烈紅色留給本題錯誤回饋。繼續保留文字與圖示，不只靠紅綠區分。
++
++10. **準備分數與遊戲風險的表示方式不一致。**
++
++    圖片：三組 05、`d-06-gearcheck.png`、`m-06-gearcheck.png`、兩張 07、兩張 08、`d-09-ending.png`。
++
++    準備頁的「0／45」搭配空條，直覺容易被讀成尚未準備；遊戲卻改用「出事風險 30%」，看起來像事故機率。結局又並列行前風險、累積風險與百分比，需要玩家自行猜測關係。
++
++    修改：統一名稱與單位，例如準備頁寫「待改善 0 項」並保留風險教學分數，遊戲 HUD 標「風險指標」，以量尺數值呈現。若沒有可解釋的機率模型，UI 不使用 `%`。`.check-total` 附上「本次評分項目已備齊，仍需依路況判斷」；五個分類可用「已備齊」文字與勾，避免全部顯示空條。
++
++11. **手機走路畫面的互動入口重複，操作層級不夠明確。**
++
++    圖片：`m-08-walking-forest.png`，對照 `d-08-walking-ridge.png`。
++
++    同時出現路標上的「查看」、中央「前方有狀況，點這裡查看」與右下「互動」。三者都像同一件事，中央提示與揮手／喝水／拍照又占住角色前下方。搖桿明顯、按鈕也夠大，問題在入口競爭。
++
++    修改：保留路標救生圈作為世界內提示，靠近時將右下主鈕改為「查看狀況」。中央提示改成短暫教學，完成第一次互動後收起。揮手／喝水／拍照移到可展開的次要列，讓搖桿與主鈕之間保留視野；右下按鈕連同安全區保持至少 16px 邊距。
++
++12. **小字與背景文字對比需要加強。**
++
++    圖片：`d-01-start.png`、`d-03-season.png`、兩張 08，以及所有畫面底部安全說明。
++
++    桌機底部安全說明約 10–11px，灰褐字放在淡色半透明條上，很難長讀；桌機走路指引是小白字疊綠草，沒有穩定的閱讀底。季節頁的補充資訊也偏小、偏淡。手機底部已較可讀，無須一律放大成大型警告。
++
++    修改：次要文字用穩定的深褐色，例如 `#6b5c50`，避免對整段文字降 opacity；實際對比需以最後背景色量測。走路指引增加奶油色實底短條與深色字。底部簡短常駐「安全教育模擬」，完整說明另設可開啟入口；求救資訊要有可找到的完整版本。主要警語目標 14px，非關鍵輔助文字至少 12px。
++
++## P2：讓畫面更像完成的溫暖 Q 版遊戲
++
++13. **選山插圖過度重複，辨識全靠山名。**
++
++    圖片：`d-02-mountain.png`、`d-02c-ack.png`、三張手機 02，以及兩張 03。
++
++    多座高山使用近似三角雪峰，草坡山也高度相似。大面積卡片因此仍像資料目錄。
++
++    修改：延用現有 canvas 扁平畫風，為山岳 banner 增加各自輪廓與環境特徵，例如草坡、森林、裸岩與稜線。季節用少量雲、雨與植被色提示，不增加寫實照片。高山不要全年一律用雪帽代表。
++
++14. **預覽角色可愛，但裝備遮住表情，且與場景角色的視覺份量不同。**
++
++    圖片：`d-01-start.png`、`m-01-start.png`、三組 05、兩張 08。
++
++    預設角色的大眼與腮紅很清楚；配齊後大墨鏡遮住眼睛，胸前手機、背帶、頭燈集中成一團。預覽的大頭感也比走路角色更強，連續體驗的比例稍有落差。
++
++    修改：共用頭身比例、手腳寬度與臉部位置參數。讓墨鏡保留眼睛亮點或少量透光，維持裝備可信的形狀。胸前裝置略側移、縮小背帶對比，帽徽與腮紅沿用同一套尺寸。可增加眨眼或輕微站姿呼吸，但不靠動畫掩蓋靜態辨識問題。
++
++15. **背包物品盤像圖示集合，欠缺名稱與分組。**
++
++    圖片：A／C 的桌機與手機 05、`d-06-gearcheck.png`。
++
++    急救包與頭燈可認，部分圓環、色塊、信封狀圖示則難知道實物。桌機檢查頁的圖示更小，難以核對帶了什麼。
++
++    修改：`drawTray()` 依導航照明、補給、緊急備援分組，固定同一順序與格距。canvas 旁加 DOM 文字清單或點擊詳情，手機不能只依賴 hover。空背包狀態縮小留白，增加「前往背包挑裝備」按鈕；不要讓半個預覽區只留一句空狀態。
++
++16. **手機季節頁下半留白過多，換裝頁卻擁擠。**
++
++    圖片：`m-03-season.png`、`m-04-forecast-dress-default.png`，對照 `d-03-season.png`。
++
++    手機季節資訊卡結束後到下一步之間有大段空白；換裝則把摘要、分頁與選項緊密堆在一起。桌機季節頁的左右分欄與空間較平衡，可保留。
++
++    修改：手機季節頁讓 CTA 接在內容後，底部只保留必要安全區；短頁可以自然留白，但不以固定高度把按鈕推到底。預報卡突出山頂溫度、降雨與風速三個主要數值，說明降一級。全流程統一 8／12／16／24px 間距節奏。
++
++17. **開始與結局可以更有角色焦點。**
++
++    圖片：`d-01-start.png`、`m-01-start.png`、`d-09-ending.png`、`m-09-ending.png`。
++
++    開始頁場景溫暖、手機標題也清楚；桌機右邊 NPC 被畫面邊界切到，主角相對小。結局桌機的休息插圖舒服，但右側清單密度高；手機這張只看到複習區，缺少快速回到成果的定位。
++
++    修改：桌機起始場景為右側 NPC 保留安全邊距，或整體移出鏡頭，避免人物只剩一部分；把主角放大約一成，保留登山口的主視覺。結局頂端以結局名稱、角色插圖與最重要成果建立單一焦點，回顧區加「回到成果」入口。主要 CTA 保持「帶著本趟清單再練習」這類有下一步目的的文字。
++
++## 修完後的驗收順序
++
++1. 在 390×844 驗收完整安全文字與保命題卡的三種作答狀態，確認最後一行可讀、所有選項可回看。
++2. 並排比較 A／B／C，不依賴選單文字也能分辨外觀；再確認長褲、鞋型與名稱一致。
++3. 以手機滑到鞋子、最後一項裝備檢查與最後一題結局回顧，確認固定列不壓住內容，角色預覽仍有合理入口。
++4. 在 1440×900 檢查主說明字級與捲動提示；另補同尺寸的走路截圖，避免目前 1280×720 的樣本造成誤判。
++
++整體評分：**7／10**。角色與山景已有可愛、溫暖且一致的基礎，選中與答題狀態大多清楚。扣分主要來自手機關鍵訊息截斷、A／C 換裝回饋不足，以及清單式介面佔去過多遊戲感；先完成 P0 與前五項 P1，最能提升完成度。
+
+exec
+/bin/bash -lc 'wc -l research/codex_final_review.md; tail -3 research/codex_final_review.md' in /workspace/digital-hiking
+ succeeded in 0ms:
+168 research/codex_final_review.md
+4. 在 1440×900 檢查主說明字級與捲動提示；另補同尺寸的走路截圖，避免目前 1280×720 的樣本造成誤判。
+
+整體評分：**7／10**。角色與山景已有可愛、溫暖且一致的基礎，選中與答題狀態大多清楚。扣分主要來自手機關鍵訊息截斷、A／C 換裝回饋不足，以及清單式介面佔去過多遊戲感；先完成 P0 與前五項 P1，最能提升完成度。
+
+codex
+已看完 26 張截圖，審核寫入 [codex_final_review.md](/workspace/digital-hiking/research/codex_final_review.md)，只新增此檔。
+
+包含 17 項 P0／P1／P2 修正建議，逐項標明圖片、問題與 CSS／元素調整方式。
+
+整體 **7／10**。優先修正手機安全文字截斷、保命題卡脈絡不完整，以及 A／C 穿搭外觀難以區分。
+tokens used
+68,777
+已看完 26 張截圖，審核寫入 [codex_final_review.md](/workspace/digital-hiking/research/codex_final_review.md)，只新增此檔。
+
+包含 17 項 P0／P1／P2 修正建議，逐項標明圖片、問題與 CSS／元素調整方式。
+
+整體 **7／10**。優先修正手機安全文字截斷、保命題卡脈絡不完整，以及 A／C 穿搭外觀難以區分。

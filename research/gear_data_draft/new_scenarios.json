@@ -1,0 +1,178 @@
+[
+  {
+    "id": "prep-postpone",
+    "category": "行前規劃",
+    "stage": "trailhead",
+    "title": "今天改期",
+    "situation": "官方公告本路線封閉，背包已打包完成。",
+    "options": [
+      "改期並通知隊友與留守人",
+      "帶齊裝備就能通過",
+      "走旁邊小路避開封鎖"
+    ],
+    "answer": 0,
+    "risk": [
+      0,
+      30,
+      30
+    ],
+    "why": "封閉時不進入，裝備不能替代開放與許可。",
+    "sources": [
+      "https://hike.taiwan.gov.tw/"
+    ]
+  },
+  {
+    "id": "prep-rainpants",
+    "category": "裝備穿搭",
+    "stage": "forest",
+    "title": "褲管也要防雨",
+    "situation": "雨持續下，外套擋住上身，但褲管開始濕冷。",
+    "options": [
+      "加快走路烘乾褲管",
+      "在安全處穿雨褲，評估撤退",
+      "只套背包套即可"
+    ],
+    "answer": 1,
+    "risk": [
+      20,
+      0,
+      18
+    ],
+    "why": "上身外套不等於全身防雨，持續濕冷應調整行程。",
+    "sources": [
+      "https://www.ysnp.gov.tw/StaticPage/Equipment"
+    ]
+  },
+  {
+    "id": "prep-down-dry",
+    "category": "裝備穿搭",
+    "stage": "ridge",
+    "title": "保住乾燥保暖層",
+    "situation": "休息前發現雨水快進入背包，裡面放著羽絨衣。",
+    "options": [
+      "把羽絨衣拿出來接雨",
+      "不用處理，羽絨永遠保暖",
+      "先在安全遮蔽處防水收納，檢查乾衣並評估撤退"
+    ],
+    "answer": 2,
+    "risk": [
+      25,
+      20,
+      0
+    ],
+    "why": "羽絨受潮保暖表現下降，乾燥收納與遮蔽很重要。",
+    "sources": [
+      "https://www.ysnp.gov.tw/StaticPage/Equipment"
+    ]
+  },
+  {
+    "id": "prep-ice-turn",
+    "category": "天氣與地形",
+    "stage": "ridge",
+    "title": "前方是冰面",
+    "situation": "原本沒有雪的步道出現大片結冰，你沒有雪地訓練。",
+    "options": [
+      "停止前進，沿可安全撤回的路退回，受困則求援",
+      "登山鞋踩重一點就不滑",
+      "靠登山杖快速衝過"
+    ],
+    "answer": 0,
+    "risk": [
+      0,
+      28,
+      30
+    ],
+    "why": "一般登山鞋與登山杖不能保證冰面安全；雪地裝備仍需訓練。",
+    "sources": [
+      "https://www.ysnp.gov.tw/Trail/7fa5c242-df1a-4a8e-bcab-32dc55b1f7b6?Tab=5"
+    ]
+  },
+  {
+    "id": "prep-water-plan",
+    "category": "體能補給",
+    "stage": "trailhead",
+    "title": "山屋沒有保證供水",
+    "situation": "你查到山屋近期缺水，原本只打算背一點水。",
+    "options": [
+      "照走再跟別人借",
+      "重算各段用水，增加攜水或改行程",
+      "到湖邊直接喝"
+    ],
+    "answer": 1,
+    "risk": [
+      22,
+      0,
+      25
+    ],
+    "why": "山屋與溪流不是保證水站，先確認水況與處理方式。",
+    "sources": [
+      "https://www.ysnp.gov.tw/StaticPage/Equipment"
+    ]
+  },
+  {
+    "id": "prep-thunder-stop",
+    "category": "天氣與地形",
+    "stage": "summit",
+    "title": "有雨衣也要撤",
+    "situation": "穿好雨衣後，你在開闊山頂聽見雷聲。",
+    "options": [
+      "有雨衣可以多待一下",
+      "躲到最高的孤立樹下",
+      "立刻放棄拍照，沿安全路線離開山頂與裸稜"
+    ],
+    "answer": 2,
+    "risk": [
+      28,
+      30,
+      0
+    ],
+    "why": "防水衣物不防雷，聽到雷聲就採取避雷行動。",
+    "sources": [
+      "https://www.cwa.gov.tw/V8/C/L/Mountain/Mountain.html"
+    ]
+  },
+  {
+    "id": "prep-sat-sky",
+    "category": "迷路與求救",
+    "stage": "forest",
+    "title": "衛星訊息還沒送出",
+    "situation": "在安全待援點，衛星設備顯示訊息尚未送達。",
+    "options": [
+      "確認操作與天空遮蔽，在安全範圍嘗試並保留電力",
+      "沒送出也當作救援已收到",
+      "離開步道爬崖追訊號"
+    ],
+    "answer": 0,
+    "risk": [
+      0,
+      20,
+      30
+    ],
+    "why": "備用通訊仍有使用限制，需確認送達與保持自身安全。",
+    "sources": [
+      "https://www.ysnp.gov.tw/StaticPage/Equipment"
+    ]
+  },
+  {
+    "id": "prep-overpack",
+    "category": "裝備穿搭",
+    "stage": "trailhead",
+    "title": "背得動才帶得走",
+    "situation": "背包整理好卻重到無法穩定行走。",
+    "options": [
+      "先把頭燈、雨衣與水丟掉",
+      "保留安全功能，協調分工、減少非必要物或縮短路線",
+      "勉強背著衝上山"
+    ],
+    "answer": 1,
+    "risk": [
+      24,
+      0,
+      20
+    ],
+    "why": "負重需實際試背，不要以刪除安全備援解決。",
+    "sources": [
+      "https://www.ysnp.gov.tw/StaticPage/Equipment"
+    ]
+  }
+]

@@ -1,0 +1,934 @@
+{
+  "version": 1,
+  "simulation_notice": "天氣範圍、事件機率、星等與點數皆為教育遊戲設計，非官方預報或事故率。",
+  "forecast_algorithm": {
+    "lapse_c_per_m": 0.006,
+    "summit_jitter_c": [
+      -2,
+      2
+    ],
+    "observation_error_c": [
+      -3,
+      3
+    ],
+    "min_temp_c": -25,
+    "max_temp_c": 38,
+    "gust_increment_ms": [
+      4,
+      8
+    ],
+    "max_wind_ms": 30,
+    "warning_cancel_flags": [
+      "typhoon",
+      "official_closed"
+    ],
+    "winter_ice_action": "postpone_or_change_route"
+  },
+  "mountains": [
+    {
+      "id": "qixing",
+      "name": "七星山主峰",
+      "summit_m": 1120,
+      "trailhead_m": 805,
+      "days": [
+        0.5,
+        1
+      ],
+      "difficulty_stars": 1,
+      "terrain": "小油坑至主峰原路往返；石階、草原裸稜",
+      "intro": "郊山入門，也要準備風雨備援。",
+      "permits_note": "一般開放步道通常免入園、入山申請；不含另有管制的保護區。無住宿安排。",
+      "primary_risks": [
+        "濃霧",
+        "濕滑石階",
+        "強風",
+        "雷擊"
+      ],
+      "water_carry_l": [
+        1,
+        2
+      ],
+      "overnight": false,
+      "stage_counts": {
+        "trailhead": 1,
+        "forest": 2,
+        "ridge": 1,
+        "summit": 1,
+        "descent": 2
+      },
+      "priority_ids": [
+        "check-hiking-boots",
+        "fog-junction",
+        "ridge-gust",
+        "headlamp-before-dark"
+      ],
+      "forecast": {
+        "spring": {
+          "trailhead_temp_c": [
+            10,
+            22
+          ],
+          "summit_temp_envelope_c": [
+            6.1,
+            22.1
+          ],
+          "rain_probability_pct": [
+            40,
+            80
+          ],
+          "wind_ms": [
+            2,
+            9
+          ],
+          "hazard_probability": {
+            "thunder": 0.1,
+            "front": 0.3,
+            "typhoon": 0.0,
+            "fog": 0.455,
+            "ice": 0.004,
+            "gust": 0.18
+          }
+        },
+        "summer": {
+          "trailhead_temp_c": [
+            19,
+            30
+          ],
+          "summit_temp_envelope_c": [
+            15.1,
+            30.1
+          ],
+          "rain_probability_pct": [
+            30,
+            70
+          ],
+          "wind_ms": [
+            1,
+            7
+          ],
+          "hazard_probability": {
+            "thunder": 0.4,
+            "front": 0.1,
+            "typhoon": 0.1,
+            "fog": 0.325,
+            "ice": 0.0,
+            "gust": 0.12
+          }
+        },
+        "autumn": {
+          "trailhead_temp_c": [
+            12,
+            25
+          ],
+          "summit_temp_envelope_c": [
+            8.1,
+            25.1
+          ],
+          "rain_probability_pct": [
+            30,
+            75
+          ],
+          "wind_ms": [
+            3,
+            11
+          ],
+          "hazard_probability": {
+            "thunder": 0.1,
+            "front": 0.15,
+            "typhoon": 0.08,
+            "fog": 0.39,
+            "ice": 0.002,
+            "gust": 0.3
+          }
+        },
+        "winter": {
+          "trailhead_temp_c": [
+            2,
+            16
+          ],
+          "summit_temp_envelope_c": [
+            -1.9,
+            16.1
+          ],
+          "rain_probability_pct": [
+            40,
+            85
+          ],
+          "wind_ms": [
+            4,
+            13
+          ],
+          "hazard_probability": {
+            "thunder": 0.01,
+            "front": 0.35,
+            "typhoon": 0.0,
+            "fog": 0.455,
+            "ice": 0.015,
+            "gust": 0.42
+          }
+        }
+      },
+      "source_urls": [
+        "https://www.ymsnp.gov.tw/ch/sglarticle/trail-classification"
+      ],
+      "checked_on": "2026-11-01",
+      "status": "recheck_before_trip"
+    },
+    {
+      "id": "hehuan",
+      "name": "合歡山主峰",
+      "summit_m": 3417,
+      "trailhead_m": 3200,
+      "days": [
+        0.5,
+        1
+      ],
+      "difficulty_stars": 2,
+      "terrain": "台14甲線主峰登山口原路往返；舊道路、開闊坡面",
+      "intro": "步程短，高海拔與低溫仍須認真準備。",
+      "permits_note": "一般合歡主峰步道通常免入園及入山申請；仍須查道路、雪季及步道管制。住宿若有需另訂。",
+      "primary_risks": [
+        "高山症",
+        "失溫",
+        "強風",
+        "雷擊",
+        "結冰"
+      ],
+      "water_carry_l": [
+        1,
+        2
+      ],
+      "overnight": false,
+      "stage_counts": {
+        "trailhead": 1,
+        "forest": 1,
+        "ridge": 2,
+        "summit": 1,
+        "descent": 2
+      },
+      "priority_ids": [
+        "altitude-symptoms",
+        "ridge-gust",
+        "afternoon-thunder",
+        "ams-turnaround"
+      ],
+      "forecast": {
+        "spring": {
+          "trailhead_temp_c": [
+            -2,
+            12
+          ],
+          "summit_temp_envelope_c": [
+            -5.3,
+            12.7
+          ],
+          "rain_probability_pct": [
+            25,
+            65
+          ],
+          "wind_ms": [
+            3,
+            12
+          ],
+          "hazard_probability": {
+            "thunder": 0.1,
+            "front": 0.3,
+            "typhoon": 0.0,
+            "fog": 0.35,
+            "ice": 0.12,
+            "gust": 0.18
+          }
+        },
+        "summer": {
+          "trailhead_temp_c": [
+            6,
+            18
+          ],
+          "summit_temp_envelope_c": [
+            2.7,
+            18.7
+          ],
+          "rain_probability_pct": [
+            35,
+            75
+          ],
+          "wind_ms": [
+            2,
+            10
+          ],
+          "hazard_probability": {
+            "thunder": 0.4,
+            "front": 0.1,
+            "typhoon": 0.1,
+            "fog": 0.25,
+            "ice": 0.0,
+            "gust": 0.12
+          }
+        },
+        "autumn": {
+          "trailhead_temp_c": [
+            0,
+            14
+          ],
+          "summit_temp_envelope_c": [
+            -3.3,
+            14.7
+          ],
+          "rain_probability_pct": [
+            15,
+            55
+          ],
+          "wind_ms": [
+            3,
+            13
+          ],
+          "hazard_probability": {
+            "thunder": 0.1,
+            "front": 0.15,
+            "typhoon": 0.08,
+            "fog": 0.3,
+            "ice": 0.08,
+            "gust": 0.3
+          }
+        },
+        "winter": {
+          "trailhead_temp_c": [
+            -8,
+            7
+          ],
+          "summit_temp_envelope_c": [
+            -11.3,
+            7.7
+          ],
+          "rain_probability_pct": [
+            15,
+            55
+          ],
+          "wind_ms": [
+            4,
+            16
+          ],
+          "hazard_probability": {
+            "thunder": 0.01,
+            "front": 0.35,
+            "typhoon": 0.0,
+            "fog": 0.35,
+            "ice": 0.5,
+            "gust": 0.42
+          }
+        }
+      },
+      "source_urls": [
+        "https://www.taroko.gov.tw/ch/listicle/faq/350"
+      ],
+      "checked_on": "2026-11-01",
+      "status": "recheck_before_trip"
+    },
+    {
+      "id": "jiali",
+      "name": "加里山",
+      "summit_m": 2220,
+      "trailhead_m": 1350,
+      "days": [
+        1,
+        1
+      ],
+      "difficulty_stars": 3,
+      "terrain": "鹿場主線原路往返；森林、樹根、溪流及近頂陡坡",
+      "intro": "長日中級山，留足折返與照明餘裕。",
+      "permits_note": "山林悠遊網列入山申請「否」，一般主線通常免入園；沿線避難設施不可當作已預約住宿。查新竹分署最新公告。",
+      "primary_risks": [
+        "迷途",
+        "濕滑樹根",
+        "扭傷",
+        "溪水暴漲",
+        "摸黑"
+      ],
+      "water_carry_l": [
+        2,
+        3
+      ],
+      "overnight": false,
+      "stage_counts": {
+        "trailhead": 2,
+        "forest": 3,
+        "ridge": 2,
+        "summit": 1,
+        "descent": 2
+      },
+      "priority_ids": [
+        "download-offline-map",
+        "lost-stop",
+        "ankle-sprain",
+        "unsafe-crossing",
+        "headlamp-before-dark"
+      ],
+      "forecast": {
+        "spring": {
+          "trailhead_temp_c": [
+            7,
+            21
+          ],
+          "summit_temp_envelope_c": [
+            -0.2,
+            17.8
+          ],
+          "rain_probability_pct": [
+            35,
+            75
+          ],
+          "wind_ms": [
+            1,
+            7
+          ],
+          "hazard_probability": {
+            "thunder": 0.1,
+            "front": 0.3,
+            "typhoon": 0.0,
+            "fog": 0.42,
+            "ice": 0.012,
+            "gust": 0.105
+          }
+        },
+        "summer": {
+          "trailhead_temp_c": [
+            15,
+            27
+          ],
+          "summit_temp_envelope_c": [
+            7.8,
+            23.8
+          ],
+          "rain_probability_pct": [
+            40,
+            80
+          ],
+          "wind_ms": [
+            1,
+            6
+          ],
+          "hazard_probability": {
+            "thunder": 0.4,
+            "front": 0.1,
+            "typhoon": 0.1,
+            "fog": 0.3,
+            "ice": 0.0,
+            "gust": 0.07
+          }
+        },
+        "autumn": {
+          "trailhead_temp_c": [
+            8,
+            23
+          ],
+          "summit_temp_envelope_c": [
+            0.8,
+            19.8
+          ],
+          "rain_probability_pct": [
+            20,
+            60
+          ],
+          "wind_ms": [
+            2,
+            8
+          ],
+          "hazard_probability": {
+            "thunder": 0.1,
+            "front": 0.15,
+            "typhoon": 0.08,
+            "fog": 0.36,
+            "ice": 0.008,
+            "gust": 0.175
+          }
+        },
+        "winter": {
+          "trailhead_temp_c": [
+            -1,
+            15
+          ],
+          "summit_temp_envelope_c": [
+            -8.2,
+            11.8
+          ],
+          "rain_probability_pct": [
+            20,
+            60
+          ],
+          "wind_ms": [
+            2,
+            10
+          ],
+          "hazard_probability": {
+            "thunder": 0.01,
+            "front": 0.35,
+            "typhoon": 0.0,
+            "fog": 0.42,
+            "ice": 0.05,
+            "gust": 0.245
+          }
+        }
+      },
+      "source_urls": [
+        "https://recreation.forest.gov.tw/Trail/RT?tr_id=043"
+      ],
+      "checked_on": "2026-11-01",
+      "status": "recheck_before_trip"
+    },
+    {
+      "id": "yushan",
+      "name": "玉山主峰",
+      "summit_m": 3952,
+      "trailhead_m": 2600,
+      "days": [
+        2,
+        2
+      ],
+      "difficulty_stars": 4,
+      "terrain": "塔塔加經排雲山莊原路往返；山腰步道、碎石風口",
+      "intro": "兩天行程也要有高度適應與撤退計畫。",
+      "permits_note": "主峰線需入園，並確認入山核准；排雲住宿名額須依公告申請及抽籤，床位、餐食與租借分別確認。",
+      "primary_risks": [
+        "高山症",
+        "失溫",
+        "碎石落石",
+        "雷擊",
+        "冰雪"
+      ],
+      "water_carry_l": [
+        2,
+        3
+      ],
+      "overnight": true,
+      "stage_counts": {
+        "trailhead": 2,
+        "forest": 2,
+        "ridge": 3,
+        "summit": 2,
+        "descent": 2
+      },
+      "priority_ids": [
+        "check-permits",
+        "hut-camp-planning",
+        "falling-rock",
+        "ams-turnaround",
+        "headlamp-before-dark"
+      ],
+      "forecast": {
+        "spring": {
+          "trailhead_temp_c": [
+            0,
+            14
+          ],
+          "summit_temp_envelope_c": [
+            -10.1,
+            7.9
+          ],
+          "rain_probability_pct": [
+            25,
+            65
+          ],
+          "wind_ms": [
+            3,
+            12
+          ],
+          "hazard_probability": {
+            "thunder": 0.1,
+            "front": 0.3,
+            "typhoon": 0.0,
+            "fog": 0.35,
+            "ice": 0.132,
+            "gust": 0.165
+          }
+        },
+        "summer": {
+          "trailhead_temp_c": [
+            7,
+            20
+          ],
+          "summit_temp_envelope_c": [
+            -3.1,
+            13.9
+          ],
+          "rain_probability_pct": [
+            35,
+            75
+          ],
+          "wind_ms": [
+            2,
+            10
+          ],
+          "hazard_probability": {
+            "thunder": 0.4,
+            "front": 0.1,
+            "typhoon": 0.1,
+            "fog": 0.25,
+            "ice": 0.0,
+            "gust": 0.11
+          }
+        },
+        "autumn": {
+          "trailhead_temp_c": [
+            1,
+            16
+          ],
+          "summit_temp_envelope_c": [
+            -9.1,
+            9.9
+          ],
+          "rain_probability_pct": [
+            15,
+            55
+          ],
+          "wind_ms": [
+            3,
+            13
+          ],
+          "hazard_probability": {
+            "thunder": 0.1,
+            "front": 0.15,
+            "typhoon": 0.08,
+            "fog": 0.3,
+            "ice": 0.088,
+            "gust": 0.275
+          }
+        },
+        "winter": {
+          "trailhead_temp_c": [
+            -6,
+            10
+          ],
+          "summit_temp_envelope_c": [
+            -16.1,
+            3.9
+          ],
+          "rain_probability_pct": [
+            15,
+            55
+          ],
+          "wind_ms": [
+            4,
+            16
+          ],
+          "hazard_probability": {
+            "thunder": 0.01,
+            "front": 0.35,
+            "typhoon": 0.0,
+            "fog": 0.35,
+            "ice": 0.55,
+            "gust": 0.385
+          }
+        }
+      },
+      "source_urls": [
+        "https://www.ysnp.gov.tw/Trail/7fa5c242-df1a-4a8e-bcab-32dc55b1f7b6?Tab=5"
+      ],
+      "checked_on": "2026-11-01",
+      "status": "recheck_before_trip"
+    },
+    {
+      "id": "xueshan",
+      "name": "雪山主峰",
+      "summit_m": 3886,
+      "trailhead_m": 2140,
+      "days": [
+        2,
+        3
+      ],
+      "difficulty_stars": 4,
+      "terrain": "武陵雪山登山口經東峰、黑森林及圈谷原路往返",
+      "intro": "穿越森林到圈谷，天候與過夜準備都重要。",
+      "permits_note": "需入園；入山需求依當期警政管制範圍核對。七卡山莊、三六九山莊相關營地或替代住宿須依核准安排；三六九重建期間不可預設有床。",
+      "primary_risks": [
+        "高山症",
+        "黑森林迷途",
+        "失溫",
+        "冰雪",
+        "長程疲勞"
+      ],
+      "water_carry_l": [
+        2,
+        3
+      ],
+      "overnight": true,
+      "stage_counts": {
+        "trailhead": 2,
+        "forest": 3,
+        "ridge": 3,
+        "summit": 2,
+        "descent": 2
+      },
+      "priority_ids": [
+        "hut-camp-planning",
+        "fog-junction",
+        "severe-altitude",
+        "wet-hypothermia",
+        "night-bivouac"
+      ],
+      "forecast": {
+        "spring": {
+          "trailhead_temp_c": [
+            3,
+            17
+          ],
+          "summit_temp_envelope_c": [
+            -9.5,
+            8.5
+          ],
+          "rain_probability_pct": [
+            25,
+            65
+          ],
+          "wind_ms": [
+            3,
+            12
+          ],
+          "hazard_probability": {
+            "thunder": 0.1,
+            "front": 0.3,
+            "typhoon": 0.0,
+            "fog": 0.35,
+            "ice": 0.132,
+            "gust": 0.165
+          }
+        },
+        "summer": {
+          "trailhead_temp_c": [
+            10,
+            23
+          ],
+          "summit_temp_envelope_c": [
+            -2.5,
+            14.5
+          ],
+          "rain_probability_pct": [
+            35,
+            75
+          ],
+          "wind_ms": [
+            2,
+            10
+          ],
+          "hazard_probability": {
+            "thunder": 0.4,
+            "front": 0.1,
+            "typhoon": 0.1,
+            "fog": 0.25,
+            "ice": 0.0,
+            "gust": 0.11
+          }
+        },
+        "autumn": {
+          "trailhead_temp_c": [
+            4,
+            19
+          ],
+          "summit_temp_envelope_c": [
+            -8.5,
+            10.5
+          ],
+          "rain_probability_pct": [
+            15,
+            55
+          ],
+          "wind_ms": [
+            3,
+            13
+          ],
+          "hazard_probability": {
+            "thunder": 0.1,
+            "front": 0.15,
+            "typhoon": 0.08,
+            "fog": 0.3,
+            "ice": 0.088,
+            "gust": 0.275
+          }
+        },
+        "winter": {
+          "trailhead_temp_c": [
+            -4,
+            12
+          ],
+          "summit_temp_envelope_c": [
+            -16.5,
+            3.5
+          ],
+          "rain_probability_pct": [
+            15,
+            55
+          ],
+          "wind_ms": [
+            4,
+            16
+          ],
+          "hazard_probability": {
+            "thunder": 0.01,
+            "front": 0.35,
+            "typhoon": 0.0,
+            "fog": 0.35,
+            "ice": 0.55,
+            "gust": 0.385
+          }
+        }
+      },
+      "source_urls": [
+        "https://www.taiwan.nps.gov.tw/home/zh-tw/trails/21209.html"
+      ],
+      "checked_on": "2026-11-01",
+      "status": "recheck_before_trip"
+    },
+    {
+      "id": "nanhu",
+      "name": "南湖大山",
+      "summit_m": 3742,
+      "trailhead_m": 1950,
+      "days": [
+        4,
+        5
+      ],
+      "difficulty_stars": 5,
+      "terrain": "勝光或思源一帶核准起點，經雲稜、五岩峰、圈谷往返；長程負重、岩稜",
+      "intro": "多天遠程考驗，撤退餘裕比登頂更重要。",
+      "permits_note": "進入生態保護區須入園；入山另依警政公告核對。雲稜、圈谷山屋或營地須核准，不保證現場有位。",
+      "primary_risks": [
+        "五岩峰暴露地形",
+        "強風",
+        "碎石坡",
+        "高山症",
+        "失溫",
+        "救援距離"
+      ],
+      "water_carry_l": [
+        2,
+        3
+      ],
+      "overnight": true,
+      "stage_counts": {
+        "trailhead": 2,
+        "forest": 3,
+        "ridge": 3,
+        "summit": 2,
+        "descent": 3
+      },
+      "priority_ids": [
+        "check-permits",
+        "hut-camp-planning",
+        "ridge-gust",
+        "falling-rock",
+        "night-bivouac",
+        "severe-altitude"
+      ],
+      "forecast": {
+        "spring": {
+          "trailhead_temp_c": [
+            4,
+            18
+          ],
+          "summit_temp_envelope_c": [
+            -8.8,
+            9.2
+          ],
+          "rain_probability_pct": [
+            25,
+            65
+          ],
+          "wind_ms": [
+            3,
+            12
+          ],
+          "hazard_probability": {
+            "thunder": 0.1,
+            "front": 0.3,
+            "typhoon": 0.0,
+            "fog": 0.35,
+            "ice": 0.132,
+            "gust": 0.165
+          }
+        },
+        "summer": {
+          "trailhead_temp_c": [
+            11,
+            24
+          ],
+          "summit_temp_envelope_c": [
+            -1.8,
+            15.2
+          ],
+          "rain_probability_pct": [
+            35,
+            75
+          ],
+          "wind_ms": [
+            2,
+            10
+          ],
+          "hazard_probability": {
+            "thunder": 0.4,
+            "front": 0.1,
+            "typhoon": 0.1,
+            "fog": 0.25,
+            "ice": 0.0,
+            "gust": 0.11
+          }
+        },
+        "autumn": {
+          "trailhead_temp_c": [
+            5,
+            20
+          ],
+          "summit_temp_envelope_c": [
+            -7.8,
+            11.2
+          ],
+          "rain_probability_pct": [
+            15,
+            55
+          ],
+          "wind_ms": [
+            3,
+            13
+          ],
+          "hazard_probability": {
+            "thunder": 0.1,
+            "front": 0.15,
+            "typhoon": 0.08,
+            "fog": 0.3,
+            "ice": 0.088,
+            "gust": 0.275
+          }
+        },
+        "winter": {
+          "trailhead_temp_c": [
+            -3,
+            13
+          ],
+          "summit_temp_envelope_c": [
+            -15.8,
+            4.2
+          ],
+          "rain_probability_pct": [
+            15,
+            55
+          ],
+          "wind_ms": [
+            4,
+            16
+          ],
+          "hazard_probability": {
+            "thunder": 0.01,
+            "front": 0.35,
+            "typhoon": 0.0,
+            "fog": 0.35,
+            "ice": 0.55,
+            "gust": 0.385
+          }
+        }
+      },
+      "source_urls": [
+        "https://www.taroko.gov.tw/ch/trailsAttractions/trail-list/58"
+      ],
+      "checked_on": "2026-11-01",
+      "status": "recheck_before_trip"
+    }
+  ]
+}

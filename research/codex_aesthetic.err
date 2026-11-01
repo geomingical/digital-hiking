@@ -1,0 +1,1781 @@
+Reading additional input from stdin...
+OpenAI Codex v0.164.0
+--------
+workdir: /workspace/digital-hiking/research
+model: gpt-6.1-sol
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: none
+reasoning summaries: none
+session id: 01a1931d-1b27-7860-b822-694198946a04
+--------
+user
+你是資深遊戲 UI/美術指導。附圖是繁體中文 Q 版登山教育遊戲「數位登山」的截圖（桌機與手機），參考風格是 sansatemple.com（可愛、溫暖、可走動的小場景）。程式在 /workspace/digital-hiking（index.html, style.css, js/art.js 角色與場景繪製, js/world.js, js/ui.js, js/main.js）。請從視覺美感審查：Q版可愛度、風格一致性、可讀性（字體對比、字級）、手機版版面（HUD 重疊、卡片遮擋）、色彩、動畫與回饋、角色比例與細節、場景層次/視差。請閱讀必要的程式碼，然後輸出 10–14 條『具體、可執行』的修正清單，每條包含：問題、檔案/位置、建議作法（可含 CSS 數值或繪製調整）。依重要性排序，繁體中文，只輸出清單。
+codex
+我會先核對版面與繪圖程式，並查看參考網站，將建議對應到可修改的位置。
+exec
+/bin/bash -lc "pwd && rg --files -g 'AGENTS.md' -g 'style.css' -g 'index.html' -g '*.js' /workspace/digital-hiking" in /workspace/digital-hiking/research
+ succeeded in 0ms:
+/workspace/digital-hiking/research
+/workspace/digital-hiking/style.css
+/workspace/digital-hiking/index.html
+/workspace/digital-hiking/js/ui.js
+/workspace/digital-hiking/js/fallback-data.js
+/workspace/digital-hiking/js/world.js
+/workspace/digital-hiking/js/core.js
+/workspace/digital-hiking/js/art.js
+/workspace/digital-hiking/js/audio.js
+/workspace/digital-hiking/js/main.js
+
+web search: 
+web search: https://sansatemple.com
+exec
+/bin/bash -lc 'cat /workspace/digital-hiking/style.css' in /workspace/digital-hiking/research
+ succeeded in 0ms:
+:root {
+  --ink: #4d4037;
+  --ink-soft: #7c6c5f;
+  --paper: #fffdf6;
+  --cream: #fbf3e0;
+  --line: #eadfc8;
+  --orange: #f08a57;
+  --orange-deep: #d96f3e;
+  --green: #4fa871;
+  --green-soft: #e4f5e4;
+  --red: #d9483f;
+  --red-soft: #fde8e4;
+  --sky: #a9ddf5;
+  --shadow: 0 8px 26px rgba(90, 70, 50, .2);
+  --font: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans CJK TC', sans-serif;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--sky);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+#scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: pointer;
+}
+
+#stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  pointer-events: none;
+}
+#stage > * { pointer-events: auto; }
+#stage > #toasts, #stage > #controls { pointer-events: none; }
+#controls > * { pointer-events: auto; }
+
+#legal {
+  position: relative;
+  flex: none;
+  padding: 3px 12px calc(3px + env(safe-area-inset-bottom));
+  background: rgba(255, 253, 246, .84);
+  color: var(--ink-soft);
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: center;
+}
+
+button { font-family: inherit; color: inherit; }
+
+.btn {
+  min-height: 48px;
+  padding: 10px 22px;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .12s ease, background .15s ease;
+}
+.btn:hover:not(:disabled) { background: var(--cream); transform: translateY(-1px); }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: .62; cursor: default; }
+.btn-primary {
+  border-color: var(--orange-deep);
+  background: var(--orange);
+  color: #fff;
+  box-shadow: 0 4px 0 var(--orange-deep);
+}
+.btn-primary:hover:not(:disabled) { background: #f49866; }
+.btn-big { font-size: 19px; min-height: 56px; }
+.btn-small { min-height: 40px; padding: 6px 14px; font-size: 14px; }
+.btn-ghost { background: transparent; color: var(--ink-soft); }
+.btn-sos { background: var(--red); border-color: #b5362f; box-shadow: 0 4px 0 #b5362f; }
+.btn-sos:hover:not(:disabled) { background: #e2574e; }
+:focus-visible { outline: 3px solid #4f8fd1; outline-offset: 2px; }
+#card:focus { outline: none; }
+
+.icon-btn {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--paper);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.icon-btn.is-on { color: var(--orange-deep); border-color: var(--orange); }
+
+/* HUD ------------------------------------------------------------ */
+#hud {
+  position: absolute;
+  top: calc(10px + env(safe-area-inset-top));
+  left: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+#hud > * { pointer-events: auto; }
+
+.hud-route, .hud-risk {
+  background: rgba(255, 253, 246, .93);
+  border-radius: 16px;
+  box-shadow: 0 3px 12px rgba(90, 70, 50, .15);
+}
+.hud-route { flex: 1 1 56%; min-width: 0; padding: 7px 14px 11px; }
+.hud-route-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; white-space: nowrap; }
+.hud-route-top strong { font-size: 15px; }
+.hud-route-top span { font-size: 13px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+
+.route-bar { position: relative; height: 9px; margin-top: 4px; border-radius: 6px; background: #eadfc8; }
+.route-fill { height: 100%; width: 0; border-radius: 6px; background: linear-gradient(90deg, #8fd0a0, #5fa781); }
+.route-tick { position: absolute; top: -2px; width: 2px; height: 13px; background: rgba(120, 100, 80, .42); }
+.route-dot {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 15px;
+  height: 15px;
+  margin: -7.5px 0 0 -7.5px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--orange);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+}
+
+.hud-risk { flex: 1 1 34%; min-width: 150px; display: flex; align-items: center; gap: 8px; padding: 7px 12px; }
+.risk-body { flex: 1; min-width: 0; }
+.risk-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--ink-soft); white-space: nowrap; }
+.risk-top b { font-size: 17px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.risk-bar { height: 11px; border-radius: 6px; background: #eadfc8; overflow: hidden; }
+.risk-fill { height: 100%; width: 0; border-radius: 6px; }
+.hud-risk.bump { animation: bump .5s ease; }
+.hud-risk.is-danger #risk-face { animation: pulse .8s ease-in-out infinite; }
+.hud-btns { display: flex; gap: 8px; flex: none; }
+
+@keyframes bump {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.09); box-shadow: 0 0 0 4px rgba(217, 72, 63, .4); }
+  100% { transform: scale(1); }
+}
+@keyframes pulse { 50% { transform: scale(1.14); } }
+
+/* 提示與 toast ---------------------------------------------------- */
+#toasts {
+  position: absolute;
+  top: calc(84px + env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 4;
+}
+.toast {
+  padding: 7px 18px;
+  border-radius: 999px;
+  background: rgba(255, 253, 246, .96);
+  box-shadow: 0 3px 12px rgba(90, 70, 50, .2);
+  font-size: 15px;
+  font-weight: 700;
+  animation: toast-in .24s ease;
+  transition: opacity .35s ease;
+}
+.toast.out { opacity: 0; }
+.toast.good { color: #2f8a53; }
+.toast.warn { color: #c0532b; }
+.toast.stage { color: #5a7f6c; font-size: 17px; }
+@keyframes toast-in { from { transform: translateY(-10px); opacity: 0; } }
+
+#prompt {
+  position: absolute;
+  left: 50%;
+  bottom: 74px;
+  transform: translateX(-50%);
+  z-index: 4;
+  max-width: 90%;
+  min-height: 44px;
+  padding: 8px 20px;
+  border: 2px solid var(--orange);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--orange-deep);
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(90, 70, 50, .2);
+  animation: glow 1.2s ease-in-out infinite;
+}
+@keyframes glow { 50% { box-shadow: 0 0 0 6px rgba(240, 138, 87, .35); } }
+
+/* 操作區 --------------------------------------------------------- */
+#controls { position: absolute; inset: 0; }
+
+#joy {
+  position: absolute;
+  left: 18px;
+  bottom: 18px;
+  width: 124px;
+  height: 124px;
+  border: 3px solid rgba(255, 253, 246, .85);
+  border-radius: 50%;
+  background: rgba(255, 253, 246, .34);
+  touch-action: none;
+  display: none;
+  place-items: center;
+}
+#joy-knob {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: rgba(255, 253, 246, .96);
+  box-shadow: 0 3px 8px rgba(90, 70, 50, .3);
+}
+
+#btn-interact {
+  position: absolute;
+  right: 18px;
+  bottom: 24px;
+  width: 84px;
+  height: 84px;
+  border: 3px solid rgba(255, 253, 246, .9);
+  border-radius: 50%;
+  background: rgba(190, 180, 165, .78);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  display: none;
+  place-items: center;
+  padding: 0;
+  touch-action: manipulation;
+}
+#btn-interact.is-ready { background: var(--orange); animation: glow 1s ease-in-out infinite; }
+
+#actions {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+.act-btn {
+  min-height: 38px;
+  padding: 4px 12px 4px 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 253, 246, .88);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+.act-btn kbd {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--cream);
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+#hints {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4px;
+  margin: 0;
+  color: #fff;
+  font-size: 13px;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(40, 40, 30, .6);
+  pointer-events: none;
+}
+
+body.touch #joy, body.touch #btn-interact { display: grid; }
+body.touch #hints { display: none; }
+body.touch .act-btn { padding: 4px 14px; min-height: 40px; }
+body.touch .act-btn kbd { display: none; }
+
+@media (max-width: 760px) {
+  #joy, #btn-interact { display: grid; }
+  #hints { display: none; }
+  #actions { bottom: 148px; }
+  .act-btn { padding: 4px 14px; min-height: 40px; }
+  .act-btn kbd { display: none; }
+  #prompt { bottom: 196px; font-size: 14px; }
+  #hud { flex-wrap: wrap; gap: 6px 8px; left: 8px; right: 8px; }
+  .hud-route { flex: 1 1 100%; }
+  .hud-risk { flex: 1 1 0; }
+  #toasts { top: calc(124px + env(safe-area-inset-top)); }
+}
+/* 小手機的步道離操作區太近，把可有可無的小動作收起來 */
+@media (max-width: 760px) and (max-height: 640px) and (orientation: portrait) {
+  #actions { display: none; }
+}
+
+/* 事件卡片 ------------------------------------------------------- */
+.card {
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  width: min(640px, calc(100% - 20px));
+  max-height: calc(100% - 92px - env(safe-area-inset-top));
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-50%);
+  z-index: 5;
+  border: 3px solid #fff;
+  border-radius: 24px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  animation: card-in .28s cubic-bezier(.2, 1.3, .5, 1);
+}
+.card.is-right { border-color: #9fdcb0; }
+.card.is-wrong { border-color: #f4a79f; }
+.card.shake { animation: card-shake .46s ease; }
+
+@keyframes card-in { from { transform: translateX(-50%) translateY(30px) scale(.97); opacity: 0; } }
+@keyframes card-shake {
+  15% { transform: translateX(calc(-50% - 9px)); }
+  35% { transform: translateX(calc(-50% + 8px)); }
+  55% { transform: translateX(calc(-50% - 6px)); }
+  75% { transform: translateX(calc(-50% + 4px)); }
+  100% { transform: translateX(-50%); }
+}
+
+.card-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 16px 18px 14px;
+}
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.tag {
+  display: inline-block;
+  padding: 2px 11px;
+  border-radius: 999px;
+  background: #e2f2ea;
+  color: #38795a;
+  font-size: 13px;
+  font-weight: 700;
+}
+.card-count { color: var(--ink-soft); font-size: 13px; font-variant-numeric: tabular-nums; }
+.card h2 { margin: 7px 0 3px; font-size: 21px; line-height: 1.35; }
+#card-sit { margin: 0 0 11px; font-size: 16px; }
+
+.opts { display: grid; gap: 8px; }
+.opt {
+  min-height: 52px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 13px 8px 9px;
+  border: 2px solid var(--line);
+  border-radius: 15px;
+  background: #fff;
+  font-size: 16px;
+  line-height: 1.42;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background .14s ease, border-color .14s ease;
+}
+.opt:hover:not(:disabled) { background: #fff5e6; border-color: var(--orange); }
+.opt:disabled { cursor: default; color: var(--ink); }
+.opt-key {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--cream);
+  color: var(--ink-soft);
+  font-size: 15px;
+  font-weight: 800;
+}
+.answered .opt:not(.correct):not(.wrong) { opacity: .62; }
+.opt.correct { border-color: var(--green); background: var(--green-soft); font-weight: 700; }
+.opt.correct .opt-key { background: var(--green); color: #fff; }
+.opt.wrong { border-color: var(--red); background: var(--red-soft); }
+.opt.wrong .opt-key { background: var(--red); color: #fff; }
+
+.fb { margin-top: 11px; padding: 11px 14px; border-radius: 15px; background: var(--cream); }
+.is-right .fb { background: var(--green-soft); }
+.is-wrong .fb { background: var(--red-soft); }
+.fb-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 17px; }
+.fb-gain { color: #2f8a53; font-weight: 800; }
+.fb-loss { color: var(--red); font-weight: 800; }
+#fb-why { margin: 4px 0 0; font-size: 15.5px; }
+.fb-src { margin: 5px 0 0; font-size: 12.5px; color: var(--ink-soft); }
+.fb-src:empty { display: none; }
+
+.card-foot { flex: none; padding: 10px 18px 15px; border-top: 2px solid var(--cream); }
+.card-foot .btn { width: 100%; }
+
+@media (max-width: 760px) {
+  .card { max-height: calc(100% - 142px - env(safe-area-inset-top)); }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .card { width: min(880px, calc(100% - 16px)); bottom: 4px; max-height: calc(100% - 66px); border-radius: 18px; }
+  .card-scroll { display: grid; grid-template-columns: 2fr 3fr; gap: 14px; padding: 10px 14px; }
+  .card-main { position: sticky; top: 0; align-self: start; }
+  .card h2 { font-size: 18px; }
+  #card-sit { font-size: 15px; margin-bottom: 0; }
+  .opt { min-height: 48px; font-size: 15px; padding: 4px 10px 4px 7px; }
+  .opts { gap: 6px; }
+  .card-foot { padding: 6px 14px 8px; }
+  #hud { top: 4px; }
+  .hud-route { padding: 3px 12px 7px; }
+  .hud-risk { padding: 3px 10px; }
+  #risk-face { width: 28px; height: 28px; }
+  #toasts { top: 58px; }
+  #joy { width: 104px; height: 104px; bottom: 8px; left: 12px; }
+  #joy-knob { width: 46px; height: 46px; }
+  #btn-interact { width: 70px; height: 70px; bottom: 10px; }
+  #actions { bottom: 14px; }
+  #prompt { bottom: 60px; }
+}
+
+/* 開始畫面 ------------------------------------------------------- */
+.screen { position: absolute; inset: 0; z-index: 6; pointer-events: none !important; }
+.screen > * { pointer-events: auto; }
+
+#start-screen { display: flex; align-items: center; padding: 20px 20px 20px clamp(20px, 7vw, 110px); }
+.start-card {
+  position: relative;
+  width: min(430px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 24px 28px;
+  border: 3px solid #fff;
+  border-radius: 28px;
+  background: rgba(255, 253, 246, .95);
+  box-shadow: var(--shadow);
+}
+.start-kicker { margin: 0; color: var(--orange-deep); font-size: 14px; font-weight: 700; }
+.start-card h1 { margin: 0; font-size: clamp(38px, 7vw, 54px); line-height: 1.2; letter-spacing: .06em; color: #4a7c63; }
+.start-sub { margin: 6px 0 16px; font-size: 16px; }
+.start-btns { display: grid; gap: 10px; }
+.start-sound { position: absolute; top: 14px; right: 14px; }
+
+.load-notice { margin-top: 12px; padding: 11px 13px; border-radius: 14px; background: #fff1dc; font-size: 14.5px; }
+.load-notice p { margin: 0 0 8px; }
+
+@media (max-width: 760px) and (orientation: portrait) {
+  #start-screen { align-items: flex-start; padding: calc(16px + env(safe-area-inset-top)) 14px 14px; }
+  .start-card { width: 100%; padding: 18px 20px; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  #start-screen { padding: 8px 8px 8px 16px; }
+  .start-card { width: 340px; padding: 10px 16px; }
+  .start-card h1 { font-size: 30px; }
+  .start-kicker { display: none; }
+  .start-sub { font-size: 13px; margin: 2px 0 8px; }
+  .start-btns { gap: 6px; }
+  .start-btns .btn { min-height: 44px; padding: 4px 12px; font-size: 15px; }
+}
+
+/* 結局畫面 ------------------------------------------------------- */
+#ending-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(70, 70, 66, .45);
+  pointer-events: auto !important;
+}
+.ending-panel {
+  width: min(1040px, 100%);
+  height: min(680px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  border: 3px solid #fff;
+  border-radius: 26px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.ending-left { display: flex; flex-direction: column; padding: 18px 22px; overflow-y: auto; min-height: 0; }
+#ending-art { flex: none; width: 100%; height: clamp(180px, 34vh, 250px); border-radius: 18px; display: block; }
+.ending-kicker { margin: 12px 0 0; color: var(--orange-deep); font-size: 14px; font-weight: 700; }
+.ending-left h2 { margin: 0; font-size: 28px; line-height: 1.3; }
+#ending-msg { margin: 4px 0 12px; font-size: 15.5px; }
+.ending-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.ending-stats > div { padding: 6px 4px; border-radius: 13px; background: var(--cream); text-align: center; }
+.ending-stats span { display: block; color: var(--ink-soft); font-size: 13px; }
+.ending-stats b { font-size: 23px; line-height: 1.3; font-variant-numeric: tabular-nums; }
+.ending-best { margin: 9px 0 0; color: var(--ink-soft); font-size: 14px; }
+.ending-best:empty { display: none; }
+.ending-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.badge-chip { padding: 2px 11px; border-radius: 999px; background: #fff0c9; color: #93651a; font-size: 13px; font-weight: 700; }
+.ending-btns { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-top: auto; padding-top: 13px; }
+
+.ending-right { display: flex; flex-direction: column; min-height: 0; padding: 18px 20px; background: #fbf7ea; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
+.ending-right h3 { margin: 0; font-size: 21px; }
+.summary-note { margin: 0 0 10px; color: var(--ink-soft); font-size: 14px; }
+#summary-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.sum-item { padding: 11px 14px; border: 2px solid var(--line); border-radius: 16px; background: #fff; }
+.sum-item.ok { border-color: #bfe6c9; }
+.sum-item.ng { border-color: #f5c4bd; }
+.sum-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.sum-res { font-size: 13.5px; font-weight: 800; }
+.sum-res.ok { color: #2f8a53; }
+.sum-res.ng { color: var(--red); }
+.sum-item h4 { margin: 5px 0 1px; font-size: 17px; }
+.sum-sit { margin: 0 0 5px; color: var(--ink-soft); font-size: 14px; }
+.sum-item dl { margin: 0; font-size: 14.5px; }
+.sum-item dt { margin-top: 4px; color: var(--ink-soft); font-size: 12.5px; font-weight: 700; }
+.sum-item dd { margin: 0; }
+.c-ok { color: #2f8a53; font-weight: 700; }
+.c-ng { color: var(--red); font-weight: 700; }
+.sum-src { margin: 5px 0 0; color: var(--ink-soft); font-size: 12.5px; }
+
+@media (max-width: 760px), (max-height: 520px) {
+  #ending-screen { padding: 0; }
+  .ending-panel { display: block; width: 100%; height: 100%; border: 0; border-radius: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; }
+  .ending-left, .ending-right { overflow: visible; }
+  #ending-art { height: 200px; }
+  .ending-left { padding: 12px 14px; }
+  .ending-right { padding: 14px; }
+  .ending-btns { position: sticky; bottom: 0; margin: 11px -14px -12px; padding: 10px 14px; background: var(--paper); border-top: 2px solid var(--cream); z-index: 2; }
+}
+
+/* 彈窗 ---------------------------------------------------------- */
+.modal {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 14px;
+  background: rgba(70, 70, 66, .45);
+}
+.modal-box {
+  position: relative;
+  width: min(540px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  padding: 20px 22px;
+  border: 3px solid #fff;
+  border-radius: 24px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+}
+.modal-box h2 { margin: 0 44px 10px 0; font-size: 23px; }
+.modal-x {
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: var(--cream);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.help-list { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 8px 13px; font-size: 15.5px; }
+.help-list dt { font-weight: 800; color: #4a7c63; }
+.help-list dd { margin: 0; }
+.help-note { margin: 13px 0 0; padding: 9px 13px; border-radius: 13px; background: var(--cream); font-size: 15px; }
+
+.records-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.records-stats > div { padding: 7px 4px; border-radius: 13px; background: var(--cream); text-align: center; }
+.records-stats span { display: block; color: var(--ink-soft); font-size: 13px; }
+.records-stats b { font-size: 23px; }
+.records-best { margin-top: 10px; padding: 9px 13px; border-radius: 13px; background: var(--green-soft); }
+.records-best span, .records-best small { display: block; color: var(--ink-soft); font-size: 13px; }
+.records-seen { margin: 9px 0 0; font-size: 14.5px; color: var(--ink-soft); }
+.records h3 { margin: 12px 0 7px; font-size: 17px; }
+.badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-bottom: 13px; }
+.badge { padding: 8px 12px; border: 2px dashed var(--line); border-radius: 13px; color: var(--ink-soft); }
+.badge strong { display: block; font-size: 15px; }
+.badge span { font-size: 12.5px; line-height: 1.4; display: block; }
+.badge.on { border: 2px solid #efc76a; background: #fff6da; color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+exec
+/bin/bash -lc "rg -n 'function|const .*=>|camera|parallax|toast|resize|scale|draw' /workspace/digital-hiking/js/{art,world,ui,main}.js" in /workspace/digital-hiking/research
+ succeeded in 0ms:
+/workspace/digital-hiking/js/ui.js:2:(function () {
+/workspace/digital-hiking/js/ui.js:5:  const $ = (id) => document.getElementById(id);
+/workspace/digital-hiking/js/ui.js:6:  const el = (tag, cls, txt) => {
+/workspace/digital-hiking/js/ui.js:138:      const face = FACES.find((f) => risk < f.max);
+/workspace/digital-hiking/js/ui.js:163:    toast(message, kind) {
+/workspace/digital-hiking/js/ui.js:164:      const t = el('div', `toast ${kind || ''}`, message);
+/workspace/digital-hiking/js/ui.js:165:      const box = $('toasts');
+/workspace/digital-hiking/js/ui.js:244:      const right = answers.filter((a) => a.correct).length;
+/workspace/digital-hiking/js/ui.js:254:        const b = BADGES.find((x) => x.id === id);
+/workspace/digital-hiking/js/main.js:2:(function () {
+/workspace/digital-hiking/js/main.js:6:  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+/workspace/digital-hiking/js/main.js:77:  async function loadBank() {
+/workspace/digital-hiking/js/main.js:104:  function setScreen(name) {
+/workspace/digital-hiking/js/main.js:109:  function resetPlayer(x) {
+/workspace/digital-hiking/js/main.js:123:  function startGame() {
+/workspace/digital-hiking/js/main.js:154:  function nextEvent() {
+/workspace/digital-hiking/js/main.js:158:  function openEvent(ev) {
+/workspace/digital-hiking/js/main.js:170:  function answer(displayIndex) {
+/workspace/digital-hiking/js/main.js:202:      if (state.streak === 3 || state.streak === 5) ui.toast(`連續答對 ${state.streak} 題！`, 'good');
+/workspace/digital-hiking/js/main.js:217:  function announceRisk() {
+/workspace/digital-hiking/js/main.js:220:      ui.toast(step === 2 ? '天色很差，再出錯就得求救了' : '起霧了，風險正在升高', 'warn');
+/workspace/digital-hiking/js/main.js:225:  function continueAfterAnswer() {
+/workspace/digital-hiking/js/main.js:239:  function finish(completed) {
+/workspace/digital-hiking/js/main.js:267:  function interact() {
+/workspace/digital-hiking/js/main.js:282:  function setPose(name, seconds) {
+/workspace/digital-hiking/js/main.js:286:  function say(text, seconds) {
+/workspace/digital-hiking/js/main.js:291:  function doAction(name) {
+/workspace/digital-hiking/js/main.js:309:  function burstFlowers() {
+/workspace/digital-hiking/js/main.js:325:  function floatText(text, color) {
+/workspace/digital-hiking/js/main.js:332:  function moveVector() {
+/workspace/digital-hiking/js/main.js:344:  function updatePlayer(dt) {
+/workspace/digital-hiking/js/main.js:384:  function updateEvents() {
+/workspace/digital-hiking/js/main.js:403:  function updateNpcSpeech() {
+/workspace/digital-hiking/js/main.js:412:  function updateSection() {
+/workspace/digital-hiking/js/main.js:417:        ui.toast(`${sec.name}　海拔 ${alt.toLocaleString('en-US')}m`, 'stage');
+/workspace/digital-hiking/js/main.js:425:  function updateCommon(dt) {
+/workspace/digital-hiking/js/main.js:502:  function updateAttract(dt) {
+/workspace/digital-hiking/js/main.js:511:  function update(dt) {
+/workspace/digital-hiking/js/main.js:528:  function resize() {
+/workspace/digital-hiking/js/main.js:536:    needsRedraw = true;
+/workspace/digital-hiking/js/main.js:539:  function sizeEndingCanvas() {
+/workspace/digital-hiking/js/main.js:548:  function drawScene() {
+/workspace/digital-hiking/js/main.js:570:  function drawEnding() {
+/workspace/digital-hiking/js/main.js:581:  let needsRedraw = true;
+/workspace/digital-hiking/js/main.js:585:  function frame(now) {
+/workspace/digital-hiking/js/main.js:592:      if (needsRedraw) {
+/workspace/digital-hiking/js/main.js:593:        drawScene();
+/workspace/digital-hiking/js/main.js:594:        needsRedraw = false;
+/workspace/digital-hiking/js/main.js:596:      drawEnding();
+/workspace/digital-hiking/js/main.js:598:      drawScene();
+/workspace/digital-hiking/js/main.js:602:  function setPaused(paused) {
+/workspace/digital-hiking/js/main.js:624:  function toggleSound() {
+/workspace/digital-hiking/js/main.js:694:  function endDrag(e) {
+/workspace/digital-hiking/js/main.js:713:  function joyMove(e) {
+/workspace/digital-hiking/js/main.js:730:  function releaseJoy() {
+/workspace/digital-hiking/js/main.js:749:  async function share() {
+/workspace/digital-hiking/js/main.js:762:      ui.toast('已複製分享文字', 'good');
+/workspace/digital-hiking/js/main.js:764:      ui.toast('這個瀏覽器無法複製，手動截圖分享吧', 'warn');
+/workspace/digital-hiking/js/main.js:839:  window.addEventListener('resize', resize);
+/workspace/digital-hiking/js/main.js:840:  window.addEventListener('orientationchange', resize);
+/workspace/digital-hiking/js/main.js:846:  resize();
+/workspace/digital-hiking/js/world.js:2:(function () {
+/workspace/digital-hiking/js/world.js:10:  const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+/workspace/digital-hiking/js/world.js:11:  const css = (c) => `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`;
+/workspace/digital-hiking/js/world.js:12:  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+/workspace/digital-hiking/js/world.js:13:  const smooth = (a, b, v) => {
+/workspace/digital-hiking/js/world.js:17:  const hash = (n) => {
+/workspace/digital-hiking/js/world.js:37:  function blendAt(x) {
+/workspace/digital-hiking/js/world.js:57:  function paletteFor(w, risk) {
+/workspace/digital-hiking/js/world.js:73:  const wave = (x) => 14 * Math.sin(x * 0.0041) + 8 * Math.sin(x * 0.0113 + 1);
+/workspace/digital-hiking/js/world.js:74:  const hillRise = (x) => 92 + 26 * Math.sin(x * 0.0029 + 2) + 12 * Math.sin(x * 0.009);
+/workspace/digital-hiking/js/world.js:76:  function makeLayout(w, h) {
+/workspace/digital-hiking/js/world.js:83:  const pathTop = (L, x) => L.base + wave(x);
+/workspace/digital-hiking/js/world.js:84:  const playerY = (L, x, d) => pathTop(L, x) + PATH_MARGIN + d * (PATH_H - PATH_MARGIN * 2);
+/workspace/digital-hiking/js/world.js:87:  function softSprite(rgb) {
+/workspace/digital-hiking/js/world.js:103:  function buildDecor() {
+/workspace/digital-hiking/js/world.js:106:    const add = (type, x, oy, s, extra) => items.push(Object.assign({ type, x, oy, s: s || 1, h: r.next() }, extra));
+/workspace/digital-hiking/js/world.js:107:    const back = (lo, hi) => -r.range(lo, hi);
+/workspace/digital-hiking/js/world.js:108:    const front = (lo, hi) => PATH_H + r.range(lo, hi);
+/workspace/digital-hiking/js/world.js:189:  function buildNpcs() {
+/workspace/digital-hiking/js/world.js:207:  function ridgeHeight(x, seed, sharp) {
+/workspace/digital-hiking/js/world.js:214:  function mountains(c, L, camX, par, seed, baseY, amp, col, haze, sharp) {
+/workspace/digital-hiking/js/world.js:230:  function cloud(c, x, y, s, col, alpha) {
+/workspace/digital-hiking/js/world.js:239:  function clouds(c, L, g, pal, horizon) {
+/workspace/digital-hiking/js/world.js:251:  function sun(c, L, w, horizon, risk) {
+/workspace/digital-hiking/js/world.js:261:    c.drawImage(glowSprite, x - size / 2, y - size / 2, size, size);
+/workspace/digital-hiking/js/world.js:267:  function cloudSea(c, L, camX, baseY, col, alpha, t) {
+/workspace/digital-hiking/js/world.js:285:  function treeline(c, L, camX, baseY, col, alpha) {
+/workspace/digital-hiking/js/world.js:308:  function ground(c, L, g, pal) {
+/workspace/digital-hiking/js/world.js:386:  function streamAndBridge(c, L, sx, t) {
+/workspace/digital-hiking/js/world.js:410:  function bridgeDeck(c, L, sx) {
+/workspace/digital-hiking/js/world.js:420:  function grassEdge(c, L, g, pal) {
+/workspace/digital-hiking/js/world.js:443:  function foreground(c, L, g, pal, w) {
+/workspace/digital-hiking/js/world.js:466:  function ambient(c, L, g, w) {
+/workspace/digital-hiking/js/world.js:479:        A.drawButterfly(c, sx, y, 1.15, t + i, colors[i % colors.length]);
+/workspace/digital-hiking/js/world.js:524:        c.drawImage(glowSprite, sx - 11, y - 11, 22, 22);
+/workspace/digital-hiking/js/world.js:531:  function weather(c, L, g, risk) {
+/workspace/digital-hiking/js/world.js:542:        c.drawImage(fogSprite, x - size / 2, y - size * 0.3, size, size * 0.6);
+/workspace/digital-hiking/js/world.js:562:  function vignette(c, L, risk) {
+/workspace/digital-hiking/js/world.js:574:  function eventMarker(c, ev, x, y, t, isNext, near) {
+/workspace/digital-hiking/js/world.js:576:      if (ev.correct) A.drawFlower(c, x, y - 6, 8, '#ffb1c4', ev.x);
+/workspace/digital-hiking/js/world.js:593:      A.drawAnimal(c, ev.animal, x, y, 0.82, t, -1);
+/workspace/digital-hiking/js/world.js:605:      c.drawImage(glowSprite, bx - 58, by - 58, 116, 116);
+/workspace/digital-hiking/js/world.js:610:    c.scale(pulse, pulse);
+/workspace/digital-hiking/js/world.js:619:  function render(c, L, g) {
+/workspace/digital-hiking/js/world.js:697:          A.drawHiker(c, e.sx, e.y, { t: t + n.x, scale: n.s, dir: n.dir, colors: n.colors, pose: n.pose });
+/workspace/digital-hiking/js/world.js:699:          A.drawAnimal(c, n.kind, e.sx, e.y, n.s, t + n.x, n.dir);
+/workspace/digital-hiking/js/world.js:705:        A.drawHiker(c, e.sx, e.y, {
+/workspace/digital-hiking/js/world.js:706:          t, scale: depth, dir: p.dir, risk: g.riskView, phase: p.phase, moving: p.moving, pose: p.pose, jump: p.jump,
+/workspace/digital-hiking/js/world.js:728:      if (q.kind === 'flower') A.drawFlower(c, sx, q.y, q.r, q.color, q.rot);
+/workspace/digital-hiking/js/art.js:2:(function () {
+/workspace/digital-hiking/js/art.js:7:  function rr(c, x, y, w, h, r) {
+/workspace/digital-hiking/js/art.js:16:  function ell(c, x, y, rx, ry, color, rot) {
+/workspace/digital-hiking/js/art.js:21:  function box(c, x, y, w, h, r, color) {
+/workspace/digital-hiking/js/art.js:26:  function line(c, x1, y1, x2, y2, color, width) {
+/workspace/digital-hiking/js/art.js:35:  function poly(c, pts, color) {
+/workspace/digital-hiking/js/art.js:43:  function text(c, str, x, y, size, color, weight) {
+/workspace/digital-hiking/js/art.js:50:  function shadow(c, rx, ry) {
+/workspace/digital-hiking/js/art.js:53:  function drop(c, x, y, s) {
+/workspace/digital-hiking/js/art.js:68:  function hikerFace(c, risk, pose, t) {
+/workspace/digital-hiking/js/art.js:121:  function drawHiker(c, x, y, o) {
+/workspace/digital-hiking/js/art.js:123:    const s = o.scale || 1;
+/workspace/digital-hiking/js/art.js:133:    c.scale(s, s);
+/workspace/digital-hiking/js/art.js:136:    c.scale(o.dir || 1, 1);
+/workspace/digital-hiking/js/art.js:351:  function drawAnimal(c, kind, x, y, s, t, dir) {
+/workspace/digital-hiking/js/art.js:354:    c.scale(s * (dir || 1), s);
+/workspace/digital-hiking/js/art.js:359:  function drawButterfly(c, x, y, s, t, color) {
+/workspace/digital-hiking/js/art.js:363:    c.scale(s, s);
+/workspace/digital-hiking/js/art.js:366:      c.scale(side * flap, 1);
+/workspace/digital-hiking/js/art.js:376:  function drawFlower(c, x, y, r, color, rot) {
+/workspace/digital-hiking/js/art.js:388:  function speech(c, x, y, str) {
+/workspace/digital-hiking/js/art.js:402:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:410:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:418:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:424:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:435:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:442:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:458:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:470:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:483:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:496:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:498:      drawFlower(c, 0, -16, 6, it.color || '#ffb1c4', it.h * 6);
+/workspace/digital-hiking/js/art.js:501:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:515:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:543:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:550:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:571:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:583:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:602:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:607:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:616:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:637:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:653:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:664:      c.scale(s, s);
+/workspace/digital-hiking/js/art.js:672:  function skyFill(c, w, h, top, bottom) {
+/workspace/digital-hiking/js/art.js:679:  function bumps(c, w, y, h, step, color, phase) {
+/workspace/digital-hiking/js/art.js:689:  function miniCloud(c, x, y, s, color) {
+/workspace/digital-hiking/js/art.js:730:      drawHiker(c, cx - 8, h * 0.5, { t, pose: 'cheer', jump, scale: Math.min(1, h / 230) });
+/workspace/digital-hiking/js/art.js:734:        drawFlower(c, fx, fy2, 5, ['#ffb1c4', '#ffd965', '#fff', '#ffc78f'][i % 4], t + i);
+/workspace/digital-hiking/js/art.js:755:      drawHiker(c, w * 0.43, h * 0.8, { t, risk: 62, scale: sc, headTilt: 0.05 });
+/workspace/digital-hiking/js/art.js:792:      c.scale(sc * 0.72, sc * 0.72);
+/workspace/digital-hiking/js/art.js:793:      drawHiker(c, 0, 0, { t, pose: 'wave', dir: -1, colors: { jacket: '#e8605c', jacketDark: '#c94d4a', hat: '#fff9ea', hatBand: '#e8605c', pack: '#f4c76b', packDark: '#d8a94c' } });
+/workspace/digital-hiking/js/art.js:798:      c.scale(sc, sc);
+/workspace/digital-hiking/js/art.js:828:      drawHiker(c, gx, gy, { t, risk: 62, pose: 'wave', scale: sc * 0.95 });
+/workspace/digital-hiking/js/art.js:834:    drawHiker, drawAnimal, drawButterfly, drawFlower, speech,
+
+exec
+/bin/bash -lc 'cat /workspace/digital-hiking/index.html' in /workspace/digital-hiking/research
+ succeeded in 0ms:
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#a9ddf5">
+<meta name="description" content="數位登山：操控 Q 版登山客走一趟台灣山徑，在情境選擇中學會登山安全。">
+<title>數位登山</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23a9ddf5'/%3E%3Cpath d='M3 26 13 10l5 8 3-4 8 12z' fill='%235fa781'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="scene" aria-label="登山步道場景"></canvas>
+
+  <div id="stage">
+    <header id="hud" hidden>
+      <div class="hud-route">
+        <div class="hud-route-top">
+          <strong id="hud-stage">登山口</strong>
+          <span id="hud-alt">海拔 1,850m</span>
+        </div>
+        <div class="route-bar" role="progressbar" aria-label="路線進度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="route-bar">
+          <div class="route-fill" id="route-fill"></div>
+          <div id="route-ticks"></div>
+          <div class="route-dot" id="route-dot"></div>
+        </div>
+      </div>
+      <div class="hud-risk" id="hud-risk">
+        <svg id="risk-face" viewBox="0 0 32 32" width="34" height="34" aria-hidden="true">
+          <circle id="risk-face-bg" cx="16" cy="16" r="14.5" fill="#5bbf7a"/>
+          <ellipse cx="11" cy="13.5" rx="2" ry="2.6" fill="#3a3028"/>
+          <ellipse cx="21" cy="13.5" rx="2" ry="2.6" fill="#3a3028"/>
+          <path id="risk-face-mouth" d="M10.5 19.5 Q16 25 21.5 19.5" fill="none" stroke="#3a3028" stroke-width="2" stroke-linecap="round"/>
+          <path id="risk-face-drop" d="M26 6 q3 4 0 6 q-3-2 0-6" fill="#8fd3f4" opacity="0"/>
+        </svg>
+        <div class="risk-body">
+          <div class="risk-top"><span>出事風險</span><b id="risk-num">0</b></div>
+          <div class="risk-bar" role="meter" aria-label="出事風險" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="risk-bar"><div class="risk-fill" id="risk-fill"></div></div>
+        </div>
+      </div>
+      <div class="hud-btns">
+        <button class="icon-btn" id="btn-sound" type="button" aria-pressed="false" aria-label="開啟音效" title="開啟音效（M）"></button>
+        <button class="icon-btn" id="btn-help" type="button" aria-label="操作說明" title="操作說明">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 9.2a3 3 0 1 1 4.6 2.5c-1 .7-1.6 1.3-1.6 2.6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="18" r="1.4" fill="currentColor"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="toasts" aria-live="polite"></div>
+
+    <button id="prompt" type="button" hidden></button>
+
+    <div id="controls" hidden>
+      <div id="joy" aria-label="移動搖桿"><div id="joy-knob"></div></div>
+      <div id="actions">
+        <button type="button" class="act-btn" data-act="wave"><kbd>1</kbd>揮手</button>
+        <button type="button" class="act-btn" data-act="drink"><kbd>2</kbd>喝水</button>
+        <button type="button" class="act-btn" data-act="photo"><kbd>3</kbd>拍照</button>
+      </div>
+      <button id="btn-interact" type="button">互動</button>
+      <p id="hints">方向鍵／WASD 移動　·　點地面走過去　·　拖曳看周圍　·　E／空白鍵 互動</p>
+    </div>
+
+    <section id="card" class="card" role="dialog" aria-labelledby="card-title" tabindex="-1" hidden>
+      <div class="card-scroll" id="card-scroll">
+        <div class="card-main">
+          <div class="card-head">
+            <span class="tag" id="card-tag"></span>
+            <span class="card-count" id="card-count"></span>
+          </div>
+          <h2 id="card-title"></h2>
+          <p id="card-sit"></p>
+        </div>
+        <div class="card-side">
+          <div class="opts" id="card-opts"></div>
+          <div class="fb" id="card-fb" aria-live="polite" hidden>
+            <div class="fb-head" id="fb-head"></div>
+            <p id="fb-why"></p>
+            <p class="fb-src" id="fb-src"></p>
+          </div>
+        </div>
+      </div>
+      <div class="card-foot" id="card-foot" hidden>
+        <button type="button" class="btn btn-primary" id="card-next">繼續前進</button>
+      </div>
+    </section>
+
+    <section id="start-screen" class="screen">
+      <div class="start-card">
+        <p class="start-kicker">一趟走得完、也學得會的山徑</p>
+        <h1>數位登山</h1>
+        <p class="start-sub">從登山口走到山頂再平安下山。<br>路上的每個選擇，都決定這趟路有多安全。</p>
+        <div class="start-btns">
+          <button type="button" class="btn btn-primary btn-big" id="btn-start" disabled>整理背包中…</button>
+          <button type="button" class="btn" id="btn-howto">操作說明</button>
+          <button type="button" class="btn" id="btn-records">查看成就／最佳紀錄</button>
+        </div>
+        <div class="load-notice" id="load-notice" role="alert" hidden>
+          <p id="load-notice-text"></p>
+          <button type="button" class="btn btn-small" id="btn-retry">重新讀取題庫</button>
+        </div>
+        <button class="icon-btn start-sound" id="btn-sound-start" type="button" aria-pressed="false" aria-label="開啟音效" title="開啟音效"></button>
+      </div>
+    </section>
+
+    <section id="ending-screen" class="screen" hidden>
+      <div class="ending-panel">
+        <div class="ending-left">
+          <canvas id="ending-art" aria-hidden="true"></canvas>
+          <p class="ending-kicker" id="ending-kicker"></p>
+          <h2 id="ending-title"></h2>
+          <p id="ending-msg"></p>
+          <div class="ending-stats">
+            <div><span>出事風險</span><b id="ending-risk"></b></div>
+            <div><span>答對</span><b id="ending-correct"></b></div>
+            <div><span>經驗值</span><b id="ending-exp"></b></div>
+          </div>
+          <p class="ending-best" id="ending-best"></p>
+          <div class="ending-badges" id="ending-badges"></div>
+          <div class="ending-btns">
+            <button type="button" class="btn btn-primary" id="btn-again">再玩一次</button>
+            <button type="button" class="btn" id="btn-share">分享</button>
+          </div>
+        </div>
+        <div class="ending-right">
+          <h3>學習總結</h3>
+          <p class="summary-note" id="summary-note"></p>
+          <ol id="summary-list"></ol>
+        </div>
+      </div>
+    </section>
+
+    <div id="modal" class="modal" hidden>
+      <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <button type="button" class="modal-x" id="modal-close" aria-label="關閉">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+        <h2 id="modal-title"></h2>
+        <div id="modal-body"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer id="legal">本遊戲為登山安全教育參考，實際行程請以官方公告與專業課程為準。山中緊急求救請撥 112（手機無訊號也可嘗試）或 119。</footer>
+</div>
+<noscript><p style="position:fixed;top:40%;left:0;right:0;text-align:center">這個遊戲需要開啟 JavaScript 才能遊玩。</p></noscript>
+
+<script src="js/fallback-data.js"></script>
+<script src="js/core.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/art.js"></script>
+<script src="js/world.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
+
+exec
+/bin/bash -lc "sed -n '68,220p' /workspace/digital-hiking/js/art.js; sed -n '395,442p' /workspace/digital-hiking/js/art.js; sed -n '76,84p' /workspace/digital-hiking/js/world.js; sed -n '619,745p' /workspace/digital-hiking/js/world.js" in /workspace/digital-hiking/research
+ succeeded in 0ms:
+  function hikerFace(c, risk, pose, t) {
+    const blink = t % 3.7 < 0.12;
+    const worried = risk >= 60;
+    [1, 19].forEach((ex) => {
+      if (blink || pose === 'cheer') {
+        c.beginPath();
+        if (pose === 'cheer') c.arc(ex, 3, 5, Math.PI * 1.15, Math.PI * 1.85);
+        else { c.moveTo(ex - 5, 2); c.lineTo(ex + 5, 2); }
+        c.strokeStyle = '#3a3028';
+        c.lineWidth = 2.4;
+        c.lineCap = 'round';
+        c.stroke();
+        return;
+      }
+      ell(c, ex, 2, 5.4, 7, '#3a3028');
+      ell(c, ex + 1.6, -0.8, 2.1, 2.5, '#fff');
+      ell(c, ex - 1.5, 4.8, 1, 1.2, 'rgba(255,255,255,.75)');
+    });
+    if (worried) {
+      line(c, -5, -8, 2, -10.5, '#5a3d2b', 2);
+      line(c, 25, -8, 18, -10.5, '#5a3d2b', 2);
+    }
+    ell(c, -8, 11, 6, 3.7, 'rgba(255,135,135,.55)');
+    ell(c, 25, 11, 5, 3.7, 'rgba(255,135,135,.55)');
+
+    c.beginPath();
+    c.strokeStyle = '#7a3e32';
+    c.lineWidth = 2;
+    c.lineCap = 'round';
+    if (pose === 'cheer') {
+      c.moveTo(4, 10);
+      c.quadraticCurveTo(10, 21, 16, 10);
+      c.closePath();
+      c.fillStyle = '#e8605c';
+      c.fill();
+    } else if (pose === 'stumble') {
+      ell(c, 10, 13, 3.2, 4, '#7a3e32');
+    } else if (worried) {
+      c.moveTo(5, 15);
+      c.quadraticCurveTo(7.5, 11, 10, 14);
+      c.quadraticCurveTo(12.5, 17, 15, 13);
+      c.stroke();
+    } else if (risk >= 35) {
+      c.moveTo(6, 13.5);
+      c.lineTo(14, 13.5);
+      c.stroke();
+    } else {
+      c.moveTo(5, 11);
+      c.quadraticCurveTo(10, 17, 15, 11);
+      c.stroke();
+    }
+  }
+
+  function drawHiker(c, x, y, o) {
+    const t = o.t || 0;
+    const s = o.scale || 1;
+    const risk = o.risk || 0;
+    const phase = o.phase || 0;
+    const mv = o.moving ? 1 : 0;
+    const pose = o.pose || 'idle';
+    const jump = o.jump || 0;
+    const col = o.colors ? Object.assign({}, HIKER_COLORS, o.colors) : HIKER_COLORS;
+
+    c.save();
+    c.translate(x, y);
+    c.scale(s, s);
+    shadow(c, 27 * (1 - Math.min(jump, 60) / 150), 7);
+    c.translate(0, -jump);
+    c.scale(o.dir || 1, 1);
+    if (pose === 'stumble') c.rotate(Math.sin(t * 22) * 0.07 - 0.05);
+
+    const swing = Math.sin(phase) * mv;
+    const lift = Math.cos(phase) * mv;
+    const bob = mv ? Math.abs(Math.cos(phase)) * 3 : Math.sin(t * 2.1) * 0.9;
+
+    /* 背包 */
+    box(c, -31, -54 - bob, 21, 33, 8, col.pack);
+    box(c, -29, -38 - bob, 13, 13, 4, col.packDark);
+    box(c, -31, -62 - bob, 20, 10, 5, col.roll);
+    line(c, -27, -57 - bob, -15, -57 - bob, 'rgba(180,140,90,.6)', 1.2);
+
+    /* 腿與靴 */
+    const legs = [
+      { fx: -6 - swing * 11, ly: Math.max(0, -lift) * 5, shade: 0.82 },
+      { fx: 6 + swing * 11, ly: Math.max(0, lift) * 5, shade: 1 },
+    ];
+    legs.forEach((l) => {
+      c.globalAlpha = l.shade;
+      line(c, l.fx * 0.35, -22 - bob, l.fx, -5 - l.ly, col.pants, 9);
+      box(c, l.fx - 6, -8 - l.ly, 15, 8, 4, col.boots);
+      c.globalAlpha = 1;
+    });
+
+    /* 身體 */
+    box(c, -15, -48 - bob, 30, 30, 11, col.jacket);
+    box(c, -15, -28 - bob, 30, 7, 3, col.jacketDark);
+    line(c, -9, -46 - bob, -7, -24 - bob, col.packDark, 3.2);
+
+    /* 手與登山杖 */
+    const shoulderY = -42 - bob;
+    const armColor = col.jacketDark;
+    if (pose === 'cheer') {
+      line(c, -11, shoulderY, -21, shoulderY - 25, armColor, 7.5);
+      line(c, 11, shoulderY, 22, shoulderY - 25, armColor, 7.5);
+      ell(c, -21, shoulderY - 27, 4.6, 4.6, col.skin);
+      ell(c, 22, shoulderY - 27, 4.6, 4.6, col.skin);
+    } else if (pose === 'wave') {
+      const wv = Math.sin(t * 14) * 5;
+      line(c, 11, shoulderY, 24 + wv, shoulderY - 25, armColor, 7.5);
+      ell(c, 24 + wv, shoulderY - 28, 4.8, 4.8, col.skin);
+    } else if (pose === 'drink') {
+      line(c, 11, shoulderY, 20, shoulderY - 14, armColor, 7.5);
+      c.save();
+      c.translate(21, shoulderY - 19);
+      c.rotate(-0.8);
+      box(c, -4.5, -11, 9, 21, 3, '#6cc1e6');
+      box(c, -3, -14, 6, 4, 1.5, '#e8785c');
+      c.restore();
+      ell(c, 21, shoulderY - 15, 4.6, 4.6, col.skin);
+    } else if (pose === 'photo') {
+      line(c, 11, shoulderY, 22, shoulderY - 12, armColor, 7.5);
+      box(c, 19, shoulderY - 25, 18, 13, 3, '#4a5468');
+      ell(c, 30, shoulderY - 18.5, 4, 4, '#a9ddf5');
+      ell(c, 22, shoulderY - 11, 4.4, 4.4, col.skin);
+    } else {
+      const hx = 17 + swing * 5;
+      const hy = -31 - bob;
+      line(c, hx - 1, hy - 9, hx + 9 + swing * 11, -1, '#8a8f98', 2.6);
+      line(c, hx - 1, hy - 9, hx, hy + 2, '#4a5468', 3.6);
+      line(c, 10, shoulderY, hx, hy, armColor, 7.5);
+      ell(c, hx, hy, 4.4, 4.4, col.skin);
+    }
+
+    /* 頭 */
+    c.save();
+    c.translate(2, -67 - bob);
+    if (o.headTilt) c.rotate(o.headTilt);
+    ell(c, -21, 0, 13, 16, col.hair);
+    ell(c, 2, 0, 30, 27, col.skin);
+    ell(c, -22, 4, 5, 6, '#ffd2ad');
+    c.beginPath();
+    c.moveTo(-27, -7);
+    c.quadraticCurveTo(-4, -22, 28, -9);
+    c.quadraticCurveTo(16, -3, 8, -9);
+    c.quadraticCurveTo(-8, -4, -27, -7);
+    c.fillStyle = col.hair;
+    c.fill();
+    hikerFace(c, risk, pose, t);
+    /* 帽子 */
+    c.beginPath();
+    c.moveTo(-23, -14);
+    c.quadraticCurveTo(-22, -39, 2, -39);
+    c.quadraticCurveTo(26, -39, 27, -14);
+
+  /* 地上的場景物件：c 已平移到物件腳底，s 為縮放 */
+  const decor = {
+    cedar(c, s, t, it) {
+      const sw = Math.sin(t * 0.8 + it.h * 9) * 1.5;
+      const col = it.dark || '#4f9a78';
+      const col2 = it.light || '#66b18c';
+      c.scale(s, s);
+      box(c, -7, -48, 14, 48, 3, '#94694a');
+      poly(c, [-44, -36, 44, -36, sw * 0.4, -130], col);
+      poly(c, [-36, -84, 36, -84, sw * 0.7, -176], col2);
+      poly(c, [-27, -130, 27, -130, sw, -214], col);
+      poly(c, [-14, -40, 34, -40, sw * 0.3, -116], 'rgba(255,255,255,.07)');
+    },
+    broadleaf(c, s, t, it) {
+      c.scale(s, s);
+      box(c, -6, -44, 12, 44, 4, '#94694a');
+      ell(c, 0, -74, 38, 34, it.dark || '#8cc97c');
+      ell(c, -18, -60, 22, 20, it.dark || '#8cc97c');
+      ell(c, 20, -62, 22, 20, it.dark || '#8cc97c');
+      ell(c, -7, -84, 20, 16, it.light || '#a8d98f');
+    },
+    fir(c, s, t, it) {
+      c.scale(s, s);
+      box(c, -4, -34, 8, 34, 2, '#8a6a57');
+      poly(c, [-22, -24, 22, -24, 0, -82], it.dark || '#6f9c8a');
+      poly(c, [-16, -56, 16, -56, 0, -108], it.light || '#83b09c');
+    },
+    fern(c, s, t, it) {
+      c.scale(s, s);
+      const col = it.dark || '#57a56c';
+      for (let i = -3; i <= 3; i++) {
+        const a = i * 0.36 + Math.sin(t * 1.2 + it.h * 7) * 0.04 - Math.PI / 2;
+        c.save();
+        c.rotate(a + Math.PI / 2);
+        ell(c, 0, -14, 3.8, 15, col);
+        c.restore();
+      }
+    },
+    shrub(c, s, t, it) {
+      c.scale(s, s);
+      ell(c, 0, -14, 25, 17, it.dark || '#86c97f');
+      ell(c, -14, -9, 15, 11, it.dark || '#86c97f');
+      ell(c, 15, -9, 14, 10, it.dark || '#86c97f');
+      ell(c, -5, -19, 12, 8, it.light || '#a5da92');
+    },
+    rock(c, s, t, it) {
+      c.scale(s, s);
+  function makeLayout(w, h) {
+    const z = clamp(Math.min(h / 620, w / 500), 0.6, 1.5);
+    const vw = w / z;
+    const vh = h / z;
+    const base = vh * (vh > vw ? 0.6 : 0.62);
+    return { w, h, z, vw, vh, base, pathH: PATH_H };
+  }
+  const pathTop = (L, x) => L.base + wave(x);
+  const playerY = (L, x, d) => pathTop(L, x) + PATH_MARGIN + d * (PATH_H - PATH_MARGIN * 2);
+  function render(c, L, g) {
+    if (!fogSprite) {
+      fogSprite = softSprite('226,232,240');
+      glowSprite = softSprite('255,232,170');
+    }
+    const w = blendAt(g.cam.x);
+    const pal = paletteFor(w, g.riskView);
+    const t = g.t;
+    const camX = g.cam.x;
+
+    c.save();
+    c.translate(g.shake.x, g.shake.y - g.lift);
+
+    /* 天空要蓋住上抬與搖晃露出的邊 */
+    const sky = c.createLinearGradient(0, 0, 0, L.base);
+    sky.addColorStop(0, css(pal.sky1));
+    sky.addColorStop(1, css(pal.sky2));
+    c.fillStyle = sky;
+    c.fillRect(-40, -40, L.vw + 80, L.vh + 400);
+
+    const horizon = L.base - 34;
+    sun(c, L, w, horizon, g.riskView);
+    clouds(c, L, g, pal, horizon);
+    const tallness = Math.max(1, L.vh / 640);
+    mountains(c, L, camX, 0.08, 1.3, horizon, 210 * tallness, pal.far, pal.sky2, true);
+    cloudSea(c, L, camX * 0.5, horizon - 18, pal.cloud, (w[2] * 0.7 + w[3]) * 0.92, t);
+    mountains(c, L, camX, 0.18, 3.1, horizon + 18, 128 * tallness, pal.mid, pal.far, true);
+    cloudSea(c, L, camX, horizon + 34, pal.cloud, w[3] * 0.96, t + 30);
+    treeline(c, L, camX, horizon - 8, pal.near, w[1] * 0.9 + w[4] * 0.8 + w[0] * 0.25);
+    mountains(c, L, camX, 0.4, 5.7, horizon + 44, 52, pal.near, pal.mid, false);
+
+    ground(c, L, g, pal);
+    grassEdge(c, L, g, pal);
+
+    /* 物件依前後排序，登山客才會正確地被遮或遮別人 */
+    const left = camX - L.vw / 2;
+    const margin = 240;
+    const list = [];
+    for (const it of g.decor) {
+      const sx = it.x - left;
+      if (sx < -margin || sx > L.vw + margin) continue;
+      list.push({ y: pathTop(L, it.x) + it.oy, it, sx });
+    }
+    for (const n of g.npcs) {
+      const sx = n.x - left;
+      if (sx < -80 || sx > L.vw + 80) continue;
+      list.push({ y: pathTop(L, n.x) + n.oy, npc: n, sx });
+    }
+    g.events.forEach((ev, i) => {
+      const sx = ev.x - left;
+      if (sx < -80 || sx > L.vw + 80) return;
+      list.push({ y: playerY(L, ev.x, ev.d), ev, sx, isNext: i === g.eventIndex });
+    });
+    const p = g.player;
+    list.push({ y: playerY(L, p.x, p.d), player: true, sx: p.x - left });
+    list.sort((a, b) => a.y - b.y);
+
+    if (g.walkTarget) {
+      const sx = g.walkTarget.x - left;
+      const y = playerY(L, g.walkTarget.x, g.walkTarget.d);
+      const pulse = (t * 2) % 1;
+      c.strokeStyle = `rgba(255,253,246,${0.9 * (1 - pulse)})`;
+      c.lineWidth = 3;
+      c.beginPath();
+      c.ellipse(sx, y, 7 + pulse * 22, 3 + pulse * 9, 0, 0, TAU);
+      c.stroke();
+    }
+
+    for (const e of list) {
+      if (e.it) {
+        const fn = A.decor[e.it.type];
+        c.save();
+        c.translate(e.sx, e.y);
+        fn(c, e.it.s, t, e.it);
+        c.restore();
+      } else if (e.npc) {
+        const n = e.npc;
+        if (n.kind === 'hiker') {
+          A.drawHiker(c, e.sx, e.y, { t: t + n.x, scale: n.s, dir: n.dir, colors: n.colors, pose: n.pose });
+        } else {
+          A.drawAnimal(c, n.kind, e.sx, e.y, n.s, t + n.x, n.dir);
+        }
+      } else if (e.ev) {
+        eventMarker(c, e.ev, e.sx, e.y, t, e.isNext, e.isNext && g.nearEvent);
+      } else {
+        const depth = 0.92 + p.d * 0.12;
+        A.drawHiker(c, e.sx, e.y, {
+          t, scale: depth, dir: p.dir, risk: g.riskView, phase: p.phase, moving: p.moving, pose: p.pose, jump: p.jump,
+        });
+      }
+    }
+
+    ambient(c, L, g, w);
+
+    /* NPC 對話與玩家的小泡泡 */
+    if (g.npcSpeech) {
+      const n = g.npcSpeech;
+      const headH = n.kind === 'hiker' ? 112 : 84;
+      A.speech(c, clamp(n.x - left, 110, L.vw - 110), pathTop(L, n.x) + n.oy - headH * n.s, n.say);
+    }
+    if (p.say) {
+      A.speech(c, clamp(p.x - left, 90, L.vw - 90), playerY(L, p.x, p.d) - 122 - p.jump, p.say);
+    }
+
+    /* 粒子 */
+    for (const q of g.particles) {
+      const sx = q.x - left;
+      const fade = Math.min(1, q.life / 0.4);
+      c.globalAlpha = fade;
+      if (q.kind === 'flower') A.drawFlower(c, sx, q.y, q.r, q.color, q.rot);
+      else if (q.kind === 'text') {
+        c.save();
+        c.font = `800 ${q.size}px ${A.FONT}`;
+        c.textAlign = 'center';
+        c.textBaseline = 'middle';
+        c.lineJoin = 'round';
+        c.lineWidth = 5;
+        c.strokeStyle = 'rgba(255,253,246,.95)';
+        const ty = Math.max(q.y, g.lift + (g.topSafe || 0));
+        const tx = clamp(sx, 90, L.vw - 90);
+        c.strokeText(q.text, tx, ty);
+        c.fillStyle = q.color;
+        c.fillText(q.text, tx, ty);
+        c.restore();
+      }
+      c.globalAlpha = 1;
+    }
+
+exec
+/bin/bash -lc "sed -n '425,570p' /workspace/digital-hiking/js/main.js; rg -n 'toast|summary|showCard|focus|float' /workspace/digital-hiking/js/ui.js; sed -n '1,190p' /workspace/digital-hiking/js/ui.js; sed -n '30,73p' /workspace/digital-hiking/js/world.js" in /workspace/digital-hiking/research
+ succeeded in 0ms:
+  function updateCommon(dt) {
+    const p = state.player;
+    view.t += dt;
+    state.riskView += (state.risk - state.riskView) * Math.min(1, dt * 2.6);
+
+    if (poseTimer > 0) {
+      poseTimer -= dt;
+      if (poseTimer <= 0) p.pose = 'idle';
+    }
+    if (sayTimer > 0) {
+      sayTimer -= dt;
+      if (sayTimer <= 0) p.say = '';
+    }
+    if (jumpV !== 0 || p.jump > 0) {
+      p.jump += jumpV * dt;
+      jumpV -= 980 * dt;
+      if (p.jump <= 0) {
+        if (poseTimer > 0.25 && jumpV < -150) jumpV = 200;
+        else jumpV = 0;
+        p.jump = 0;
+      }
+    }
+
+    if (view.shakeTime > 0) {
+      view.shakeTime = Math.max(0, view.shakeTime - dt);
+      const m = view.shakeTime * 26;
+      view.shake.x = Math.sin(view.t * 62) * m;
+      view.shake.y = Math.cos(view.t * 49) * m * 0.55;
+    } else {
+      view.shake.x = 0;
+      view.shake.y = 0;
+    }
+    if (view.flash > 0) view.flash = Math.max(0, view.flash - dt * 2.6);
+
+    for (let i = view.particles.length - 1; i >= 0; i--) {
+      const q = view.particles[i];
+      q.life -= dt;
+      if (q.life <= 0) {
+        view.particles.splice(i, 1);
+        continue;
+      }
+      q.vy += q.g * dt;
+      q.x += q.vx * dt;
+      q.y += q.vy * dt;
+      q.rot += dt * 3;
+    }
+
+    if (layout) {
+      const cardRect = state.screen === 'card' ? document.getElementById('card').getBoundingClientRect() : null;
+      /* 寬螢幕：把登山客移到卡片旁邊。窄螢幕放不下，改把場景往上抬。 */
+      const beside = cardRect && cardRect.left >= 130;
+      let target;
+      if (beside) {
+        target = p.x - cardRect.left / 2 / layout.z + layout.vw / 2;
+      } else if (state.screen === 'start' || state.screen === 'loading') {
+        const wide = layout.vw > layout.vh;
+        target = p.x + (wide ? -layout.vw * 0.2 : 0);
+      } else {
+        target = p.x + p.dir * Math.min(120, layout.vw * 0.12) + view.pan;
+      }
+      const lo = layout.vw * 0.3;
+      const hi = FINISH_X + 260;
+      view.cam.x += (clamp(target, lo, hi) - view.cam.x) * Math.min(1, dt * 4.5);
+
+      let liftTarget = 0;
+      if (cardRect && !beside) {
+        const headY = (world.playerY(layout, p.x, p.d) - 120) * layout.z;
+        const feetY = (world.playerY(layout, p.x, p.d) + 6) * layout.z;
+        const stageTop = document.getElementById('hud').getBoundingClientRect().bottom;
+        const over = feetY - (cardRect.top - 8);
+        const maxLift = Math.max(0, headY - stageTop);
+        liftTarget = clamp(over, 0, maxLift) / layout.z;
+      }
+      view.lift += (liftTarget - view.lift) * Math.min(1, dt * 5);
+    }
+  }
+
+  function updateAttract(dt) {
+    const p = state.player;
+    p.moving = true;
+    p.dir = 1;
+    p.phase += dt * 8;
+    p.x += dt * 54;
+    if (p.x > 1250) p.x = 760;
+  }
+
+  function update(dt) {
+    updateCommon(dt);
+    if (state.screen === 'play') {
+      updatePlayer(dt);
+      updateNpcSpeech();
+      updateSection();
+      updateEvents();
+    } else if (state.screen === 'start' || state.screen === 'loading') {
+      updateAttract(dt);
+    }
+    if (state.screen === 'play' || state.screen === 'card') {
+      const p = state.player;
+      ui.updateHud(p.x, core.altitudeAt(p.x), core.sectionAt(p.x).name, state.riskView);
+    }
+  }
+
+  /* 繪製 ---------------------------------------------------------- */
+  function resize() {
+    const w = Math.max(1, canvas.clientWidth);
+    const h = Math.max(1, canvas.clientHeight);
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    layout = world.makeLayout(w, h);
+    sizeEndingCanvas();
+    needsRedraw = true;
+  }
+
+  function sizeEndingCanvas() {
+    if (state.screen !== 'ending') return;
+    const w = Math.max(1, endingCanvas.clientWidth);
+    const h = Math.max(1, endingCanvas.clientHeight);
+    endingCanvas.width = Math.round(w * dpr);
+    endingCanvas.height = Math.round(h * dpr);
+    endingKey = `${w}x${h}`;
+  }
+
+  function drawScene() {
+    ctx.setTransform(dpr * layout.z, 0, 0, dpr * layout.z, 0, 0);
+    world.render(ctx, layout, {
+      t: view.t,
+      cam: view.cam,
+      lift: view.lift,
+      shake: view.shake,
+      flash: view.flash,
+      riskView: state.riskView,
+      decor: view.decor,
+      npcs: view.npcs,
+      events: state.events,
+      eventIndex: state.eventIndex,
+      nearEvent: state.nearEvent,
+      player: state.player,
+      walkTarget: view.walkTarget,
+      particles: view.particles,
+      npcSpeech: state.screen === 'play' && !state.player.say ? view.npcSpeech : null,
+      topSafe: (document.getElementById('hud').getBoundingClientRect().bottom + 22) / layout.z,
+    });
+  }
+
+  function drawEnding() {
+163:    toast(message, kind) {
+164:      const t = el('div', `toast ${kind || ''}`, message);
+165:      const box = $('toasts');
+194:      card.focus({ preventScroll: true });
+232:      next.focus({ preventScroll: true });
+259:      $('summary-note').textContent = left > 0
+263:      const list = $('summary-list');
+289:      $('btn-again').focus({ preventScroll: true });
+301:      $('modal-close').focus({ preventScroll: true });
+/* DOM 介面：HUD、事件卡片、開始與結局畫面、彈窗、提示。 */
+(function () {
+  const DH = (window.DH = window.DH || {});
+  const { SECTIONS, FINISH_X, BADGES, riskColor, store } = DH.core;
+  const $ = (id) => document.getElementById(id);
+  const el = (tag, cls, txt) => {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (txt !== undefined) n.textContent = txt;
+    return n;
+  };
+
+  const SOUND_ICON = {
+    on: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9.5v5h3.6L12 18.5v-13L7.6 9.5z" fill="currentColor"/><path d="M15.4 9a4.2 4.2 0 0 1 0 6M17.8 6.6a7.6 7.6 0 0 1 0 10.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    off: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 9.5v5h3.6L12 18.5v-13L7.6 9.5z" fill="currentColor"/><path d="m15.5 9.5 5 5m0-5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  };
+
+  const FACES = [
+    { max: 20, mouth: 'M10.5 19.5 Q16 25 21.5 19.5', drop: 0 },
+    { max: 50, mouth: 'M11 21 L21 21', drop: 0 },
+    { max: 80, mouth: 'M10.5 23 Q16 18.5 21.5 23', drop: 1 },
+    { max: Infinity, mouth: 'M10 23 Q13 20 16 22.5 Q19 25 22 21.5', drop: 1 },
+  ];
+
+  const lastHud = { stage: '', alt: '', pct: -1 };
+
+  const ui = {
+    handlers: {},
+
+    init(handlers) {
+      this.handlers = handlers;
+      const ticks = $('route-ticks');
+      SECTIONS.slice(1).forEach((s) => {
+        const tick = el('i', 'route-tick');
+        tick.style.left = `${(s.from / FINISH_X) * 100}%`;
+        ticks.appendChild(tick);
+      });
+
+      $('btn-start').addEventListener('click', handlers.start);
+      $('btn-again').addEventListener('click', handlers.start);
+      $('btn-howto').addEventListener('click', () => this.showHelp());
+      $('btn-help').addEventListener('click', () => this.showHelp());
+      $('btn-records').addEventListener('click', () => this.showRecords());
+      $('btn-retry').addEventListener('click', handlers.retryLoad);
+      $('btn-share').addEventListener('click', handlers.share);
+      $('modal-close').addEventListener('click', () => this.closeModal());
+      $('modal').addEventListener('pointerdown', (e) => {
+        if (e.target === $('modal')) this.closeModal();
+      });
+      $('card-next').addEventListener('click', handlers.next);
+      $('prompt').addEventListener('click', handlers.interact);
+      $('btn-interact').addEventListener('click', handlers.interact);
+      $('btn-sound').addEventListener('click', handlers.toggleSound);
+      $('btn-sound-start').addEventListener('click', handlers.toggleSound);
+      document.querySelectorAll('.act-btn').forEach((b) => {
+        b.addEventListener('click', () => {
+          handlers.action(b.dataset.act);
+          b.blur();
+        });
+      });
+      this.setSound(false);
+    },
+
+    setScreen(name) {
+      $('start-screen').hidden = name !== 'start';
+      $('ending-screen').hidden = name !== 'ending';
+      const playing = name === 'play' || name === 'card';
+      $('hud').hidden = !playing;
+      $('controls').hidden = name !== 'play';
+      $('card').hidden = name !== 'card';
+      if (name !== 'play') this.setPrompt(null);
+    },
+
+    setSound(on) {
+      ['btn-sound', 'btn-sound-start'].forEach((id) => {
+        const b = $(id);
+        b.innerHTML = on ? SOUND_ICON.on : SOUND_ICON.off;
+        b.setAttribute('aria-pressed', String(on));
+        const label = on ? '關閉音效' : '開啟音效';
+        b.setAttribute('aria-label', label);
+        b.title = `${label}（M）`;
+        b.classList.toggle('is-on', on);
+      });
+    },
+
+    setLoadState(state, count) {
+      const start = $('btn-start');
+      const notice = $('load-notice');
+      if (state === 'loading') {
+        start.disabled = true;
+        start.textContent = '整理背包中…';
+        notice.hidden = true;
+      } else if (state === 'ok') {
+        start.disabled = false;
+        start.textContent = '開始登山';
+        notice.hidden = true;
+      } else if (state === 'fallback') {
+        start.disabled = false;
+        start.textContent = '開始登山';
+        notice.hidden = false;
+        $('load-notice-text').textContent = `題庫暫時讀不到，可能是網路不穩。先用內建的精簡題庫（${count} 題）出發也可以，或再試一次。`;
+      } else {
+        start.disabled = true;
+        start.textContent = '暫時無法開始';
+        notice.hidden = false;
+        $('load-notice-text').textContent = '題庫讀不到，山路資料還沒送到。請確認網路後再試一次。';
+      }
+    },
+
+    updateHud(x, altitude, sectionName, risk) {
+      const pct = Math.round(Math.min(1, Math.max(0, x / FINISH_X)) * 100);
+      const alt = `海拔 ${(Math.round(altitude / 10) * 10).toLocaleString('en-US')}m`;
+      if (lastHud.stage !== sectionName) {
+        $('hud-stage').textContent = sectionName;
+        lastHud.stage = sectionName;
+      }
+      if (lastHud.alt !== alt) {
+        $('hud-alt').textContent = alt;
+        lastHud.alt = alt;
+      }
+      if (lastHud.pct !== pct) {
+        $('route-fill').style.width = `${pct}%`;
+        $('route-dot').style.left = `${pct}%`;
+        $('route-bar').setAttribute('aria-valuenow', String(pct));
+        lastHud.pct = pct;
+      }
+      this.updateRisk(risk);
+    },
+
+    updateRisk(risk) {
+      const color = riskColor(risk);
+      const fill = $('risk-fill');
+      $('risk-num').textContent = String(Math.round(risk));
+      fill.style.width = `${Math.min(100, risk)}%`;
+      fill.style.background = color;
+      $('risk-bar').setAttribute('aria-valuenow', String(Math.round(risk)));
+      $('risk-face-bg').setAttribute('fill', color);
+      const face = FACES.find((f) => risk < f.max);
+      $('risk-face-mouth').setAttribute('d', face.mouth);
+      $('risk-face-drop').setAttribute('opacity', String(face.drop));
+      $('hud-risk').classList.toggle('is-danger', risk >= 80);
+    },
+
+    bumpRisk() {
+      const n = $('hud-risk');
+      n.classList.remove('bump');
+      void n.offsetWidth;
+      n.classList.add('bump');
+    },
+
+    setPrompt(text) {
+      const p = $('prompt');
+      if (!text) {
+        p.hidden = true;
+        $('btn-interact').classList.remove('is-ready');
+        return;
+      }
+      if (p.textContent !== text) p.textContent = text;
+      p.hidden = false;
+      $('btn-interact').classList.add('is-ready');
+    },
+
+    toast(message, kind) {
+      const t = el('div', `toast ${kind || ''}`, message);
+      const box = $('toasts');
+      while (box.children.length >= 2) box.firstChild.remove();
+      box.appendChild(t);
+      setTimeout(() => t.classList.add('out'), 2600);
+      setTimeout(() => t.remove(), 3000);
+    },
+
+    openCard(ev, index, total) {
+      const s = ev.scenario;
+      $('card-tag').textContent = s.category || '情境';
+      $('card-count').textContent = `第 ${index + 1} / ${total} 題`;
+      $('card-title').textContent = s.title;
+      $('card-sit').textContent = s.situation;
+      const opts = $('card-opts');
+      opts.textContent = '';
+      ev.options.forEach((opt, i) => {
+        const b = el('button', 'opt');
+        b.type = 'button';
+        b.dataset.i = String(i);
+        b.appendChild(el('span', 'opt-key', String(i + 1)));
+        b.appendChild(el('span', 'opt-text', opt.text));
+        b.addEventListener('click', () => this.handlers.answer(i));
+        opts.appendChild(b);
+      });
+      $('card-fb').hidden = true;
+      $('card-foot').hidden = true;
+    Object.keys(p).forEach((k) => { out[k] = hex(p[k]); });
+    return out;
+  });
+  const STORM = [88, 100, 122];
+  /* 風險越高，這個色層越往暴風雨的灰藍偏 */
+  const STORM_MIX = { sky1: 0.8, sky2: 0.72, far: 0.6, mid: 0.52, near: 0.42, cloud: 0.42, bank: 0.28, bank2: 0.28, path: 0.2, pathEdge: 0.2, front: 0.3, front2: 0.3 };
+
+  function blendAt(x) {
+    const w = [0, 0, 0, 0, 0];
+    const FADE = 280;
+    let idx = SECTIONS.findIndex((s) => x < s.to);
+    if (idx < 0) idx = SECTIONS.length - 1;
+    const sec = SECTIONS[idx];
+    if (idx < SECTIONS.length - 1 && x > sec.to - FADE) {
+      const t = smooth(sec.to - FADE, sec.to + FADE, x);
+      w[idx] = 1 - t;
+      w[idx + 1] = t;
+    } else if (idx > 0 && x < sec.from + FADE) {
+      const t = smooth(sec.from - FADE, sec.from + FADE, x);
+      w[idx - 1] = 1 - t;
+      w[idx] = t;
+    } else {
+      w[idx] = 1;
+    }
+    return w;
+  }
+
+  function paletteFor(w, risk) {
+    const rf = smooth(25, 100, risk);
+    const out = {};
+    Object.keys(STORM_MIX).forEach((k) => {
+      const c = [0, 0, 0];
+      for (let i = 0; i < 5; i++) {
+        if (w[i]) for (let j = 0; j < 3; j++) c[j] += PALETTES[i][k][j] * w[i];
+      }
+      const m = rf * STORM_MIX[k];
+      for (let j = 0; j < 3; j++) c[j] += (STORM[j] - c[j]) * m;
+      out[k] = c;
+    });
+    return out;
+  }
+
+  /* 地形 ------------------------------------------------------- */
+  const wave = (x) => 14 * Math.sin(x * 0.0041) + 8 * Math.sin(x * 0.0113 + 1);
+
+codex
+1. **手機 HUD 與提示佔據過多場景高度。**  
+   **位置：** `style.css` 的 `#hud`、手機媒體查詢、`#toasts`；`js/ui.js` 的 `toast()`。  
+   **建議：** 手機改用兩列緊湊排列：第一列路線進度，第二列風險與功能鍵，總高控制在約 104–112 CSS px。Toast 位置改依 HUD 實際底緣加 8px 計算；同時只顯示一則，區域名稱併入 HUD，避免「森林步道／海拔」重複出現。
+
+2. **事件卡片與角色搶空間，手機缺乏穩定的閱讀構圖。**  
+   **位置：** `style.css` 的 `.card`、`.card-scroll`；`js/main.js` 的 `updateCommon()`。  
+   **建議：** 手機卡片採底部面板，初始上限約 `56dvh`，答題後可擴至 `68dvh`，內容內捲、繼續按鈕固定。現有抬升只避開 HUD，應將 Toast 一起納入安全區；角色腳底與卡片保持至少 12px，完整角色上方留 8px。短螢幕優先縮小角色展示區，避免把整個天空抬出畫面。
+
+3. **主按鈕白字配淺橘，視覺醒目但文字對比不足。**  
+   **位置：** `style.css` 的 `--orange`、`.btn-primary`、`.btn-primary:hover`。  
+   **建議：** 一般主按鈕底色改為較深的 `#bd542b`、陰影 `#913c21`，保留白字；原本的淺橘留給帽帶、裝飾與提示框。Hover 同步使用深橘，並檢查一般字級文字達到 4.5:1 對比。
+
+4. **首頁卡片偏向表單，手機下半部則留有大片單調草地。**  
+   **位置：** `style.css` 的 `.start-card`、`.start-btns`、`.start-sound`；`js/world.js` 的 `makeLayout()`；`js/main.js` 的首頁鏡頭分支。  
+   **建議：** 手機保留 52–56px 的「開始登山」主按鈕，將兩個次要入口改為同列的小按鈕；卡片內距採 20–24px。標題區右側預留 52px 給音效鍵。首頁另設構圖，讓角色與告示牌位於卡片下方約 24–40px，縮短空白草地並增加一組近景花草。
+
+5. **字體依裝置替換，UI 與場景文字的氣質容易不一致。**  
+   **位置：** `style.css` 的 `--font`、卡片文字規則；`js/art.js` 的 `FONT`、`text()`；`index.html`。  
+   **建議：** 固定載入具繁體中文字形的圓體，例如自託管「源泉圓體」必要字重，DOM 與 Canvas 共用字體名稱；字體載入完成後重繪 Canvas。正文維持 16–17px／行高 1.6，題目 22–24px，來源至少 13px；避免整張卡片都使用粗體。
+
+6. **圓潤角色搭配尖銳三角樹，場景與角色的造型語言落差明顯。**  
+   **位置：** `js/art.js` 的 `decor.cedar()`、`decor.fir()`、`decor.rock()`。  
+   **建議：** 樹冠改用二次貝茲曲線形成略鼓的側緣與圓鈍樹尖，減少三層等腰三角形的機械感；製作三種輪廓，再隨機調整寬度 ±12%、高度 ±15%。岩石同步改為不對稱圓弧，讓樹、石頭、角色共享柔軟輪廓。
+
+7. **森林與稜線的植被重複密集，削弱主角與事件的辨識度。**  
+   **位置：** `js/world.js` 的 `buildDecor()`、`grassEdge()`、`foreground()`；`js/art.js` 的草叢繪製。  
+   **建議：** 稜線草叢數量先減少約三分之一，改成「3–5 叢成組、組間留白」；事件標記周圍保留約 56 個世界單位的乾淨區域。降低背景植被飽和度約 15%，前景才保留較深綠色，避免整幅畫面同樣鮮明。
+
+8. **已有遠山視差，但近景裝飾的移動層次仍不夠鮮明。**  
+   **位置：** `js/world.js` 的 `render()`、`mountains()`、`foreground()`。  
+   **建議：** 保留現有遠山 `0.08／0.18／0.4` 視差；可互動物件維持世界座標速度 `1.0`，另加純裝飾前景層以 `1.08–1.15` 移動。遠景降低對比、偏天空色，最近的葉片只放畫面左右下角，避免遮住角色、事件與操作鍵。
+
+9. **角色已具大頭優勢，但軀幹偏窄，裝備細節在小尺寸容易糊成一塊。**  
+   **位置：** `js/art.js` 的 `drawHiker()`、`hikerFace()`。  
+   **建議：** 頭部尺寸先保留，身體由寬 30 調至約 34、靴子加寬約 2 個繪圖單位，形成更穩定的短胖比例。縮小顯示時省略背包細線與第二個眼睛高光；背包帶、手掌、登山杖之間保留清楚間隙。主角帽子加一個小山形徽章，強化辨識。
+
+10. **問號標記缺乏情境個性，容易與右上角說明按鈕混淆。**  
+    **位置：** `js/world.js` 的 `eventMarker()`；`js/art.js` 的場景圖示。  
+    **建議：** 依題型改用背包、熊掌、水滴、路牌等簡化圖示；下一個事件使用橘框並上下浮動約 3 個世界單位，後續事件使用較淡的棕框。接近時再增加底部光圈與「查看」文字，避免所有標記持續爭取注意力。
+
+11. **經驗值浮字重複堆疊，回饋位置與事件來源脫節。**  
+    **位置：** `js/main.js` 的 `floatText()`、粒子更新；`js/world.js` 的文字粒子繪製；`js/ui.js` 的 `toast()`。  
+    **建議：** 同類經驗值在 600ms 內合併成一則，從角色頭頂上浮約 24px，於 0.9–1.2 秒內淡出；避免多則文字一起被夾到畫面左側。答對以角色小跳搭配少量花瓣，答錯以表情與風險條變化為主，畫面只保留一個主要回饋焦點。
+
+12. **持續脈動與搖晃偏多，破壞溫暖、悠閒的步行節奏。**  
+    **位置：** `style.css` 的 `glow`、`pulse`、`card-shake`；`js/main.js` 的震動更新；`js/art.js` 的 `hikerFace()`。  
+    **建議：** 互動提示入場脈動兩次後停止；答錯卡片位移縮至 ±3px、約 180ms，避免整個閱讀區左右甩動。NPC 眨眼加入各自相位，減少同步感；補上 `prefers-reduced-motion`，同時控制 CSS 動畫及 Canvas 震動、跳躍與粒子。
+
+13. **結局畫面的長篇總結壓過完成旅程的成就感。**  
+    **位置：** `js/ui.js` 的結局與 `summary-list` 產生邏輯；`style.css` 的 `.ending-panel`、`.sum-item`、`.ending-btns`。  
+    **建議：** 初始優先展開答錯題，答對題收合為「題名＋答對」一列，可點開查看理由；每題只突出一句關鍵提醒。手機將再玩／分享固定在結局面板底部，並預留等高內容內距。結局開啟時清除 Toast 與浮字，讓插畫、成績和徽章成為第一視覺。
+tokens used
+48,433

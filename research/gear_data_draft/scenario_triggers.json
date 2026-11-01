@@ -1,0 +1,67 @@
+{
+  "prep-postpone": {
+    "only_if": {
+      "path": "weather.official_closed",
+      "op": "eq",
+      "value": true
+    }
+  },
+  "prep-rainpants": {
+    "only_if": {
+      "path": "weather.rain",
+      "op": "eq",
+      "value": true
+    }
+  },
+  "prep-down-dry": {
+    "only_if": {
+      "all": [
+        {
+          "path": "weather.rain",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "path": "gear.down_layer",
+          "op": "eq",
+          "value": true
+        }
+      ]
+    }
+  },
+  "prep-ice-turn": {
+    "only_if": {
+      "path": "weather.ice",
+      "op": "eq",
+      "value": true
+    }
+  },
+  "prep-water-plan": {
+    "only_if": {
+      "path": "route.overnight",
+      "op": "eq",
+      "value": true
+    }
+  },
+  "prep-thunder-stop": {
+    "only_if": {
+      "path": "weather.thunder",
+      "op": "eq",
+      "value": true
+    }
+  },
+  "prep-sat-sky": {
+    "only_if": {
+      "path": "gear.has_satellite",
+      "op": "eq",
+      "value": true
+    }
+  },
+  "prep-overpack": {
+    "only_if": {
+      "path": "state.pack_weight_g",
+      "op": "gte",
+      "value": 8000
+    }
+  }
+}

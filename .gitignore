@@ -1,0 +1,8 @@
+final_tmp/
+screenshots/*
+!screenshots/final/
+.vercel/
+node_modules/
+__pycache__/
+*.pyc
+.DS_Store

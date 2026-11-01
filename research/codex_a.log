@@ -1,0 +1,101 @@
+Reading additional input from stdin...
+OpenAI Codex v0.164.0
+--------
+workdir: /workspace/digital-hiking/research
+model: gpt-6.1-sol
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: none
+reasoning summaries: none
+session id: 01a192f4-a069-7830-986b-1383eb509c5d
+--------
+user
+你是台灣登山安全專家。研究並撰寫 26 個登山情境題目，主題涵蓋：行前規劃與入山入園申請、登山計畫書並留給親友、天氣/颱風/午後雷陣雨查詢、十大必備裝備與背包打包、穿著洋蔥式穿法與不穿棉質、登山鞋/雨具/頭燈/地圖GPS離線地圖/急救包/緊急毯/水與行動糧、體能配速與休息補給、折返時間與天黑前下山、團隊規則(不脫隊、最慢者在前、領隊/殿後)、登山保險、手機電量與訊號與省電、無痕山林LNT、高山症、公廁/垃圾/水源。stage 以 trailhead 與 forest 為主、其餘分散。 Output a single valid JSON array (UTF-8, Traditional Chinese zh-TW, Taiwan terminology) written to the file given below. Each item schema: {"id":"kebab-id","category":"short zh-TW category","stage":"one of trailhead|forest|ridge|summit|descent","title":"short zh-TW title (<=12 chars)","situation":"1-3 sentence zh-TW scene in second person, vivid, practical","options":["opt A","opt B","opt C"],"answer":0,"risk":[0,15,25],"why":"2-4 sentence zh-TW plain-language teaching explanation of the correct answer and why the wrong ones are dangerous","sources":["agency or doc names"]}. Rules: exactly 3 options each; answer is the index of the single correct option (vary the index across items); risk is an array of 3 ints = accident-risk points added if that option is chosen (0 for the correct one; wrong ones 8-30 depending on severity; a dangerous choice like going into a gully when lost is higher). Wrong options must be plausible, not silly. Facts must be accurate for Taiwan (e.g. 112 emergency from mobile even without signal, 119 fire/rescue, 內政部消防署, 國家公園署 / 林業及自然保育署 入園入山 申請, 山林悠遊網, 中央氣象署, 無痕山林 Leave No Trace seven principles, 台灣黑熊 guidance from 林業及自然保育署, 虎頭蜂 guidance, 高山症 AMS, 失溫, 中暑, STOP principle for lost hikers). Use web search to verify key facts against official sources. Do not invent regulations; if unsure, phrase generally. Keep every text concise (mobile cards). After writing, validate the JSON with python3 -m json.tool and fix errors. 請寫入 /workspace/digital-hiking/research/scenarios_a.json
+codex
+我會先查核臺灣官方登山安全資料，特別確認申請制度、緊急通訊與急症處置，再撰寫 26 題並驗證 JSON 格式。
+exec
+/bin/bash -lc "ls -la; rg --files -g AGENTS.md -g '*scenario*'" in /workspace/digital-hiking/research
+ exited 1 in 0ms:
+total 20
+drwxr-xr-x 6 box box 4096 Nov  1 01:14 .
+drwxr-xr-x 4 box box 4096 Nov  1 01:13 ..
+dr-xr-xr-x 2 box box   40 Nov  1 01:14 .agents
+dr-xr-xr-x 2 box box   40 Nov  1 01:14 .aws
+dr-xr-xr-x 2 box box   40 Nov  1 01:14 .codex
+dr-xr-xr-x 2 box box   40 Nov  1 01:14 .git
+-rw-r--r-- 1 box box 2762 Nov  1 01:14 codex_a.log
+-rw-r--r-- 1 box box 2909 Nov  1 01:14 codex_b.log
+-rw-r--r-- 1 box box 1583 Nov  1 01:14 schema.txt
+
+web search: 
+web search: site.nfa.gov.tw 登山 112 無訊號 119 ...
+web search: 
+web search: site.cwa.gov.tw 登山 午後 雷雨 颱風 ...
+exec
+/bin/bash -lc 'cat schema.txt; for p in /AGENTS.md /workspace/AGENTS.md /workspace/digital-hiking/AGENTS.md; do if [ -f "$p" ]; then cat "$p"; fi; done' in /workspace/digital-hiking/research
+ succeeded in 0ms:
+Output a single valid JSON array (UTF-8, Traditional Chinese zh-TW, Taiwan terminology) written to the file given below. Each item schema: {"id":"kebab-id","category":"short zh-TW category","stage":"one of trailhead|forest|ridge|summit|descent","title":"short zh-TW title (<=12 chars)","situation":"1-3 sentence zh-TW scene in second person, vivid, practical","options":["opt A","opt B","opt C"],"answer":0,"risk":[0,15,25],"why":"2-4 sentence zh-TW plain-language teaching explanation of the correct answer and why the wrong ones are dangerous","sources":["agency or doc names"]}. Rules: exactly 3 options each; answer is the index of the single correct option (vary the index across items); risk is an array of 3 ints = accident-risk points added if that option is chosen (0 for the correct one; wrong ones 8-30 depending on severity; a dangerous choice like going into a gully when lost is higher). Wrong options must be plausible, not silly. Facts must be accurate for Taiwan (e.g. 112 emergency from mobile even without signal, 119 fire/rescue, 內政部消防署, 國家公園署 / 林業及自然保育署 入園入山 申請, 山林悠遊網, 中央氣象署, 無痕山林 Leave No Trace seven principles, 台灣黑熊 guidance from 林業及自然保育署, 虎頭蜂 guidance, 高山症 AMS, 失溫, 中暑, STOP principle for lost hikers). Use web search to verify key facts against official sources. Do not invent regulations; if unsure, phrase generally. Keep every text concise (mobile cards). After writing, validate the JSON with python3 -m json.tool and fix errors.
+
+web search: 
+web search: site.cwa.gov.tw 登山 雷擊 午後雷陣雨 安全 ...
+codex
+已確認：112 可在自己業者無訊號、但其他業者有涵蓋時嘗試撥通，並非完全無基地臺訊號也能通話。題目會清楚區分入園、入山及山屋申請，並以登山口與林間情境為主。
+exec
+/bin/bash -lc "cat > /tmp/build_scenarios_a.py <<'PY'
+import json
+items=[]
+def add(id,cat,stage,title,scene,opts,a,r,why,src):
+ items.append(dict(id=id,category=cat,stage=stage,title=title,situation=scene,options=opts,answer=a,risk=r,why=why,sources=src))
+add('check-permits','行前規劃','trailhead','許可不是一張通行證','你在登山口發現隊友只有山屋訂位紀錄，卻說這樣就能走完全程。你該如何確認？',['查管理機關公告，分別確認入園、入山及住宿等適用申請與核准狀態','有山屋床位就先走，遇到查驗再補辦','跟著已獲准的隊伍進入即可'],0,[0,22,24],'不同路線的管制與申請項目不同，床位不等於所有許可。可由臺灣登山申請一站式服務網查入口，入園及保護區等洽管理機關，入山許可屬警政機關業務；不可借用別隊核准。',['臺灣登山申請一站式服務網'])
+add('leave-trip-plan','登山計畫','trailhead','把計畫留在山下','你準備出發，親友只知道你要去某座山。這次路線有數個岔路，午後可能沒有訊號。',['只傳山頂名稱，避免親友擔心','把路線、隊員、時程、撤退備案及逾時通報約定交給留守親友','等到山頂有訊號再告知預計下山時間'],1,[16,0,20],'留守人需要知道你預計在哪裡，以及何時應啟動聯繫或報案。計畫變更與平安下山也要回報；僅有山名或延後通知，會讓失聯時難以判斷。',['國家公園署：在國家公園登山迷途怎麼辦？聰明自救保平安'])
+add('typhoon-route-check','天氣查詢','trailhead','山下晴也要查','你到登山口時陽光燦爛，但有颱風接近臺灣。隊友拿出昨天的市區預報說可以照走。',['依眼前天空決定，走到下雨再回頭','只確認山頂當下沒有下雨就出發','查中央氣象署山區預報、颱風與豪雨資訊及道路步道公告，必要時取消'],2,[25,22,0],'山下天氣不能代表山區，昨天的預報也可能已改變。颱風與強降雨會增加落石、崩塌及溪水暴漲風險，應依最新資訊調整或取消。',['中央氣象署：天然災害災防問答集','雪霸國家公園管理處：山區短延時強降雨安全提醒'])
+add('ten-essentials','裝備檢查','trailhead','短程也要備援','你要走半日步道，隊友提議只帶水與手機以減輕重量。你如何準備安全備援？',['檢核導航、防曬、保暖、照明、急救、用火工具、修補工具、額外食物、水與緊急遮蔽十類，再依路線調整','依十類清單準備，但頭燈和保暖留車上','只補帶急救包，其餘向其他遊客借'],0,[0,18,22],'十大必備是功能檢核，不是所有山域通用的固定十件物品；用火工具須防水收妥並遵守禁火規定。短程也可能延誤，留車上或仰賴路人無法及時應急。',['內政部消防署：低溫降雪風險升高，消防署提醒登山務必備齊關鍵裝備','玉山國家公園管理處：登山裝備'])
+add('pack-for-rain','背包打包','trailhead','雨衣放哪裡','你正整理背包，雨衣被塞在最底層，水袋和硬物集中在外側。今天可能隨時下雨。',['維持原樣，淋雨時再把背包倒空','重物靠背固定，雨具與急救用品易取，乾衣與電子用品分別防水','只套背包套，內部衣物不必防水'],1,[17,0,15],'靠背且穩定的重物有助維持重心，常用及應急物品應能迅速取出。背包套仍可能從背部或開口進水，內部分袋防水才能保住乾衣與通訊用品。',['玉山國家公園管理處：登山裝備','內政部消防署：低溫降雪風險升高，消防署提醒登山務必備齊關鍵裝備'])
+add('layer-clothing','衣著保暖','trailhead','棉衣濕了很冷','你穿著棉質上衣準備爬升，背包裡有排汗衣、保暖層和防風雨外層。清晨很涼，走動後卻容易流汗。',['把所有衣服一次穿上，流汗也不脫','繼續穿棉衣，濕了靠體溫烘乾','換排汗快乾底層，依冷熱增減保暖與防風雨層，另備乾衣'],2,[15,22,0],'洋蔥式穿法讓你能隨活動與風雨調整，避免汗濕後受寒。棉質吸水後不易乾，穿太多流汗或硬撐濕衣，都可能增加失溫風險。',['內政部消防署：低溫降雪風險升高，消防署提醒登山務必備齊關鍵裝備','衛生福利部疾病管制署：高溫與酷寒'])
+add('check-hiking-boots','鞋具檢查','trailhead','鞋底快脫落','你在登山口發現久未使用的登山鞋鞋底開裂，今天有濕滑石階。隊友說綁緊鞋帶就好。',['更換已試穿、鞋底完好且適合路況的鞋，無法更換就調整或取消','用膠帶暫纏鞋底，照原定長程路線走','改穿備用平底休閒鞋，濕石階慢走即可'],0,[0,20,18],'鞋面、鞋底與抓地狀況都要在出發前檢查，登山鞋也可能因老化失效。臨時纏膠帶不能保證支撐，鞋底不適合濕滑地面也會增加滑倒風險。',['玉山國家公園管理處：登山裝備','運動部：登山活動應注意事項'])
+add('check-insurance','登山保險','trailhead','保單有保這段嗎','你已買旅遊保險，行程卻包含高山路線。出發前看到保單有活動與海拔相關條款。',['已有旅遊保險，所有登山救援一定理賠','確認登山活動、海拔、期間及搜救費用等承保範圍與除外事項，不足就補足','等發生事故後，再向保險公司確認保障'],1,[18,0,20],'保險是否承保要看實際條款，醫療、意外與搜救費用也可能分開約定。未確認就出發可能留下保障缺口；保險仍不能取代風險評估與安全準備。',['運動部：登山活動應注意事項'])
+add('team-roles','團隊規則','trailhead','出發先說好','你和幾位速度差很多的朋友準備進入林間岔路。有人想各走各的，到山頂再集合。',['讓快的人先走，沿途用訊息聯繫即可','約好山頂碰面，途中自行選擇捷徑','指定領隊與殿後，讓較慢者在前段掌握配速，岔路集合並禁止自行脫隊'],2,[20,24,0],'全隊配速要配合最慢成員，領隊與殿後共同掌握人數及狀況。各走各的或抄捷徑，會讓落後、迷途或受傷的人無法被及時發現。',['運動部：登山活動應注意事項','國家公園署：在國家公園登山迷途怎麼辦？聰明自救保平安'])
+add('download-offline-map','地圖導航','trailhead','沒網路還能看圖','你準備進入收訊差的森林，手機裡只有網頁地圖截圖。這條步道有多個支線。',['先下載離線地圖與路線並測試定位，備紙圖與指南針且學會使用','截圖已足夠，走到岔路再找網路','只記錄去程軌跡，底圖不必下載'],0,[0,20,17],'GPS定位通常不需行動網路，但底圖與路線要先下載並確認可用。截圖缺乏完整地形與定位資訊，只有軌跡也不足以判讀周遭環境。',['國家公園署：在國家公園登山迷途怎麼辦？聰明自救保平安'])
+add('pace-and-snacks','體能補給','forest','喘到說不出話','你為了追上前隊，上坡喘到無法完整說話，早餐後也一直沒吃東西。前方還有長坡。',['趁還走得動先衝完，登頂再吃','通知全隊減速，短暫休息並少量補水與行動糧，評估是否縮短行程','只喝提神飲料，維持原速度'],1,[22,0,18],'穩定配速與定時補給能減少疲勞累積，體能訓練也應在行前逐步建立。硬追或靠提神飲料撐住，可能掩蓋疲勞並增加跌倒與耗竭風險。',['運動部：登山活動應注意事項','國家公園署：在國家公園登山迷途怎麼辦？聰明自救保平安'])
+add('water-source-safety','飲水補給','forest','清澈不等於能喝','你剩下的水不足以支應後半程，旁邊有清澈溪水，卻沒有可靠的補水資訊。你帶有適用的淨水用品。',['直接喝流動溪水，水清就沒有問題','刻意不喝水，照原路線走到終點','先調整或縮短行程；必要取水時避開污染源，依用品說明完成淨水處理'],2,[22,20,0],'行前應按時間、天候與備援需求帶足水，天然水源不可視為保證供水。清澈溪水仍可能含病原；缺水硬走或直接生飲，都會增加健康風險。',['國家公園署：在國家公園登山迷途怎麼辦？聰明自救保平安','林業及自然保育署：台灣山林悠遊網無痕山林'])
+add('rain-gear-early','雨具使用','forest','雨剛下就處理','你走在林間，雨滴漸密，衣領開始濕冷。隊友提議等到大雨再穿雨衣。',['在安全處先穿防水外層與雨褲，保護乾衣並評估撤退','走快一點發熱，雨停後自然會乾','只套背包套，衣服淋濕再換'],0,[0,23,18],'趁尚未濕透就阻隔風雨，比事後補救更有效。加速可能增加流汗與滑倒，背包套也不能保護身體；持續惡劣時應撤退。',['內政部消防署：低溫降雪風險升高，消防署提醒登山務必備齊關鍵裝備'])
+add('first-aid-cut','急救處置','forest','擦傷還在流血','你在林間跌倒，小腿擦傷滲血，人仍清醒且能正常活動。你的急救包就在背包側袋。',['直接貼膠帶遮住，回家再清理','先在安全處以乾淨敷料加壓止血，出血控制後沖洗覆蓋，再評估行程','用溪水沖掉血跡，傷口敞開繼續走'],1,[15,0,18],'急救包要帶合用的敷料並知道怎麼使用，先止血再清潔與保護傷口。未清理就封住或使用未處理溪水，可能增加感染；若出血不止或疑似重傷應求援。',['運動部：登山活動應注意事項','衛生福利部中央健康保險署：急救和緊急狀況處理'])
+add('hypothermia-blanket','失溫預防','forest','發抖又說話含糊','你發現同行者淋雨後持續發抖，說話含糊、動作變慢。你帶有乾衣、隔地墊及緊急毯。',['讓他快走流汗，把濕衣烘乾','只裹緊急毯，留在迎風步道等雨停','停止行進至鄰近安全避風雨處，換乾衣、隔地保暖加緊急毯，立即求援'],2,[28,24,0],'言語不清與動作遲鈍可能是失溫警訊，需要保暖並及早求援。緊急毯主要減少熱散失，不能取代乾衣、隔地與遮蔽；勉強行走會增加跌倒及惡化風險。',['衛生福利部疾病管制署：高溫與酷寒','內政部消防署：低溫降雪風險升高，消防署提醒登山務必備齊關鍵裝備'])
+add('phone-power','通訊電力','forest','電量只剩一半','你在林間一直拍照與搜尋訊號，手機電量快速下降。離出口還有數小時，手機也負責導航。',['減少非必要使用並啟用省電；無訊號時可用飛航模式配合離線定位，定時於安全處聯繫並備行動電源','持續直播與搜尋訊號，讓親友隨時看到你','把亮度調最高並常亮地圖，避免錯過岔路'],0,[0,19,17],'行前應確認離線定位在手機設定下可用，並替手機與行動電源防水。飛航模式會中斷通話與訊息，約定回報或求援時要關閉；持續搜尋與螢幕常亮會消耗備援電量。',['內政部消防署：低溫降雪風險升高，消防署提醒登山務必備齊關鍵裝備','林業及自然保育署：山區手機可通訊點標示'])
+add('lost-stop','迷途自救','forest','路突然不見了','你走進霧中的森林，發現腳下已沒有明顯步道，也無法確定來路。下方溪溝看起來通往山下。',['沿溪溝下切，水流一定通到有人處','依STOP停止、思考、觀察、計畫，在安全處定位；無法確認路線就求援待援','分頭找路，誰先找到步道就大喊'],1,[30,0,25],'STOP先阻止迷途範圍繼續擴大，再盤點位置、裝備與求援方式。溪溝可能接瀑布或陡壁，分頭探索則會增加失聯人數；待援位置仍須避開落石與洪水危險。',['國家公園署：在國家公園登山迷途怎麼辦？聰明自救保平安'])
+add('emergency-call','緊急求援','forest','沒有自家訊號','你和受傷隊友停在安全處，119沒有撥通，手機顯示無自家業者訊號。你該怎麼做？',['沿陡坡往高處走，找到訊號才報案','持續等自家業者恢復，不嘗試其他方式','嘗試112依語音按9轉119，報座標、傷況與人數；不通則啟用備援通訊'],2,[27,22,0],'112可利用其他業者涵蓋的訊號轉接救援，但手機須具相容通訊能力，完全無任何業者訊號時仍可能不通。不要為找訊號冒險攀爬，應保存電力並使用預備的衛星通訊等方式。',['內政部消防署：119、112','林業及自然保育署：山區手機可通訊點標示'])
+add('lnt-toilet-waste','無痕山林','forest','廁所與果皮','你經過最後一處開放公廁，隊友說林間到處都能方便，果皮也可以留給動物。你帶有垃圾袋與排遺袋。',['優先使用公廁，後續依場域規範處理排遺，衛生紙與果皮等垃圾密封帶下山','果皮埋入落葉，衛生紙塞進石縫','到溪邊如廁並清洗餐具，讓流水帶走髒污'],0,[0,16,22],'無痕山林LNT七原則涵蓋事前準備、耐受地面活動、處理垃圾、保留原貌、減少用火、尊重野生動物與其他使用者。排遺須遠離水源、步道與營地並依規範處理，必要時用排遺袋帶走；果皮與清洗污水也會污染或吸引動物。',['林業及自然保育署：無痕山林七大準則','台灣山林悠遊網：無痕山林'])
+add('black-bear-encounter','野生動物','forest','前方出現黑熊','你在林道轉彎處看見臺灣黑熊，牠尚未靠近。你的隊友緊張地握著食物袋。',['丟出食物分散牠的注意，再趁機離開','保持冷靜與距離，不奔跑、不餵食，留意牠的動向並緩緩退離，安全後通報','爬到旁邊的樹上，等牠離開'],1,[26,0,25],'突然奔跑、尖叫或靠近都可能增加衝突，丟食物還會讓黑熊把人和食物連結。黑熊會爬樹，不能把爬樹當逃生方法；平時就應密封管理食物與廚餘。',['林業及自然保育署：在山上遇到熊怎麼辦','林業及自然保育署臺中分署：熊熊現蹤！民眾登鳶嘴稍來山步道遇黑熊'])
+add('hornet-warning','蜂螫預防','forest','蜂在面前盤旋','你在林間看到數隻虎頭蜂反覆靠近，前方疑似有蜂巢，尚未遭到螫咬。同行者想用登山杖驅趕。',['用杖揮開蜂隻，再快速通過蜂巢旁','先噴殺蟲劑，等蜂散開再走','停止靠近，不拍打或噴藥，安靜循來路退離並提醒後方隊伍'],2,[27,28,0],'反覆靠近可能是警戒行為，應避免繼續侵入蜂巢範圍。揮打或噴殺蟲劑可能激怒蜂群；若遭群蜂攻擊應護住頭頸迅速遠離，被螫後出現呼吸困難等症狀立即119求援。',['林業及自然保育署：網傳殺蟲劑防蜂，恐激怒虎頭蜂攻擊','勞動部職業安全衛生署：從事戶外工作虎頭蜂螫危害預防指引'])
+add('thunder-ridge','雷雨應變','ridge','稜線傳來雷聲','你接近裸露稜線時聽見雷聲，午後雲層快速堆高。山頂只剩一小段路。',['停止登頂，趁路況可安全通行迅速離開稜線與孤立高點，尋找較安全遮蔽','先上頂拍照，雷雨真正到頭頂再下撤','躲到稜線最高的獨立大樹下等雨'],0,[0,29,30],'聽見雷聲就應採取避雷行動，不能用距離山頂近作為續行理由。裸露高點與孤立大樹容易遭雷擊，應依地形撤往較低且無溪洪、落石風險處；林間也不是絕對安全。',['中央氣象署：天然災害災防問答集','雪霸國家公園管理處：山區短延時強降雨安全提醒'])
+add('altitude-symptoms','高山症','ridge','頭痛又想吐','你快速上升到高海拔後頭痛、噁心，休息仍未改善。隊友說你平常跑馬拉松，應該能撐到山屋。',['吃止痛藥壓住症狀，繼續往更高山屋走','停止上升並告知全隊，症狀未改善就有人陪同下降；惡化立即求援','獨自下山，讓隊友照原計畫登頂'],1,[28,0,25],'這可能是急性高山症AMS，體能好也不能保證不會發生。不要靠藥物掩蓋症狀繼續上升，也不可讓不適者獨行；若步態不穩、意識異常或休息仍喘，須緊急下降與求援。',['國家公園署：體力好也可能會高山症，緩慢爬升、及早下撤保平安'])
+add('turnaround-time','折返決策','summit','山頂別再多等','你抵達山頂時已到事先訂好的最晚下撤時間，回程還有濕滑長坡。朋友想多等半小時拍雲海。',['等雲海出現再走，帶頭燈就不怕晚','下山時少休息、走快一點補回時間','依約立即下撤，保留補給與意外緩衝，目標天黑前到安全出口'],2,[21,25,0],'折返與下撤時間要按最慢隊員、路況與日落時間安排，抵達山頂也不能任意延後。頭燈是備援，不能消除夜間辨路與跌倒風險；趕路省休息也會累積危險。',['運動部：登山活動應注意事項'])
+add('headlamp-before-dark','照明備援','descent','林內提早變暗','你下撤時遇到濃霧，森林比預期早暗下來。背包有頭燈與備用電池，手機電量也不多。',['在安全處先戴好頭燈並確認照明，全隊集合慢行，必要時調整計畫與通報','用手機手電筒一路照明，把頭燈留到全黑','趁還看得到輪廓加快下坡，避免拿出裝備耽誤'],0,[0,18,25],'頭燈能空出雙手維持平衡，應在視線不足前就準備好。手機兼任照明會消耗導航與求援電力，昏暗中加速下坡也更容易滑倒。',['內政部消防署：低溫降雪風險升高，消防署提醒登山務必備齊關鍵裝備'])
+add('heatstroke-descent','熱傷害','descent','悶熱中開始恍神','你在悶熱的下坡看見隊友全身發燙、步態不穩，回答問題也混亂。即使他仍有流汗，你也覺得不對勁。',['扶他繼續走到停車場，讓冷氣幫忙降溫','立即119求援，移至鄰近安全陰涼處，鬆衣、濕身搧風降溫，意識不清不灌水','先強灌運動飲料，等補足水再決定是否報案'],1,[28,0,30],'高熱伴隨意識異常應懷疑中暑，有流汗也不能排除。應一面求援一面快速降溫，不等走到終點；意識不清時灌水可能嗆入呼吸道。',['衛生福利部國民健康署：熱傷害的診斷與處置','臺大醫院：台大醫網第174期熱傷害處置'])
+path='/workspace/digital-hiking/research/scenarios_a.json'
+with open(path,'w',encoding='utf-8') as f: json.dump(items,f,ensure_ascii=False,indent=2); f.write('\\n')
+assert len(items)==26
+assert len({x['id'] for x in items})==26
+for x in items:
+ assert len(x['title'])<=12,(x['id'],x['title'])
+ assert len(x['options'])==len(x['risk'])==3
+ assert x['risk'][x['answer']]==0
+ assert all(type(v)==int and (v==0 if i==x['answer'] else 8<=v<=30) for i,v in enumerate(x['risk']))
+ assert x['stage'] in ['trailhead','forest','ridge','summit','descent']
+print('Validated 26 scenarios; stages:',{s:sum(x['stage']==s for x in items) for s in ['trailhead','forest','ridge','summit','descent']})
+PY
+python3 /tmp/build_scenarios_a.py
+python3 -m json.tool /workspace/digital-hiking/research/scenarios_a.json > /tmp/scenarios_a_validated.json" in /workspace/digital-hiking/research
+ succeeded in 0ms:
+Validated 26 scenarios; stages: {'trailhead': 10, 'forest': 11, 'ridge': 2, 'summit': 1, 'descent': 2}
+
+codex
+已完成 [scenarios_a.json](/workspace/digital-hiking/research/scenarios_a.json)，共 26 題，使用繁體中文與臺灣用語，並查核官方資料。
+
+已通過 `python3 -m json.tool` 與題數、選項、答案、風險分數及標題長度檢查。
+tokens used
+32,544
+已完成 [scenarios_a.json](/workspace/digital-hiking/research/scenarios_a.json)，共 26 題，使用繁體中文與臺灣用語，並查核官方資料。
+
+已通過 `python3 -m json.tool` 與題數、選項、答案、風險分數及標題長度檢查。
