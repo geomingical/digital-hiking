@@ -132,6 +132,10 @@
   }
 
   function drawHiker(c, x, y, o) {
+    if (DH.hero3d && DH.hero3d.active) {
+      DH.hero3d.drawSprite(c, x, y, o);
+      return;
+    }
     const t = o.t || 0;
     const s = o.scale || 1;
     const risk = o.risk || 0;
@@ -152,8 +156,11 @@
     const standLift = out && o.standLift ? o.standLift : 0;
     const armW = out ? out.armW : 7.5;
 
+    /* 走到一半淋濕或受寒：身體發抖 */
+    const body = o.body || {};
+    const shiver = body.chilled && !reducedMotion() ? Math.sin(t * 34) * 0.9 : 0;
     c.save();
-    c.translate(x, y);
+    c.translate(x + shiver, y);
     c.scale(s, s);
     shadow(c, 30 * (1 - Math.min(jump, 60) / 150), 7);
     c.translate(0, -jump);
@@ -253,6 +260,17 @@
     c.translate(2 + mv * 3, -67 - bob);
     if (o.headTilt) c.rotate(o.headTilt);
     ell(c, -21, 0, 13, 16, col.hair);
+    /* 女生多一束馬尾；男生維持短髮 */
+    if (!o.colors && !o.helmet && DH.player.gender === 'female') {
+      c.beginPath();
+      c.moveTo(-26, -8);
+      c.quadraticCurveTo(-48, -4, -44, 24);
+      c.quadraticCurveTo(-34, 16, -25, 10);
+      c.closePath();
+      c.fillStyle = col.hair;
+      c.fill();
+      ell(c, -27, -6, 4, 4, '#4fb3a5');
+    }
     ell(c, 2, 0, 30, 27, col.skin);
     ell(c, -22, 4, 5, 6, '#ffd2ad');
     c.beginPath();
@@ -293,6 +311,19 @@
       ell(c, 2, -16, 25, 5, 'rgba(180,120,50,.17)');
       box(c, -23, -24, 50, 7, 3, col.hatBand);
       if (!o.colors) hatBadge(c, 15, -23);
+    }
+    /* 淋濕：髮梢與下巴滴水；受寒：呼出白氣 */
+    if (body.soaked) {
+      for (let i = 0; i < 3; i++) {
+        const p = (t * 0.9 + i / 3) % 1;
+        drop(c, -18 + i * 19, 24 + p * 30, 0.5);
+      }
+    }
+    if (body.chilled) {
+      const p = (t * 0.55) % 1;
+      c.globalAlpha = (1 - p) * 0.75;
+      ell(c, 38 + p * 16, 9 - p * 12, 4 + p * 7, 3 + p * 5, '#fff');
+      c.globalAlpha = 1;
     }
     if (risk >= 80) {
       [-2, 6, 14].forEach((lx) => line(c, lx, -8, lx, -3, 'rgba(90,120,190,.55)', 1.6));
@@ -926,7 +957,7 @@
   }
 
   const endings = {
-    good(c, w, h, t) {
+    good(c, w, h, t, outfit) {
       skyFill(c, w, h, '#8fcdf2', '#fff0d2');
       const sx = w * 0.72;
       const sy = h * 0.32;
@@ -959,14 +990,14 @@
       c.fill();
       c.restore();
       const jump = Math.abs(Math.sin(t * 3.2)) * 14;
-      drawHiker(c, cx - 8, h * 0.5, { t, pose: 'cheer', jump, scale: Math.min(1, h / 230) });
+      drawHiker(c, cx - 8, h * 0.5, { t, pose: 'cheer', jump, scale: Math.min(1, h / 230), outfit });
       for (let i = 0; i < 7; i++) {
         const fx = w * ((i * 0.147 + 0.07) % 1);
         const fy2 = ((t * 22 + i * 57) % (h * 0.7));
         drawFlower(c, fx, fy2, 5, ['#ffb1c4', '#ffd965', '#fff', '#ffc78f'][i % 4], t + i);
       }
     },
-    normal(c, w, h, t) {
+    normal(c, w, h, t, outfit) {
       skyFill(c, w, h, '#9a8fc4', '#ffc99a');
       ell(c, w * 0.8, h * 0.28, h * 0.1, h * 0.1, '#fff3c9');
       ell(c, w * 0.8 + h * 0.04, h * 0.26, h * 0.085, h * 0.085, '#ae9cc4');
@@ -984,7 +1015,7 @@
       decor.bench(c, 1.9, t, {});
       c.restore();
       const sc = Math.min(0.95, h / 240);
-      drawHiker(c, w * 0.43, h * 0.8, { t, risk: 62, scale: sc, headTilt: 0.05 });
+      drawHiker(c, w * 0.43, h * 0.8, { t, risk: 62, scale: sc, headTilt: 0.05, outfit });
       box(c, w * 0.43 - 2 * sc, h * 0.8 - 80 * sc, 14 * sc, 5 * sc, 2, '#fff9ea');
       const steam = Math.sin(t * 2) * 3;
       c.save();
@@ -998,8 +1029,8 @@
       c.stroke();
       c.restore();
     },
-    /* 求救結局：溫暖、被接住的感覺。沒有暴風雨，也沒有責備。 */
-    bad(c, w, h, t) {
+    /* 救援結局：直升機維持原本的 Q 版模樣，檢討寫在文字裡，畫面不放慶祝的東西 */
+    bad(c, w, h, t, outfit) {
       skyFill(c, w, h, '#a6dcf0', '#ffe6c2');
       const sunX = w * 0.14;
       const sunY = h * 0.2;
@@ -1080,7 +1111,7 @@
       const gx = w * 0.2;
       const gy = h * 0.84;
       const gs = sc * 0.82;
-      drawHiker(c, gx, gy, { t, risk: 10, pose: 'wave', scale: gs, blinkSeed: 1 });
+      drawHiker(c, gx, gy, { t, risk: 10, pose: 'wave', scale: gs, blinkSeed: 1, outfit });
       const rx = gx + 88 * sc;
       drawHiker(c, rx, gy + 3, { t, pose: 'idle', dir: -1, scale: gs, colors: crew, helmet: true, blinkSeed: 3 });
       /* 地上的急救包 */
@@ -1089,18 +1120,7 @@
       c.scale(sc * 0.9, sc * 0.9);
       icons.medkit(c);
       c.restore();
-      /* 小愛心 */
-      for (let i = 0; i < 3; i++) {
-        const p = (t * 0.35 + i / 3) % 1;
-        const hxx = gx + 44 * sc + Math.sin(p * 6 + i) * 6;
-        const hyy = gy - 84 * gs - p * 16;
-        c.globalAlpha = Math.sin(p * Math.PI) * 0.85;
-        ell(c, hxx - 2.4, hyy, 3, 3, '#ef7f7a');
-        ell(c, hxx + 2.4, hyy, 3, 3, '#ef7f7a');
-        poly(c, [hxx - 5.2, hyy + 1, hxx + 5.2, hyy + 1, hxx, hyy + 7], '#ef7f7a');
-        c.globalAlpha = 1;
-      }
-      speech(c, Math.max(84, gx + 44 * sc), Math.max(36, gy - 122 * gs - 20), '求救是對的決定！');
+      speech(c, Math.max(84, gx + 44 * sc), Math.max(36, gy - 122 * gs - 20), '是我準備不足。');
     },
   };
 

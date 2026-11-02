@@ -7,6 +7,14 @@
   let birdTimer = null;
   let enabled = false;
   let birdsWanted = true;
+  let rainGain = null;
+  let musicTimer = null;
+  let musicMode = 'calm';
+  /* 背景音樂：幾個五聲音階的音慢慢飄過，風險高時換成比較不安的音 */
+  const SCALES = {
+    calm: [392, 440, 523.25, 587.33, 659.25, 783.99],
+    tense: [329.63, 392, 440, 493.88, 587.33, 659.25],
+  };
 
   function noiseBuffer(seconds) {
     const len = Math.floor(ctx.sampleRate * seconds);
@@ -41,6 +49,17 @@
     wind.connect(lp).connect(windGain).connect(master);
     wind.start();
     lfo.start();
+
+    const rain = ctx.createBufferSource();
+    rain.buffer = noiseBuffer(2);
+    rain.loop = true;
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 1800;
+    rainGain = ctx.createGain();
+    rainGain.gain.value = 0;
+    rain.connect(hp).connect(rainGain).connect(master);
+    rain.start();
     return true;
   }
 
@@ -68,6 +87,21 @@
     }
   }
 
+  function scheduleMusic() {
+    clearTimeout(musicTimer);
+    if (!enabled) return;
+    musicTimer = setTimeout(() => {
+      if (ctx.state === 'running') {
+        const scale = SCALES[musicMode];
+        const n = scale[Math.floor(Math.random() * scale.length)];
+        tone(n, 0, 3.2, 0.028, 'sine');
+        tone(n / 2, 0, 4.2, 0.02, 'triangle');
+        if (Math.random() < 0.4) tone(scale[Math.floor(Math.random() * scale.length)], 0.9, 2.6, 0.018, 'sine');
+      }
+      scheduleMusic();
+    }, 2400 + Math.random() * 2600);
+  }
+
   function scheduleBirds() {
     clearTimeout(birdTimer);
     if (!enabled) return;
@@ -91,7 +125,15 @@
         if (on) ctx.resume();
       }
       scheduleBirds();
+      scheduleMusic();
       return true;
+    },
+    /* 雨聲、風聲跟著畫面上的天氣走 */
+    setWeather(rain, wind, risk) {
+      musicMode = risk >= 50 ? 'tense' : 'calm';
+      if (!ctx || !enabled) return;
+      rainGain.gain.setTargetAtTime(rain * 0.09, ctx.currentTime, 0.8);
+      if (wind > 0.3) windGain.gain.setTargetAtTime(0.05 + wind * 0.14, ctx.currentTime, 0.8);
     },
     /* 頁籤切走時暫停，切回來時恢復。 */
     suspend() { if (ctx && ctx.state === 'running') ctx.suspend(); },

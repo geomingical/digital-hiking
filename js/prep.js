@@ -63,13 +63,12 @@
     step: 'mountain',
     mountainId: null,
     activeMountain: null,
-    ack: false,
     seasonChoice: null,
     season: null,
     nonce: 0,
     forecast: null,
     actual: null,
-    selection: L.defaultSelection(),
+    selection: L.emptySelection(),
     tab: 'wear',
     whyOpen: false,
     launched: false,
@@ -138,16 +137,18 @@
       this.forecast = null;
       this.actual = null;
       this.seasonChoice = null;
-      this.ack = false;
+      this.mountainId = null;
+      this.activeMountain = null;
+      /* 重新選山就是新的一趟，從家居服重新穿 */
+      this.selection = L.emptySelection();
       this.open();
     },
 
     selectMountain(id) {
       this.activeMountain = id;
       if (id !== this.mountainId) {
-        /* 換山要重做簡報，配裝先留著比較 */
+        /* 換山要重做簡報；已經選的配裝先留著，不用重穿 */
         this.mountainId = id;
-        this.ack = false;
         this.seasonChoice = null;
         this.season = null;
         this.forecast = null;
@@ -177,6 +178,9 @@
       this.rollForecast();
       this.render();
     },
+    undecided() {
+      return L.undecidedSlots(this.selection, this.data.gear);
+    },
     postponed() {
       return this.forecast ? L.postponeReasons(this.forecast) : [];
     },
@@ -198,7 +202,7 @@
     },
 
     confirm() {
-      if (this.launched || this.postponed().length || !this.forecast) return false;
+      if (this.launched || this.postponed().length || !this.forecast || this.undecided().length) return false;
       this.launched = true;
       const ctx = this.context();
       const preparation = Object.assign(this.assessment(), { confirmed: true });
@@ -280,6 +284,9 @@
         const picked = m.id === this.mountainId;
         const card = el('article', `mtn-card ${picked ? 'picked' : ''} ${m.id === this.activeMountain ? 'active' : ''}`);
         card.dataset.id = m.id;
+        card.addEventListener('click', (e) => {
+          if (!e.target.closest('button, summary')) this.selectMountain(m.id);
+        });
         const bannerCv = el('canvas', 'mtn-banner');
         bannerCv.setAttribute('aria-hidden', 'true');
         card.appendChild(bannerCv);
@@ -290,25 +297,30 @@
         top.appendChild(star);
         card.appendChild(top);
         card.appendChild(el('p', 'mtn-intro', m.intro));
-        const dl = el('dl', 'mtn-facts');
-        [
+        const facts = (rows) => {
+          const dl = el('dl', 'mtn-facts');
+          rows.forEach(([k, v]) => {
+            dl.appendChild(el('dt', '', k));
+            dl.appendChild(el('dd', '', v));
+          });
+          return dl;
+        };
+        card.appendChild(facts([
           ['海拔', `${meters(m.summit_m)}（登山口基準${meters(m.trailhead_m)}）`],
           ['天數', L.formatDays(m.days)],
-          ['步道', m.terrain],
-          ['氣候', m.climate],
-          ['許可', m.permits_note],
-        ].forEach(([k, v]) => {
-          dl.appendChild(el('dt', '', k));
-          dl.appendChild(el('dd', '', v));
-        });
-        card.appendChild(dl);
+        ]));
+        const more = el('details', 'mtn-more');
+        more.open = picked;
+        more.appendChild(el('summary', '', '步道、氣候與許可'));
+        more.appendChild(facts([['步道', m.terrain], ['氣候', m.climate], ['許可', m.permits_note]]));
+        card.appendChild(more);
         const pick = button(`btn btn-small mtn-pick ${picked ? 'on' : ''}`, picked ? '✓ 已選這座山' : '選這座山', () => this.selectMountain(m.id));
         pick.setAttribute('aria-pressed', String(picked));
         card.appendChild(pick);
         grid.appendChild(card);
       });
       body.appendChild(grid);
-      body.appendChild(el('p', 'prep-note', '星等是本遊戲綜合步程、負重、暴露與撤退的相對排序，不等同官方步道分級。天數不含交通與額外高度適應。實際路況與申請規定請查當期官方公告。'));
+      body.appendChild(el('p', 'prep-note', '山景為示意插畫。星等是本遊戲綜合步程、負重、暴露與撤退的相對排序，不等同官方步道分級。天數不含交通與額外高度適應。實際路況與申請規定請查當期官方公告。'));
       /* 畫面排好後才知道插圖尺寸 */
       grid.querySelectorAll('.mtn-card').forEach((card) => {
         const cv = card.querySelector('.mtn-banner');
@@ -317,33 +329,13 @@
         if (w && h) GA.drawMountainBanner(fitCanvas(cv, w, h), w, h, list.find((x) => x.id === card.dataset.id));
       });
 
+      /* 許可需求直接放在下一步旁邊：看得到，不用再多勾一格 */
       const m = this.mountain;
-      const ack = el('label', `prep-ack ${m ? '' : 'off'}`);
-      const box = el('input');
-      box.type = 'checkbox';
-      box.id = 'prep-ack';
-      box.checked = this.ack;
-      box.disabled = !m;
-      const syncNext = () => {
-        const ready = !!(this.mountain && this.ack);
-        next.disabled = !ready;
-        need.hidden = ready;
-        need.textContent = this.mountain ? '請先勾選已閱讀' : '請先選山並勾選閱讀';
-      };
-      box.addEventListener('change', () => {
-        this.ack = box.checked;
-        syncNext();
-      });
-      ack.appendChild(box);
-      ack.appendChild(el('span', '', m ? `我已閱讀${m.name}的許可與住宿需求（模擬）` : '先選一座山，再閱讀它的許可與住宿需求'));
-      foot.appendChild(ack);
-      const need = el('p', 'prep-need');
-      need.id = 'prep-need';
-      foot.appendChild(need);
+      foot.appendChild(el('p', 'prep-foot-note', m ? `${m.name}的許可與住宿：${m.permits_note}` : '先選一座山，這裡會列出它的許可與住宿需求。'));
       const next = button('btn btn-primary', '下一步：看天氣', () => this.go('forecast'));
       next.id = 'prep-next';
+      next.disabled = !m;
       foot.appendChild(next);
-      syncNext();
     },
 
     /* 第 2 步：季節與預報 ----------------------------------------------- */
@@ -500,6 +492,7 @@
       const f = this.forecast;
       const m = this.mountain;
       const brief = el('div', 'gear-brief');
+      brief.appendChild(el('p', 'gear-eve', '出發前夜。明天要穿什麼、帶什麼，現在決定。'));
       brief.appendChild(el('strong', '', `${m.name}｜${L.seasonName(this.season)}｜模擬預報`));
       brief.appendChild(el('span', '', `登山口 ${range(f.trailhead_temp_c)}；山頂 ${range(f.summit_temp_c)}`));
       const hz = Object.keys(HAZARD_NAMES).filter((k) => (k === 'ice' ? f.ice : f.hazards[k])).map((k) => HAZARD_NAMES[k]);
@@ -515,6 +508,13 @@
       cv.setAttribute('role', 'img');
       cv.setAttribute('aria-label', '角色目前的穿著');
       stage.appendChild(cv);
+      const heroLabel = () => (DH.player.gender === 'male' ? '換女生' : '換男生');
+      const heroSwitch = button('btn hero-switch', heroLabel(), () => {
+        DH.player.set(DH.player.gender === 'male' ? 'female' : 'male');
+        heroSwitch.textContent = heroLabel();
+        this.refreshGear(false);
+      });
+      stage.appendChild(heroSwitch);
       visual.appendChild(stage);
       const traySlot = el('div', 'gear-tray-slot');
       traySlot.id = 'gear-tray-slot';
@@ -526,8 +526,10 @@
       const meter = el('div', 'gear-meter');
       meter.id = 'gear-meter';
       left.appendChild(meter);
-      const rec = button('btn btn-small gear-rec', '套用本趟建議清單', () => this.applyRecommended());
+      /* 先自己判斷一次，選完才能對照建議，否則一鍵就跳過了整個學習 */
+      const rec = button('btn btn-small gear-rec', '對照本趟建議清單', () => this.applyRecommended());
       rec.id = 'btn-recommend';
+      rec.hidden = true;
       left.appendChild(rec);
       layout.appendChild(left);
 
@@ -566,8 +568,10 @@
       layout.appendChild(right);
       body.appendChild(layout);
 
-      foot.appendChild(el('p', 'prep-foot-note', '點數是教學量表，不是事故機率。'));
-      const next = button('btn btn-primary', '下一步：裝備檢查', () => this.go('check'));
+      const note = el('p', 'prep-foot-note');
+      note.id = 'gear-foot-note';
+      foot.appendChild(note);
+      const next = button('btn btn-primary', '', () => this.advanceGear());
       next.id = 'prep-next';
       foot.appendChild(next);
 
@@ -575,6 +579,20 @@
       this.setTab(this.tab);
       this.refreshGear(false);
       body.addEventListener('scroll', () => this.updateMini());
+    },
+
+    /* 下一步：有沒選的就帶去第一個沒選的，都選完才進檢查 */
+    advanceGear() {
+      const [first] = this.undecided();
+      if (!first) {
+        this.go('check');
+        return;
+      }
+      this.setTab(first.id === 'water' ? 'pack' : 'wear');
+      const target = document.querySelector(`.gear-slot[data-slot="${first.id}"]`);
+      document.querySelectorAll('.gear-opt.flash').forEach((n) => n.classList.remove('flash'));
+      target.scrollIntoView({ block: 'center' });
+      target.querySelector('.gear-opt').classList.add('flash');
     },
 
     updateMini() {
@@ -628,6 +646,7 @@
         const group = el('div', 'gear-slot');
         group.setAttribute('role', 'radiogroup');
         group.setAttribute('aria-label', slot.name);
+        group.dataset.slot = slot.id;
         group.appendChild(el('h4', '', slot.name));
         const opts = el('div', 'gear-opts is-short');
         slot.options.forEach((id) => opts.appendChild(this.optionButton(slot.id, this.index[id], false)));
@@ -648,6 +667,7 @@
       const wg = el('div', 'gear-slot');
       wg.setAttribute('role', 'radiogroup');
       wg.setAttribute('aria-label', '飲水');
+      wg.dataset.slot = 'water';
       const wh = el('h4', '', '飲水');
       const target = el('small', 'gear-target');
       target.id = 'water-target';
@@ -683,7 +703,7 @@
 
     /* 預覽角色的天氣背景 */
     previewFx() {
-      return { cold: this.brief && this.brief.cold };
+      return { cold: this.brief && this.brief.cold, room: true };
     },
     drawPreview(t, pose) {
       if (!this.preview) return;
@@ -703,10 +723,59 @@
         b.classList.toggle('on', on);
         b.setAttribute('aria-checked', String(on));
       });
-      const a = this.assessment();
-      const ctx = this.context();
+      const pending = this.undecided();
       const meter = $('gear-meter');
       meter.textContent = '';
+      $('btn-recommend').hidden = pending.length > 0;
+      $('prep-next').textContent = pending.length ? `還差 ${pending.length} 項：${pending[0].name}` : '下一步：裝備檢查';
+      $('prep-next').classList.toggle('is-pending', pending.length > 0);
+      $('gear-foot-note').textContent = pending.length ? '連「不穿」也要自己選過。全部決定後才看得到行前風險。' : '點數是教學量表，不是事故機率。';
+      if (pending.length) {
+        this.renderDressing(meter, pending);
+      } else {
+        this.renderMeter(meter);
+      }
+      document.querySelectorAll('.gear-slot-note').forEach((n) => {
+        const chosen = sel[n.dataset.slot];
+        n.textContent = chosen ? this.index[chosen].teach : '還沒決定';
+      });
+      const outfit = this.outfitSummary(sel);
+      $('gear-summary').textContent = outfit;
+      $('gear-preview').setAttribute('aria-label', `角色目前的穿著：${outfit}`);
+      $('gear-tray-slot').replaceChildren(this.trayEl());
+      const f = this.forecast;
+      const weather = f ? `${this.mountain.name}｜山頂 ${range(f.summit_temp_c)}｜降雨 ${f.rain_probability_pct}%` : '';
+      $('gear-mini-text').textContent = `${weather}\n${pending.length ? `還差 ${pending.length} 項` : `行前風險 ${this.assessment().risk}／${this.assessment().cap}`}｜${outfit}`;
+
+      const target = $('water-target');
+      if (target) target.textContent = `本趟起點建議至少 ${L.waterTarget(this.mountain, this.brief)} 公升，水源與流汗再調整`;
+      const weight = $('pack-weight');
+      if (weight) weight.textContent = `可選物估重 ${(L.packWeight(sel, this.index) / 1000).toFixed(1)} 公斤（含水，不含背包與公裝）`;
+      this.renderReview($('review-panel'), pending);
+      this.sizePreview();
+      this.drawPreview(this.handlers.artTime ? this.handlers.artTime() : 1);
+      this.updateMini();
+      if (changed) this.handlers.tapSound();
+    },
+
+    renderDressing(meter, pending) {
+      const total = this.data.gear.slots.filter((s) => s.id !== 'pack').length;
+      const top = el('div', 'meter-top');
+      top.appendChild(el('span', '', '準備進度'));
+      top.appendChild(el('b', 'meter-num', `${total - pending.length}`));
+      top.appendChild(el('span', 'meter-cap', `／${total}`));
+      meter.appendChild(top);
+      const bar = el('div', 'meter-bar');
+      const fill = el('i');
+      fill.style.width = `${((total - pending.length) / total) * 100}%`;
+      fill.style.background = '#7dbf8b';
+      bar.appendChild(fill);
+      meter.appendChild(bar);
+      meter.appendChild(el('p', 'meter-pending', `還沒決定：${pending.map((s) => s.name).join('、')}`));
+    },
+
+    renderMeter(meter) {
+      const a = this.assessment();
       const top = el('div', 'meter-top');
       top.appendChild(el('span', '', '行前風險'));
       const num = el('b', 'meter-num', `${a.risk}`);
@@ -736,34 +805,17 @@
         more.id = 'prep-why-more';
         meter.appendChild(more);
       }
-      document.querySelectorAll('.gear-slot-note').forEach((n) => {
-        n.textContent = this.index[sel[n.dataset.slot]].teach;
-      });
-      const outfit = this.outfitSummary(sel);
-      $('gear-summary').textContent = outfit;
-      $('gear-preview').setAttribute('aria-label', `角色目前的穿著：${outfit}`);
-      $('gear-tray-slot').replaceChildren(this.trayEl());
-      $('gear-mini-text').textContent = `${outfit}｜風險 ${a.risk}／${a.cap}`;
-
-      const target = $('water-target');
-      if (target) target.textContent = `本趟起點建議至少 ${ctx.gear.water_target_l} 公升，水源與流汗再調整`;
-      const weight = $('pack-weight');
-      if (weight) weight.textContent = `可選物估重 ${(ctx.state.pack_weight_g / 1000).toFixed(1)} 公斤（含水，不含背包與公裝）`;
-      this.renderReview($('review-panel'), a, ctx);
-      this.sizePreview();
-      this.drawPreview(this.handlers.artTime ? this.handlers.artTime() : 1);
-      this.updateMini();
-      if (changed) this.handlers.tapSound();
     },
 
     /* 預覽下方的文字摘要：內層・中層・外層・鞋 */
     outfitSummary(sel) {
-      const label = (slot, none, noneText) => (sel[slot] === none ? noneText : this.index[sel[slot]].name);
+      if (!sel.base && !sel.mid && !sel.shell && !sel.shoes) return '還穿著家居服，光著腳';
+      const label = (slot, none, noneText, undecidedText) => (!sel[slot] ? undecidedText : sel[slot] === none ? noneText : this.index[sel[slot]].name);
       return [
-        this.index[sel.base].name,
-        label('mid', 'no_mid', '不穿中層'),
-        label('shell', 'no_shell', '不穿外層'),
-        this.index[sel.shoes].name,
+        label('base', null, '', '內層未定'),
+        label('mid', 'no_mid', '不穿中層', '中層未定'),
+        label('shell', 'no_shell', '不穿外層', '外層未定'),
+        label('shoes', null, '', '鞋子未定'),
       ].join('・');
     },
 
@@ -814,9 +866,15 @@
       return tray;
     },
 
-    renderReview(panel, a, ctx) {
+    renderReview(panel, pending) {
       if (!panel) return;
       panel.textContent = '';
+      if (pending.length) {
+        panel.appendChild(el('p', 'review-ok', '全部決定後，這裡會列出行前風險與十大必備功能檢核。'));
+        return;
+      }
+      const a = this.assessment();
+      const ctx = this.context();
       panel.appendChild(this.groupBars(a));
       const list = el('div', 'review-reasons');
       list.appendChild(el('h4', '', '目前的風險原因'));
@@ -854,10 +912,11 @@
     essentials(ctx) {
       const wrap = el('details', 'essentials');
       wrap.open = true;
-      wrap.appendChild(el('summary', '', '十大必備功能檢核'));
+      const statuses = L.essentialStatus(this.data.gear, this.selection, ctx.gear);
+      wrap.appendChild(el('summary', '', `十大必備功能檢核：已備 ${statuses.filter((s) => s.status === 'done').length} / ${statuses.length}`));
       const LABEL = { done: '已備', part: '部分', none: '未備' };
       const ul = el('ul');
-      L.essentialStatus(this.data.gear, this.selection, ctx.gear).forEach((s) => {
+      statuses.forEach((s) => {
         const li = el('li', `ess-${s.status}`);
         li.appendChild(el('b', 'ess-tag', LABEL[s.status]));
         li.appendChild(el('span', 'ess-name', s.name));
@@ -867,6 +926,32 @@
       wrap.appendChild(ul);
       wrap.appendChild(el('p', 'prep-note', '用火與修補缺少時只提醒、不計分。保險只做保障檢核，不降低風險。'));
       return wrap;
+    },
+
+    /* 必備功能還缺什麼，直接擺出來並能回去補；仍然可以選擇出發 */
+    essentialGaps(ctx) {
+      const statuses = L.essentialStatus(this.data.gear, this.selection, ctx.gear);
+      const gaps = statuses.filter((s) => s.status !== 'done').sort((a, b) => (a.status === 'none' ? 0 : 1) - (b.status === 'none' ? 0 : 1));
+      const box = el('div', 'ess-gaps');
+      if (!gaps.length) {
+        box.appendChild(el('p', 'ess-gaps-ok', '十大必備功能都備齊了。'));
+        return box;
+      }
+      box.appendChild(el('h4', '', `必備功能還缺 ${gaps.length} 項`));
+      const ul = el('ul');
+      gaps.slice(0, 3).forEach((s) => {
+        const li = el('li');
+        li.appendChild(el('b', '', s.name));
+        li.appendChild(el('span', '', s.note));
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+      const fix = button('btn ess-gaps-fix', '回背包補齊', () => {
+        this.tab = 'pack';
+        this.go('gear');
+      });
+      box.appendChild(fix);
+      return box;
     },
 
     /* 第 4 步：裝備檢查 ------------------------------------------------- */
@@ -894,8 +979,12 @@
       const right = el('div', 'check-right');
       const rows = el('ul', 'check-list');
       rows.id = 'check-list';
-      const ordered = a.findings.filter((x) => x.hit).sort((x, y) => y.points - x.points).concat(a.findings.filter((x) => !x.hit));
-      ordered.forEach((x) => {
+      const hits = a.findings.filter((x) => x.hit).sort((x, y) => y.points - x.points);
+      const passes = a.findings.filter((x) => !x.hit);
+      /* 一次看到十幾條警告，玩家不知道從哪裡下手：先給最值得改的三件，其他收起來 */
+      const TOP = 3;
+      if (hits.length) right.appendChild(el('h4', 'check-top-title', hits.length > TOP ? '先改這三件最有用' : '建議先改這些'));
+      const addRow = (x, list) => {
         const li = el('li');
         const b = button(`check-row ${x.hit ? 'adjust' : 'pass'}`, '', () => this.jumpToRule(x));
         b.dataset.rule = x.id;
@@ -907,10 +996,24 @@
         b.appendChild(text);
         if (x.hit) b.appendChild(el('span', 'check-pts', `＋${x.points}`));
         li.appendChild(b);
-        rows.appendChild(li);
-      });
+        list.appendChild(li);
+      };
+      /* 全部合格時沒有要改的，直接列出符合的項目 */
+      (hits.length ? hits.slice(0, TOP) : passes).forEach((x) => addRow(x, rows));
       right.appendChild(rows);
+      const folded = (title, items) => {
+        if (!items.length) return;
+        const more = el('details', 'check-more');
+        more.appendChild(el('summary', '', title));
+        const list = el('ul', 'check-list');
+        items.forEach((x) => addRow(x, list));
+        more.appendChild(list);
+        right.appendChild(more);
+      };
+      folded(`其他 ${Math.max(0, hits.length - TOP)} 項可以再調整`, hits.slice(TOP));
+      if (hits.length) folded(`已經符合的 ${passes.length} 項`, passes);
       right.appendChild(el('p', 'prep-note', '風險點數是教學量表，不是事故機率。行前風險大於 0 仍可出發，路上多留餘裕；每一列都可以點回去修改。'));
+      right.appendChild(this.essentialGaps(ctx));
       right.appendChild(this.essentials(ctx));
       right.querySelector('.essentials').open = false;
       wrap.appendChild(right);

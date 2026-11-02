@@ -10,7 +10,10 @@
   const BASE = {
     wicking: { body: '#35b0a3', dark: '#2a9186' },
     cotton: { body: '#fbf7ee', dark: '#e3dccc' },
+    home_tee: { body: '#dcd6ec', dark: '#c6bedd' },
   };
+  /* 還沒決定的欄位 → 家居服、赤腳、沒背包 */
+  const HOME_OUTFIT = { hat: 'no_hat', base: 'home_tee', mid: 'no_mid', shell: 'no_shell', pants: 'home_shorts', shoes: 'barefoot', gloves: 'no_gloves', socks: 'no_socks' };
   const MID = {
     fleece: { body: '#ef8f4b', arm: '#d97a38' },
     down: { body: '#9078cc', arm: '#7a61b4' },
@@ -24,13 +27,16 @@
   const ARM_W = { down: 13.5, fleece: 9, no_mid: 7 };
 
   /* 配裝 → 畫圖用的資料。同一副背包，不因多選而無限堆疊。 */
-  function resolve(sel) {
+  function resolve(chosen) {
+    const sel = Object.assign({}, chosen);
+    Object.keys(HOME_OUTFIT).forEach((k) => { if (!sel[k]) sel[k] = HOME_OUTFIT[k]; });
     const pack = new Set(sel.pack);
     const shell = SHELL[sel.shell];
     const mid = MID[sel.mid];
     return {
       sel,
       pack,
+      hasPack: !!sel.water || sel.pack.length > 0,
       poles: pack.has('poles'),
       arm: shell ? shell.arm : mid ? mid.arm : SKIN,
       bareArm: !shell && !mid,
@@ -42,6 +48,7 @@
   }
 
   function drawPack(c, out, bob) {
+    if (!out.hasPack) return;
     const cover = out.pack.has('rain_kit');
     const main = cover ? '#5c9bd6' : '#4fb3a5';
     const dark = cover ? '#4a86bf' : '#3c978b';
@@ -74,7 +81,10 @@
     const midX = topX + (fx - topX) * 0.55;
     const midY = topY + (ankle - topY) * 0.55;
     /* 先畫皮膚，褲與襪疊上去 */
-    if (pants === 'shorts') {
+    if (pants === 'home_shorts') {
+      line(c, midX, midY, fx, ankle, SKIN, 7.5);
+      line(c, topX, topY, midX, midY, '#b6aed0', 11);
+    } else if (pants === 'shorts') {
       line(c, midX, midY, fx, ankle, SKIN, 7.5);
       line(c, topX, topY, midX, midY, '#8f9499', 11);
       line(c, midX - 5, midY + 1, midX + 5, midY + 1, '#74797e', 2);
@@ -112,6 +122,8 @@
       box(c, fx - 6, -7 - ly, 17, 6.4, 3.2, '#4a8fd6');
       box(c, fx - 6.5, -2.2 - ly, 18.5, 2.6, 1.2, '#fffdf6');
       line(c, fx + 2, -6 - ly, fx + 6, -4.6 - ly, '#fffdf6', 1.2);
+    } else if (shoes === 'barefoot') {
+      box(c, fx - 5.5, -4.6 - ly, 16, 4.6, 2.3, socks === 'no_socks' ? SKIN : socks === 'hiking_socks' ? '#a7abae' : '#fffdf6');
     } else {
       const foot = socks === 'no_socks' ? SKIN : socks === 'hiking_socks' ? '#a7abae' : '#fffdf6';
       box(c, fx - 5.5, -4.6 - ly, 16, 4.2, 2.1, foot);
@@ -169,7 +181,7 @@
     if (m && (s || mid === 'down')) ell(c, 2, top + 2.4, 11 + Math.max(p, 0), 4.6 + Math.max(p, 0) * 0.3, m.body);
     if (m || s) ell(c, 2, top + 1.8, 7.5, 2.8, b.body);
     /* 背帶 */
-    line(c, -8 - p * 0.5, y + 2, -6 - p * 0.5, y + 23, out.pack.has('rain_kit') ? '#4a86bf' : '#3c978b', 3);
+    if (out.hasPack) line(c, -8 - p * 0.5, y + 2, -6 - p * 0.5, y + 23, out.pack.has('rain_kit') ? '#4a86bf' : '#3c978b', 3);
   }
 
   function drawHand(c, out, x, y, r) {
@@ -360,8 +372,38 @@
     c.restore();
   }
 
+  /* 手繪插圖：載入前或載入失敗時，畫面退回原本的 Canvas 圖 ---------------- */
+  const ART_FILES = ['room-night', 'mtn-qixing', 'mtn-hehuan', 'mtn-jiali', 'mtn-yushan', 'mtn-xueshan', 'mtn-nanhu'];
+  const paintings = {};
+  function loadPaintings(onLoad) {
+    /* 有 3D 就現算同風格的模型山景，手繪圖只留給 2D 備援畫面 */
+    if (DH.hero3d.active) {
+      DH.diorama.paintAll(paintings, onLoad);
+      return;
+    }
+    ART_FILES.forEach((name) => {
+      const img = new Image();
+      img.onload = () => {
+        paintings[name] = img;
+        if (onLoad) onLoad(name);
+      };
+      img.onerror = () => console.warn(`插圖讀取失敗，改用 Canvas 圖：${name}`);
+      img.src = `assets/art/${name}.jpg`;
+    });
+  }
+  function drawCover(c, img, w, h, focusY) {
+    const k = Math.max(w / img.width, h / img.height);
+    const dw = img.width * k;
+    const dh = img.height * k;
+    c.drawImage(img, (w - dw) / 2, (h - dh) * (focusY === undefined ? 0.5 : focusY), dw, dh);
+  }
+
   /* 換裝預覽 --------------------------------------------------------- */
   function backdrop(c, w, h, groundY, fx) {
+    if (fx && fx.room && paintings['room-night']) {
+      drawCover(c, paintings['room-night'], w, h, 0.8);
+      return;
+    }
     const sky = c.createLinearGradient(0, 0, 0, groundY);
     const cold = fx && fx.cold;
     sky.addColorStop(0, cold ? '#bcd7ec' : '#bfe6f7');
@@ -504,6 +546,7 @@
 
   function drawMountainBanner(c, w, h, m, fx) {
     const f = fx || {};
+    const painting = paintings[`mtn-${m.id}`];
     const sky = c.createLinearGradient(0, 0, 0, h);
     if (f.dim) {
       sky.addColorStop(0, '#9fb4c6');
@@ -514,12 +557,17 @@
     }
     c.fillStyle = sky;
     c.fillRect(0, 0, w, h);
-    if (!f.dim) {
-      ell(c, w * 0.86, h * 0.24, h * 0.13, h * 0.13, '#ffe391');
-    }
     const tone = SEASON_TONE[f.season] || SEASON_TONE.summer;
-    const scene = BANNERS[m.id] || BANNERS.hehuan;
-    scene(c, w, h, tone, f.season);
+    if (painting) {
+      drawCover(c, painting, w, h);
+      if (f.dim) {
+        c.fillStyle = 'rgba(95,115,135,.34)';
+        c.fillRect(0, 0, w, h);
+      }
+    } else {
+      if (!f.dim) ell(c, w * 0.86, h * 0.24, h * 0.13, h * 0.13, '#ffe391');
+      (BANNERS[m.id] || BANNERS.hehuan)(c, w, h, tone, f.season);
+    }
     if (f.fog) {
       c.fillStyle = 'rgba(235,238,240,.62)';
       c.fillRect(0, h * 0.46, w, h * 0.32);
@@ -558,5 +606,5 @@
     }
   }
 
-  DH.gearArt = { resolve, drawPack, drawLeg, drawTorso, drawHand, drawFront, drawHeadwear, drawIcon, drawPreview, drawMountainBanner, ICONS, TRAY_GROUPS };
+  DH.gearArt = { resolve, drawPack, drawLeg, drawTorso, drawHand, drawFront, drawHeadwear, drawIcon, drawPreview, drawMountainBanner, loadPaintings, paintings, drawCover, ICONS, TRAY_GROUPS };
 })();
