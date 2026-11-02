@@ -152,6 +152,7 @@
       syncHeroPick(DH.player.gender);
       DH.player.onChange = syncHeroPick;
       $('hero-pick').addEventListener('change', (e) => DH.player.set(e.target.value));
+      $('start-slogan').textContent = DH.core.SLOGANS.start;
       $('btn-again').addEventListener('click', handlers.again);
       $('btn-mountains').addEventListener('click', handlers.mountains);
       $('btn-howto').addEventListener('click', () => this.showHelp());
@@ -518,7 +519,7 @@
         world.appendChild(el('p', 'fb-world-text', ev.worldNote.text));
         if (ev.worldNote.missed.length) world.appendChild(el('p', 'fb-world-missed', `你沒看到的線索：${ev.worldNote.missed.join(' ')}`));
       }
-      if (ev.worldNote && ev.worldNote.halt) world.appendChild(el('p', 'fb-world-real', '這裡是練習，遊戲會帶你走完路線。真實山上，現場不安全就折返。'));
+      if (ev.worldNote && ev.worldNote.halt) world.appendChild(el('p', 'fb-world-real', `這裡是練習，遊戲會帶你走完路線。${DH.core.SLOGANS.turnBack}`));
       $('fb-why').textContent = ev.scenario.why;
       const src = ev.scenario.sources;
       const isKey = !!ev.scenario.key;
@@ -699,6 +700,7 @@
       $('ending-screen').dataset.tier = grade.tier;
       $('ending-kicker').textContent = grade.kicker;
       $('ending-title').textContent = grade.title;
+      $('ending-slogan').textContent = DH.core.SLOGANS[grade.tier] || '';
       $('ending-msg').textContent = grade.message;
       const safety = $('ending-safety');
       safety.hidden = !grade.safety;

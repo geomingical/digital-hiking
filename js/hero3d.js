@@ -350,10 +350,14 @@
     cap.scale.set(1, 0.97, 1);
     cap.castShadow = true;
     head.add(cap);
+    /* 毛帽、頭盔包住整個頭頂：瀏海收進帽子裡，不讓髮束從帽頂穿出來 */
+    const snugHat = hat === 'beanie' || hat === 'helmet';
     if (sp.gender === 'female') {
       /* 側分瀏海、耳邊髮絲，加一束從身後也看得到的馬尾 */
-      ball(head, hair, [-0.15, 0.3, 0.28], [0.27, 0.1, 0.13], [0.5, 0, 0.5]);
-      ball(head, hair, [0.2, 0.25, 0.3], [0.15, 0.09, 0.1], [0.5, 0, -0.55]);
+      if (!snugHat) {
+        ball(head, hair, [-0.15, 0.3, 0.28], [0.27, 0.1, 0.13], [0.5, 0, 0.5]);
+        ball(head, hair, [0.2, 0.25, 0.3], [0.15, 0.09, 0.1], [0.5, 0, -0.55]);
+      }
       [-1, 1].forEach((x) => ball(head, hair, [x * 0.44, -0.13, 0.08], [0.075, 0.2, 0.1]));
       ball(head, hair, [0, -0.08, -0.3], [0.36, 0.3, 0.17]);
       ball(head, '#4fb3a5', [0, 0.1, -0.47], [0.075, 0.075, 0.05]);
@@ -368,7 +372,13 @@
       /* 平頭短髮：髮際線高、前額幾根尖刺。頂上不放圓球，圓球看起來就是包包頭 */
       cap.rotation.x = -0.5;
       cap.scale.set(1.01, 0.95, 1.02);
-      if (!['sun_hat', 'npc_hat', 'beanie', 'helmet'].includes(hat)) {
+      const hatted = ['sun_hat', 'npc_hat', 'beanie', 'helmet'].includes(hat);
+      if (hatted) {
+        /* 戴帽時帽沿下露出整齊的鬢角與後腦短髮，才看得出是短髮男生而不是光頭 */
+        [-1, 1].forEach((x) => ball(head, hair, [x * 0.425, 0.02, 0.1], [0.07, 0.15, 0.11]));
+        ball(head, hair, [0, 0.0, -0.3], [0.38, 0.22, 0.2]);
+      }
+      if (!hatted) {
         const spike = new T.ConeGeometry(0.085, 0.2, 7);
         [[-0.25, 0.34, 0.2, 0.45, 0.45], [-0.13, 0.4, 0.23, 0.55, 0.22], [0, 0.42, 0.24, 0.6, 0], [0.13, 0.4, 0.23, 0.55, -0.22], [0.25, 0.34, 0.2, 0.45, -0.45],
           [-0.16, 0.46, 0.02, 0.1, 0.25], [0.04, 0.48, 0.02, 0.1, -0.05], [0.2, 0.44, 0, 0.1, -0.3]].forEach(([x, y, z, rx, rz]) => {
@@ -389,10 +399,12 @@
     if (hat === 'sun_hat' || hat === 'npc_hat') {
       const crown = hat === 'sun_hat' ? '#d9bd85' : sp.hatColor;
       const band = hat === 'sun_hat' ? '#a98a57' : sp.bandColor;
-      const d = dome(crown, 0.4);
-      d.position.y = 0.2;
-      add(head, geoCyl, mat(crown), [0, 0.2, 0], [0.72, 0.03, 0.72]);
-      rod(head, band, [0, 0.235, 0], 0.405, 0.075);
+      /* 帽冠比頭髮大一圈、壓到髮際線，頭髮只從帽沿下整齊露出，不會在帽冠外鼓成一圈 */
+      const d = dome(crown, 0.52);
+      d.position.y = 0.13;
+      d.scale.set(1, 0.82, 1);
+      add(head, geoCyl, mat(crown), [0, 0.13, 0], [0.8, 0.03, 0.8]);
+      rod(head, band, [0, 0.19, 0], 0.522, 0.075);
     } else if (hat === 'beanie') {
       const d = dome('#d9534a', 0.49);
       d.position.y = 0.1;

@@ -292,6 +292,16 @@
     return events;
   }
 
+  /* 標語集中在這裡：同一句話在不同畫面出現時用字一致 */
+  const SLOGANS = {
+    start: '山一直都在，準備好再出發。',
+    postpone: '山一直都在，下次再來。',
+    turnBack: '真實山上不安全就折返，山一直都在。',
+    good: '平安回家，就是最好的登頂。',
+    normal: '這次靠運氣，下次靠準備。',
+    bad: '多一分準備，少一次搜救。',
+  };
+
   const GRADES = [
     {
       key: 'legend', tier: 'good', max: 20,
@@ -437,7 +447,7 @@
   DH.core = {
     SECTIONS, FINISH_X, STAGE_KEYS, BADGES, GRADES,
     altitudeAt, setAltitudeProfile, sectionAt, makeRng, hash32, cleanBank, byFreshness, pickScenarios, buildEvents,
-    KEY_TABLE, KEY_POOLS, MIN_KEY, reserveKeyScenarios, logKeyShortage,
+    KEY_TABLE, KEY_POOLS, MIN_KEY, reserveKeyScenarios, logKeyShortage, SLOGANS,
     gradeFor, riskColor, store,
   };
 })();

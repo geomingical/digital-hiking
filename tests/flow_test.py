@@ -156,6 +156,7 @@ def check_observe_stage(page) -> None:
     check(page.locator("#fb-world").is_visible(), "答完看得到現場怎麼回應")
     check("隊友" in page.inner_text("#fb-world"), "沒看的線索會在解說裡補上")
     check("折返" in page.inner_text("#fb-world"), "該停下的現場會講清楚真實山上要折返")
+    check("山一直都在" in page.inner_text("#fb-world"), "該折返的現場帶出標語：山一直都在")
     check("下一段練習" in page.inner_text("#card-next"), "該停下的現場，按鈕不叫玩家回到山路")
     check(page.evaluate("window.__game.view.retreatTo") is None, "答錯不會替玩家退開")
     page.evaluate("window.__game.continue()")
@@ -191,6 +192,7 @@ def check_rescue_ending(page) -> None:
     page.keyboard.press("Enter")
     check("本來可以避免" in page.inner_text("#ending-title"), "風險 100 的結局標題是檢討，不是鼓勵")
     check("119" in page.inner_text("#ending-safety") and "112" in page.inner_text("#ending-safety"), "檢討結局仍明寫真的出事要立刻求救")
+    check("多一分準備" in page.inner_text("#ending-slogan"), "救援結局的標語講準備，不講運氣")
     check("行前就帶著" in page.inner_text("#ending-review"), "檢討列出這趟風險的實際來源")
     check(page.locator("#ending-badges .badge-chip").count() == 0, "動用救援的一趟不發徽章")
     check(page.inner_text("#ending-best") == "", "動用救援的一趟不算最佳紀錄")
@@ -236,6 +238,28 @@ def check_album(page) -> None:
     with page.expect_download() as download:
         page.click("#album-save")
     check(download.value.suggested_filename.endswith(".png") and "玉山主峰" in download.value.suggested_filename, "下載的照片檔名有山名")
+
+
+def check_change_mountain(browser) -> None:
+    ctx = browser.new_context(viewport={"width": 1440, "height": 900})
+    page = ctx.new_page()
+    to_gear(page)
+    choose_all_worn(page)
+    picked = page.locator(".gear-opt.on").count()
+    check(picked > 0, f"換裝選了 {picked} 項")
+    page.evaluate("window.__game.prep.go('mountain')")
+    page.click(".mtn-card[data-id='yushan'] .mtn-pick")
+    check(page.evaluate("window.__game.prep.mountainId") == "yushan", "回頭重按同一座山")
+    page.evaluate("window.__game.prep.go('gear')")
+    check(page.locator(".gear-opt.on").count() == picked, "同一座山回頭看，剛選的裝備還在")
+    page.evaluate("window.__game.prep.go('mountain')")
+    page.click(".mtn-card[data-id='xueshan'] .mtn-pick")
+    page.click("#prep-next")
+    page.click("[data-season='summer']")
+    page.click("#prep-next")
+    page.wait_for_selector("#gear-preview")
+    check(page.locator(".gear-opt.on").count() == 0, "換一座山就是新的一趟，裝備從家居服重新穿")
+    ctx.close()
 
 
 def check_phone_brief_feedback(browser) -> None:
@@ -292,6 +316,7 @@ def run(browser):
     page.reload()
     page.wait_for_function("window.__game && window.__game.state.prepReady")
     check(page.locator("#hero-pick input:checked").count() == 1, "開場就看得到選角色，不會多卡一步")
+    check("山一直都在" in page.inner_text(".start-card"), "開始畫面有標語")
     page.check("#hero-pick input[value='female']", force=True)
     check(page.evaluate("DH.player.gender") == "female", "選女生就換成女生")
     page.reload()
@@ -383,6 +408,7 @@ try:
         b = p.chromium.launch()
         run(b)
         check_phone_brief_feedback(b)
+        check_change_mountain(b)
         b.close()
 finally:
     srv.terminate()

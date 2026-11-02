@@ -147,7 +147,9 @@
     selectMountain(id) {
       this.activeMountain = id;
       if (id !== this.mountainId) {
-        /* 換山要重做簡報；已經選的配裝先留著，不用重穿 */
+        /* 換一座山就是新的一趟：簡報重做，裝備也從家居服重新穿，
+           不讓上一座山的配裝替玩家做了這一趟的判斷 */
+        if (this.mountainId) this.selection = L.emptySelection();
         this.mountainId = id;
         this.seasonChoice = null;
         this.season = null;
@@ -469,6 +471,7 @@
         ul.appendChild(li);
       });
       card.appendChild(ul);
+      card.appendChild(el('p', 'slogan', DH.core.SLOGANS.postpone));
       card.appendChild(el('p', '', '願意延期也是登山判斷的一部分，不會留下任何壞紀錄。換個安排再出發：'));
       const btns = el('div', 'postpone-btns');
       btns.appendChild(button('btn btn-small', '換山', () => this.go('mountain')));
