@@ -1624,3 +1624,16 @@ body.touch .act-btn kbd { display: none; }
 .fb-world-real { margin-top: 6px !important; padding-top: 6px; border-top: 1px dashed #dcc9ae; color: #7a4a22; font-size: 14px !important; font-weight: 700; }
 #ending-review.is-lesson { border-color: #eec9a6; background: #fff6ea; }
 #ending-review.is-lesson h4 { color: #a6562a; }
+
+/* 標語：短句、品牌色、兩側細線，和一般說明文字分得開 */
+.slogan { display: flex; align-items: center; gap: 10px; margin: 8px 0; color: var(--brand); font-size: 15px; font-weight: 800; letter-spacing: .1em; line-height: 1.4; text-align: center; }
+.slogan::before, .slogan::after { content: ''; flex: 1 1 18px; min-width: 14px; height: 2px; border-radius: 2px; background: currentColor; opacity: .28; }
+.slogan:empty { display: none; }
+.start-slogan { margin: 10px 0 4px; }
+#ending-slogan { margin: 2px 0 6px; }
+@media (max-width: 760px) and (orientation: portrait) {
+  #ending-slogan { order: 3; }
+}
+@media (max-height: 520px) and (orientation: landscape) {
+  #ending-slogan { order: 1; margin: 0; font-size: 13px; }
+}
