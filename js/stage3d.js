@@ -23,6 +23,9 @@
     snake: { calm: '蛇已經離開。你把注意力放回傷口和求援。', danger: '傷處比剛才更腫了。' },
   };
 
+  /* 這些現場的正解是停下或折返，但路線只有一條，遊戲會繼續：要對玩家講清楚這是練習 */
+  const HALTS = new Set(['rockfall', 'thunder', 'flood', 'collapse', 'ice', 'gust', 'closure']);
+
   const THUNDER_CLUES = (biome) => [
     clue('cloud', '雲', '雲頂一直往上長，底部越來越黑。'),
     clue('bolt', '雷聲', '遠方有閃光，接著聽得見雷聲。'),
@@ -165,8 +168,13 @@
       const boulder = k.rock(1.05, '#4f4c47');
       boulder.visible = false;
       k.add(boulder);
-      out.clues = { source: onSlope(9.6, WALL_TOP).add(new T.Vector3(0, 2.6, 0)), slope: k.ground(7.4, 3).add(new T.Vector3(0, 0.6, 0)), mate: out.mate.position.clone().add(new T.Vector3(0, 2.4, 0)) };
+      out.clues = { source: onSlope(9.6, WALL_TOP).add(new T.Vector3(0, 2.6, 0)), slope: onSlope(8.2, -6.5).add(new T.Vector3(0, 0.8, 0)), mate: out.mate.position.clone().add(new T.Vector3(0, 2.4, 0)) };
       out.focus = k.ground(9, -2.8).add(new T.Vector3(0, 3.2, 0));
+      /* 固定全景：落石源頭、坡面、步道與角色同框，答對退開時看得到自己走出落石區 */
+      out.shot = {
+        tall: { cam: k.ground(-21, 5.5).add(new T.Vector3(0, 10, 0)), look: k.ground(7, -2.2).add(new T.Vector3(0, 4.4, 0)) },
+        wide: { cam: k.ground(-17, 8).add(new T.Vector3(0, 7.5, 0)), look: k.ground(5, -3.5).add(new T.Vector3(0, 3.6, 0)) },
+      };
       return (s) => {
         const speed = s.mood === 'danger' ? 0.62 : 0.32;
         flying.forEach((f) => {
@@ -510,6 +518,7 @@
     ids: Object.keys(BY_ID),
     kindOf: (id) => (BY_ID[id] ? BY_ID[id].kind : null),
     askOf: (id) => ASK[id] || '',
+    halts: (id) => !!BY_ID[id] && HALTS.has(BY_ID[id].kind),
     reaction(id, correct) {
       const spec = BY_ID[id];
       return spec ? REACT[spec.kind][correct ? 'calm' : 'danger'] : '';

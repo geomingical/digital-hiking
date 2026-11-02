@@ -487,7 +487,7 @@ body.touch .act-btn kbd { display: none; }
   touch-action: manipulation;
   transition: background .14s ease, border-color .14s ease;
 }
-.opt:hover:not(:disabled) { background: #fff5e6; border-color: var(--orange); }
+@media (hover: hover) { .opt:hover:not(:disabled) { background: #fff5e6; border-color: var(--orange); } }
 .opt:disabled { cursor: default; color: var(--ink); }
 .opt-key {
   flex: none;
@@ -758,6 +758,24 @@ body.touch .act-btn kbd { display: none; }
   .ending-right { padding: 14px 14px 30px; }
   #ending-art { height: clamp(170px, 27vh, 230px); }
   .ending-btns { flex: none; padding: 10px 14px calc(12px + env(safe-area-inset-bottom)); border-top: 2px solid var(--cream); }
+}
+/* 直式手機結局：先講這趟該改什麼，照片和數字排在後面 */
+@media (max-width: 760px) and (orientation: portrait) {
+  .ending-scroll { display: flex; flex-direction: column; padding: 12px 14px 30px; }
+  .ending-scroll > * { display: contents; }
+  .ending-scroll > * > * { flex: none; order: 20; }
+  #ending-art { order: 1; height: clamp(150px, 24vh, 210px); }
+  .ending-btns .btn { white-space: nowrap; }
+  .ending-kicker { order: 2; }
+  #ending-title { order: 3; font-size: 25px; }
+  #ending-trip { order: 4; }
+  #ending-safety { order: 5; }
+  #ending-msg { order: 6; margin-bottom: 10px; }
+  #ending-review { order: 7; }
+  .ending-stats { order: 8; margin-bottom: 8px; }
+  .ending-badges { order: 9; margin: 0 0 8px; }
+  .ending-best { order: 10; margin: 0 0 10px; }
+  #ending-photos { order: 11; }
 }
 /* 橫式手機：維持左右兩欄，插畫與成績一眼可見 */
 @media (max-height: 520px) and (min-width: 761px) {
@@ -1597,8 +1615,12 @@ body.touch .act-btn kbd { display: none; }
 .card.fb-brief .fb-chosen, .card.fb-brief .fb-world-missed { display: none !important; }
 .card.fb-brief .card-scroll { overflow: visible; padding-bottom: 6px; }
 
-.card-seen { display: grid; gap: 2px; font-weight: 500; color: #4c4037; font-size: 14.5px; line-height: 1.45; }
+.card-seen { font-weight: 500; color: #4c4037; font-size: 14.5px; line-height: 1.45; }
 .card-seen[hidden] { display: none; }
-.card-seen b { color: #a6562a; font-size: 13px; }
+.card-seen summary { display: flex; align-items: center; min-height: 40px; color: #a6562a; font-size: 14px; font-weight: 700; cursor: pointer; }
+.card-seen summary::before { content: '▸'; margin-right: 6px; }
+.card-seen[open] summary::before { content: '▾'; }
+.card-seen span { display: block; margin-bottom: 2px; }
+.fb-world-real { margin-top: 6px !important; padding-top: 6px; border-top: 1px dashed #dcc9ae; color: #7a4a22; font-size: 14px !important; font-weight: 700; }
 #ending-review.is-lesson { border-color: #eec9a6; background: #fff6ea; }
 #ending-review.is-lesson h4 { color: #a6562a; }

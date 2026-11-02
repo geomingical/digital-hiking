@@ -519,7 +519,8 @@ AUDIT_JS = """(selectors) => {
         const hasText = [...n.childNodes].some((c) => c.nodeType === 3 && c.textContent.trim());
         if (!hasText) return;
         const r = n.getBoundingClientRect();
-        const scroller = n.closest('.card-scroll, .ending-scroll, .ending-left, .ending-right, .modal-box, .start-card');
+        let scroller = n.closest('.card-scroll, .ending-scroll, .ending-left, .ending-right, .modal-box, .start-card');
+        while (scroller && getComputedStyle(scroller).display === 'contents') scroller = scroller.parentElement.closest('.card-scroll, .ending-scroll, .ending-left, .ending-right, .modal-box, .start-card');
         if (!scroller && (r.left < -1 || r.right > vw + 1 || r.top < -1 || r.bottom > vh + 1)) issues.push('超出視窗 ' + label(n));
         if (n.scrollWidth > n.clientWidth + 1 && getComputedStyle(n).overflow !== 'visible') issues.push('文字截斷 ' + label(n));
         if (scroller && r.right > scroller.getBoundingClientRect().right + 1) issues.push('橫向溢出 ' + label(n));

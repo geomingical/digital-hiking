@@ -6,6 +6,7 @@
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
   const SPEED = 250;
+  const RETREAT_DIST = 110;
   const HINT_RANGE = 150;
   const AUTO_RANGE = 44;
   const START_X = 120;
@@ -82,6 +83,7 @@
     shake: { x: 0, y: 0 },
     shakeTime: 0,
     walkTarget: null,
+    retreatTo: null,
     particles: [],
     decor: world.buildDecor(),
     npcs: world.buildNpcs(),
@@ -416,6 +418,7 @@
     ev.seen = [];
     ev.seenNotes = [];
     ev.ask = DH.stage3d.askOf(ev.scenario.id);
+    ev.place = stage.title;
     view.npcSpeech = null;
     view.observe = { ev, stage };
     ui.setPlayControlsInert(true);
@@ -533,8 +536,10 @@
     const stage = scene3d && scene3d.ready ? scene3d.stageOf(ev) : null;
     ev.worldNote = stage ? {
       text: DH.stage3d.reaction(s.id, opt.correct),
+      halt: DH.stage3d.halts(s.id),
       missed: stage.list.filter((c) => !(ev.seen || []).includes(c.name)).map((c) => c.text),
     } : null;
+    if (ev.worldNote && ev.worldNote.halt && opt.correct) view.retreatTo = Math.max(30, state.player.x - RETREAT_DIST);
     ui.showAnswer(ev, displayIndex, state.risk >= 100, result);
     answerLockUntil = performance.now() + 220;
     announceRisk();
@@ -560,6 +565,12 @@
     if (!ev || !ev.done) return false;
     if (performance.now() < answerLockUntil) return false;
     if (ui.expandBrief()) return true;
+    if (view.retreatTo != null) {
+      state.player.x = view.retreatTo;
+      view.retreatTo = null;
+    }
+    state.player.moving = false;
+    state.player.dir = 1;
     state.current = null;
     state.eventIndex++;
     if (state.risk >= 100) {
@@ -862,6 +873,24 @@
     return null;
   }
 
+  /* 答對「停下、退開」的現場：角色真的往回走出危險範圍，玩家看得到自己的判斷 */
+  function updateRetreat(dt) {
+    const p = state.player;
+    if (view.retreatTo == null) return;
+    const left = p.x - view.retreatTo;
+    if (left <= 1 || reducedMotion()) {
+      p.x = view.retreatTo;
+      view.retreatTo = null;
+      p.moving = false;
+      p.dir = 1;
+      return;
+    }
+    p.x -= Math.min(left, SPEED * 0.55 * dt);
+    p.dir = -1;
+    p.moving = true;
+    p.phase += dt * 8;
+  }
+
   function updatePlayer(dt) {
     const p = state.player;
     /* 登頂那幾秒先站定慶祝，不然一路按著前進鍵會直接走過去 */
@@ -1124,6 +1153,7 @@
   function update(dt) {
     updateCommon(dt);
     updatePhoto();
+    if (state.screen === 'card') updateRetreat(dt);
     if (state.screen === 'play') {
       updatePlayer(dt);
       updateNpcSpeech();

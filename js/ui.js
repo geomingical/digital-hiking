@@ -442,11 +442,13 @@
       $('card-key-name').textContent = s.key ? s.keyConcept : '';
       $('card-tag').textContent = s.category || '情境';
       $('card-count').textContent = `${ev.dayLabel ? `${ev.dayLabel}・` : ''}第 ${index + 1} / ${total} 題`;
-      $('card-title').textContent = s.title;
-      const fixedTitle = $('card-fixed-title');
-      fixedTitle.textContent = s.title;
-      fixedTitle.setAttribute('aria-label', `${s.title}，回到題目與選項`);
       const observed = !!(ev.seenNotes && ev.seenNotes.length && ev.ask);
+      /* 看過現場的題目用地名當標題：危險要靠剛才自己看，不由標題說破 */
+      const title = observed ? (ev.place && ev.place !== s.title ? ev.place : '前方路段') : s.title;
+      $('card-title').textContent = title;
+      const fixedTitle = $('card-fixed-title');
+      fixedTitle.textContent = title;
+      fixedTitle.setAttribute('aria-label', `${title}，回到題目與選項`);
       $('card-sit').textContent = observed ? ev.ask : s.situation;
       const note = $('card-gear-note');
       note.hidden = !ev.gearNote;
@@ -454,7 +456,9 @@
       const seen = $('card-seen');
       seen.hidden = !(ev.seen && ev.seen.length);
       seen.textContent = '';
-      if (!seen.hidden) seen.appendChild(el('b', '', '你在現場看到'));
+      seen.open = false;
+      /* 線索收起來：題目只問怎麼做，判斷要靠剛才自己看到的，忘了才點開回看 */
+      if (!seen.hidden) seen.appendChild(el('summary', '', `回看剛才記下的 ${ev.seenNotes.length} 條線索`));
       (ev.seenNotes || []).forEach((note) => seen.appendChild(el('span', '', note)));
       const opts = $('card-opts');
       opts.textContent = '';
@@ -514,6 +518,7 @@
         world.appendChild(el('p', 'fb-world-text', ev.worldNote.text));
         if (ev.worldNote.missed.length) world.appendChild(el('p', 'fb-world-missed', `你沒看到的線索：${ev.worldNote.missed.join(' ')}`));
       }
+      if (ev.worldNote && ev.worldNote.halt) world.appendChild(el('p', 'fb-world-real', '這裡是練習，遊戲會帶你走完路線。真實山上，現場不安全就折返。'));
       $('fb-why').textContent = ev.scenario.why;
       const src = ev.scenario.sources;
       const isKey = !!ev.scenario.key;
@@ -527,7 +532,7 @@
       fillSources($('fb-src'), '參考：', isKey ? null : src);
       $('card-fb').hidden = false;
       const next = $('card-next');
-      next.textContent = sos ? '風險破表，只能求救' : '回到山路';
+      next.textContent = sos ? '風險破表，只能求救' : ev.worldNote && ev.worldNote.halt ? '下一段練習' : '回到山路';
       next.classList.toggle('btn-sos', !!sos);
       $('card-foot').hidden = false;
       /* 手機直式：先把畫面留給現場的回應，想看解析再展開 */
@@ -912,7 +917,7 @@
         ['走動', '方向鍵或 WASD；也可以點地面，登山客會自己走過去。手機用左下角搖桿。'],
         ['看周圍', '在畫面上按住拖曳，就能看看前後的風景。'],
         ['情境事件', '路上的圓形圖示就是事件，橘框是下一個。走近會自動開啟；出現「查看」時按 E、空白鍵或互動鈕，也可以提早查看。'],
-        ['回答', '點選項或按 1、2、3 回答，看完解說按「回到山路」。'],
+        ['回答', '點選項或按 1、2、3 回答，看完解說按下方按鈕繼續。'],
         ['保命觀念', '紅框救生圈的事件是一定要會的保命題，每趟都會遇到幾題，結局會列出哪些還要複習。'],
         ['小動作', '沒有事件時，按 1 揮手、2 喝水、3 拍照。'],
         ['風險點數', '選錯會增加點數，天色也會跟著變差；累積到 100，這趟就失敗，得動用救援。點數是遊戲的教學量表，不是真實的事故機率。'],

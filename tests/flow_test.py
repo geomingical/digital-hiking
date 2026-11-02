@@ -139,12 +139,38 @@ def check_observe_stage(page) -> None:
     check(page.get_attribute("#observe-go", "aria-disabled") == "false", "看過兩處就能下判斷")
     page.keyboard.press("e")
     page.wait_for_function("window.__game.state.screen === 'card'", timeout=5000)
+    check(page.locator("#card-seen").is_visible(), "題目卡留著回看線索的入口")
+    check("滾落" not in page.inner_text("#card-title"), "看過現場的題目，標題不說破危險")
+    check(page.evaluate("document.getElementById('card-seen').open") is False, "題目卡預設只問怎麼做，不重講線索")
+    check(not page.locator("#card-seen span").first.is_visible(), "沒點開就看不到線索全文")
+    page.click("#card-seen summary")
     check("坡頂" in page.inner_text("#card-seen"), "題目卡記得你看到了什麼")
     check("持續掉下" not in page.inner_text("#card-sit"), "看過現場後，題目不再把線索講一遍")
     check("小石頭" in page.inner_text("#card-seen"), "看過的線索可以回看")
     page.evaluate("window.__game.answer(window.__game.wrongIndex())")
     check(page.locator("#fb-world").is_visible(), "答完看得到現場怎麼回應")
     check("隊友" in page.inner_text("#fb-world"), "沒看的線索會在解說裡補上")
+    check("折返" in page.inner_text("#fb-world"), "該停下的現場會講清楚真實山上要折返")
+    check("下一段練習" in page.inner_text("#card-next"), "該停下的現場，按鈕不叫玩家回到山路")
+    check(page.evaluate("window.__game.view.retreatTo") is None, "答錯不會替玩家退開")
+    page.evaluate("window.__game.continue()")
+    page.wait_for_function("window.__game.state.screen === 'play'")
+    page.evaluate(
+        """(i) => {
+          const g = window.__game;
+          const ev = g.state.events[i];
+          ev.done = false;
+          g.state.eventIndex = i;
+          g.state.player.x = ev.x - 30;
+        }""",
+        index,
+    )
+    page.wait_for_function("window.__game.state.screen === 'card'", timeout=10000)
+    before = page.evaluate("window.__game.state.player.x")
+    page.evaluate("(() => { const g = window.__game; g.answer(g.state.current.options.findIndex((o) => o.correct)); })()")
+    page.wait_for_function("window.__game.view.retreatTo === null", timeout=8000)
+    after = page.evaluate("window.__game.state.player.x")
+    check(before - after > 60, f"答對退開時，角色真的往回走出落石區（{before:.0f} → {after:.0f}）")
     page.evaluate("window.__game.continue()")
     page.wait_for_function("window.__game.state.screen === 'play'")
     page.wait_for_function(
@@ -236,7 +262,16 @@ def check_phone_brief_feedback(browser) -> None:
     page.click("#card-next")
     check(page.evaluate("window.__game.state.screen") == "card", "第一次按只是展開解析，不會直接離開")
     check(page.locator("#fb-more").is_visible(), "展開後看得到完整解析")
-    check("回到山路" in page.inner_text("#card-next"), "展開後按鈕變回回到山路")
+    check(any(t in page.inner_text("#card-next") for t in ("回到山路", "下一段練習")), "展開後按鈕換回離開解說")
+    page.evaluate("window.__game.continue()")
+    page.evaluate("window.__game.skipToEnding('good')")
+    page.wait_for_selector("#ending-screen:not([hidden])")
+    page.wait_for_timeout(400)
+    review = page.locator("#ending-review").bounding_box()
+    stats = page.locator(".ending-stats").bounding_box()
+    btns = page.locator(".ending-btns").bounding_box()
+    check(review and review["y"] < stats["y"], "手機結局先講該改什麼，再講數字")
+    check(review and review["y"] + 90 < btns["y"], "手機結局第一屏看得到該改的決定")
     ctx.close()
 
 

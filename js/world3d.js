@@ -1452,14 +1452,18 @@
         lookAt = new T.Vector3(pos.x + s.tx * (1 - V.card) * 2.4, pos.y + 1.15 + (1 - V.card) * 0.5, pos.z + s.tz * (1 - V.card) * 2.4);
         /* 有現場的題目：鏡頭留在肩後，看著角色面對眼前的狀況 */
         V.stage = (V.stage || 0) + ((stage ? 1 : 0) - (V.stage || 0)) * ease;
-        if (stage) V.focus = stage.focus;
+        const tall = g.w < g.h;
+        if (stage) {
+          V.focus = stage.focus;
+          V.tallShot = stage.shot ? stage.shot[tall ? 'tall' : 'wide'] : null;
+        }
         if (V.stage > 0.002 && V.focus) {
           const ahead = new T.Vector3(V.focus.x - pos.x, 0, V.focus.z - pos.z).normalize();
           /* 直式畫面很窄：退遠、拉高、少偏移，才框得進角色和現場 */
-          const tall = g.w < g.h;
           const shoulder = pos.clone().addScaledVector(ahead, tall ? -13 : -6.8).add(new T.Vector3(-ahead.z * (tall ? 0.7 : 2.2), tall ? 6.4 : 3.6, ahead.x * (tall ? 0.7 : 2.2)));
-          cam.lerp(shoulder, V.stage);
-          lookAt.lerp(pos.clone().lerp(V.focus, tall ? 0.72 : 0.6).add(new T.Vector3(0, 0.6, 0)), V.stage);
+          const fixed = V.tallShot;
+          cam.lerp(fixed ? fixed.cam : shoulder, V.stage);
+          lookAt.lerp(fixed ? fixed.look : pos.clone().lerp(V.focus, tall ? 0.72 : 0.6).add(new T.Vector3(0, 0.6, 0)), V.stage);
         }
       } else if (atStart) {
         const drift = A.reducedMotion() ? 0 : Math.sin(t * 0.09) * 0.5;
@@ -1483,10 +1487,12 @@
       this.camPos.lerp(cam, follow);
       this.camLook.lerp(lookAt, follow);
       /* 開場從高處往下俯衝到人物身後；登頂時繞著人物轉一圈 */
+      /* 直式畫面很窄：鏡頭退遠、看低一點，角色才完整入鏡 */
+      const narrow = g.w < g.h;
       if (g.intro > 0 && onTrail) {
         const k = g.intro * g.intro * (3 - 2 * g.intro);
-        const high = pos.clone().addScaledVector(new T.Vector3(s.tx, 0, s.tz), -26).add(new T.Vector3(s.nx * 8, 24, s.nz * 8));
-        const ahead = pos.clone().addScaledVector(new T.Vector3(s.tx, 0, s.tz), 70).add(new T.Vector3(0, 24, 0));
+        const high = pos.clone().addScaledVector(new T.Vector3(s.tx, 0, s.tz), narrow ? -34 : -26).add(new T.Vector3(s.nx * 8, 24, s.nz * 8));
+        const ahead = pos.clone().addScaledVector(new T.Vector3(s.tx, 0, s.tz), narrow ? 34 : 70).add(new T.Vector3(0, narrow ? 9 : 24, 0));
         this.camPos.copy(cam).lerp(high, k);
         this.camLook.copy(lookAt).lerp(ahead, k);
       } else if (g.orbit > 0 && onTrail) {
@@ -1497,11 +1503,11 @@
         const front = Math.atan2(s.tx, s.tz) + (g.orbit - 0.5) * 1.1;
         const turn = Math.atan2(Math.sin(front - rear), Math.cos(front - rear));
         const a = rear + turn * blend;
-        const reach = 8.4 + blend * 0.6;
-        const around = pos.clone().add(new T.Vector3(Math.sin(a) * reach, 4.1 - blend * 2.3, Math.cos(a) * reach));
+        const reach = (narrow ? 13 : 8.4) + blend * 0.6;
+        const around = pos.clone().add(new T.Vector3(Math.sin(a) * reach, (narrow ? 5.2 : 4.1) - blend * 2.3, Math.cos(a) * reach));
         around.y = Math.max(around.y, this.heightAt(around.x, around.z) + 1.1);
         this.camPos.copy(cam).lerp(around, blend);
-        this.camLook.copy(lookAt).lerp(pos.clone().add(new T.Vector3(0, 2.9, 0)), blend);
+        this.camLook.copy(lookAt).lerp(pos.clone().add(new T.Vector3(0, narrow ? 3.4 : 2.9, 0)), blend);
       }
       if (g.photo > 0 && onTrail) {
         const shot = this.photoShot(heroX, p.d);
