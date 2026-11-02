@@ -188,7 +188,7 @@ test('no-WebGL mode can take a photo and leave viewer', () => {
 test('reduced motion still records the summit photo', () => {
   const { c } = mainEnv(true, true);
   c.review.updateSection();
-  c.__game.state.player.x = 4900; c.review.updateSection();
+  c.__game.state.player.x = 5340; c.review.updateSection();
   assert.ok(c.__game.state.autoPhoto);
   assert.ok(!c.__game.view.moment);
 });

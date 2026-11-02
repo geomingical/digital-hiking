@@ -210,6 +210,7 @@
     const profile = prepLogic.altitudeProfile(m);
     core.setAltitudeProfile(profile);
     world.applyRoute(view.decor, {
+      name: m.name,
       summit: m.summit_m,
       forestLabel: m.forest_label,
       altitudeAt: core.altitudeAt,
@@ -357,9 +358,15 @@
     const mo = view.moment;
     if (!mo) return;
     mo.left -= dt;
+    /* 登頂的第二波彩紙落在鏡頭繞到正面的時候 */
+    if (mo.kind === 'summit' && !mo.second && mo.total - mo.left > 1.7) {
+      mo.second = true;
+      if (scene3d) scene3d.burst('cheer');
+    }
     if (mo.left <= 0 || state.screen !== 'play' || state.player.moving || view.walkTarget) endMoment();
   }
   const SUMMIT_LOOSE_AT = 1.2;
+  const SUMMIT_AT = 5330;
   function reachSummit() {
     const m = state.trip && state.trip.mountain;
     view.walkTarget = null;
@@ -369,7 +376,7 @@
     audio.fanfare();
     scene3d.burst('cheer');
     keepSummitPhoto();
-    startMoment('summit', 4, { kicker: '你站上了山頂', main: m ? m.name : '山頂', sub: m ? `海拔 ${m.summit_m.toLocaleString()} 公尺｜平安下山才算走完` : '平安下山才算走完' });
+    startMoment('summit', 5.2, { kicker: '你站上了山頂', main: m ? m.name : '山頂', sub: m ? `海拔 ${m.summit_m.toLocaleString()} 公尺｜平安下山才算走完` : '平安下山才算走完' });
   }
 
   /* 結局：先給幾秒全螢幕的畫面，按任何鍵或點一下就跳過 */
@@ -979,17 +986,17 @@
       if (currentSection && state.screen === 'play') {
         /* 區域名稱與海拔已在 HUD 上，換區時讓那裡亮一下就好 */
         ui.flashStage();
-        if (scene3d && sec.key === 'summit' && !view.summitDone) {
-          view.summitDone = true;
-          if (reducedMotion()) keepSummitPhoto();
-          else reachSummit();
-        } else {
-          audio.jingle();
-        }
+        audio.jingle();
       }
       if (state.trip) updateBody(sec.key);
       audio.setAmbience(sec.key);
       currentSection = sec;
+    }
+    /* 進山頂區只是快到了；走到山頂碑前，才是真的站上最高點 */
+    if (scene3d && !view.summitDone && state.screen === 'play' && state.player.x >= SUMMIT_AT) {
+      view.summitDone = true;
+      if (reducedMotion()) keepSummitPhoto();
+      else reachSummit();
     }
   }
 

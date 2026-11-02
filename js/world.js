@@ -273,7 +273,10 @@
       }
       const label = orig.label.replace('森林步道', route.forestLabel);
       it.label = label;
-      if (it.type === 'stele') it.sub = `${route.summit.toLocaleString('en-US')}m`;
+      if (it.type === 'stele') {
+        it.label = route.name || label;
+        it.sub = `${route.summit.toLocaleString('en-US')}m`;
+      }
       else if (orig.sub.startsWith('海拔')) it.sub = `海拔 ${(Math.round(route.altitudeAt(it.x) / 10) * 10).toLocaleString('en-US')}m`;
     });
   }

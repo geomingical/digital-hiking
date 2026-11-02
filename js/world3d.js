@@ -485,6 +485,49 @@
     return new T.MeshStandardMaterial({ map: tex, roughness: 0.85 });
   }
 
+  /* 山頂碑：直書山名、底下刻海拔，前後兩面都刻，鏡頭從哪邊拍都讀得到 */
+  function stoneFace(label, sub) {
+    const W = 256;
+    const H_ = 640;
+    const cv = document.createElement('canvas');
+    cv.width = W;
+    cv.height = H_;
+    const c = cv.getContext('2d');
+    const grad = c.createLinearGradient(0, 0, W, H_);
+    grad.addColorStop(0, '#b9b5a8');
+    grad.addColorStop(1, '#9d998c');
+    c.fillStyle = grad;
+    c.fillRect(0, 0, W, H_);
+    c.strokeStyle = '#7d796d';
+    c.lineWidth = 8;
+    c.strokeRect(22, 22, W - 44, H_ - 44);
+    const chars = [...label];
+    const size = chars.length > 4 ? 66 : 86;
+    const step = size * 1.08;
+    const top = 70 + (4 - Math.min(4, chars.length)) * step * 0.5;
+    chars.forEach((ch, i) => A.text(c, ch, W / 2, top + step * i + size / 2, size, '#8f2f22', 900));
+    if (sub) A.text(c, sub, W / 2, H_ - 70, 38, '#3f3a33', 800);
+    const tex = new T.CanvasTexture(cv);
+    tex.colorSpace = T.SRGBColorSpace;
+    tex.anisotropy = 4;
+    return new T.MeshStandardMaterial({ map: tex, roughness: 0.9 });
+  }
+
+  function summitStele(label, sub) {
+    const g = new T.Group();
+    mesh(g, box(2.4, 0.36, 1.5), '#8a877c', [0, 0.18, 0]);
+    mesh(g, box(1.8, 0.3, 1.1), '#97948a', [0, 0.51, 0]);
+    const stone = m3('#a9a598');
+    const face = stoneFace(label, sub);
+    mesh(g, box(1.05, 2.7, 0.5), [stone, stone, stone, stone, face, face], [0, 2.01, 0]);
+    /* 圓頂比碑身薄一點，正面不和刻字面疊在同一平面（否則會閃出破線） */
+    mesh(g, cyl(0.525, 0.525, 0.44, 18), '#a9a598', [0, 3.36, 0], [Math.PI / 2, 0, 0]);
+    [[-1.5, 0.5, 0.42], [1.45, -0.4, 0.34], [-1.2, -0.75, 0.28], [1.7, 0.6, 0.24]].forEach(([x, z, r]) => {
+      mesh(g, sph(r), '#8f8c80', [x, r * 0.55, z], [0, x, 0], [1.25, 0.7, 1]);
+    });
+    return g;
+  }
+
   function signPost(label, sub) {
     const g = new T.Group();
     mesh(g, cyl(0.1, 0.12, 2), '#7b5438', [0, 1, 0]);
@@ -700,6 +743,7 @@
   const terrainOf = (land) => land.children[0];
   const PHOTO = { back: 5.2, side: 0.9, up: 1.7, lookUp: 1.55, lead: 0.6 };
   const LANDMARK = { size: 270, x: 40, y: -22, z: -760, sink: 250 };
+  const RANGE_SINK = 105;
   const FOG_FAR = 1150;
   const SPARKS = {
     cheer: { n: 26, speed: 2.6, up: 5.4, gravity: 7, spread: 0.2, y: 1.6, life: 1.5, size: 0.075, colors: ['#ffb1c4', '#ffd965', '#ffffff', '#9fdcb0', '#ffc78f'] },
@@ -883,7 +927,11 @@
     },
 
     /* 遠方群山：大圓錐加雜訊，山頂一點雪，交給霧融進天空 */
-    buildRange(scene) {
+    buildRange(land) {
+      /* 群山收在同一組：越接近山頂越往下沉，站上山頂時你就是最高的那一點 */
+      const scene = new T.Group();
+      land.add(scene);
+      this.rangeGroup = scene;
       const stream = makeRng(77);
       const rng = () => stream.next();
       const make = (x, z, radius, height, tint) => {
@@ -1052,6 +1100,7 @@
     sync(decor, npcList, events) {
       this.restoreShot();
       clearOwned(this.props);
+      this.stele = null;
       clearOwned(this.markers);
       clearOwned(this.npcs);
       const put = (obj, x, u, faceBack) => {
@@ -1071,10 +1120,20 @@
       put(signPost('步道告示', '請留行程'), 860, 3.6);
       decor.forEach((it) => {
         if (it.type === 'stagesign') put(signPost(it.label, it.sub), it.x, 3.3);
-        else if (it.type === 'stele') put(signPost(it.label, it.sub), it.x, -3.2);
+        else if (it.type === 'stele') {
+          this.stele = put(summitStele(it.label, it.sub), it.x, -3.4);
+          this.stele.userData.keep = true;
+          /* 刻字面朝步道：走近時斜著看得到，登頂鏡頭從步道另一側拍時正對著 */
+          this.stele.rotation.y += Math.PI / 2;
+        }
         else if (it.type === 'trig') {
+          /* 三角點：方柱頂面刻十字，側面標名，看得出是測量基石而不是空方塊 */
           const g = new T.Group();
-          mesh(g, box(0.5, 0.8, 0.5), '#cfcabb', [0, 0.4, 0]);
+          const side = m3('#cfcabb');
+          const label = stoneFace('三角點', '');
+          mesh(g, box(0.42, 1.0, 0.42), [side, side, side, side, label, label], [0, 0.5, 0]);
+          mesh(g, box(0.32, 0.03, 0.05), '#7d786b', [0, 1.015, 0]);
+          mesh(g, box(0.05, 0.03, 0.32), '#7d786b', [0, 1.015, 0]);
           put(g, it.x, 3);
         } else if (it.type === 'cabin') put(cabin(P.hut || '山屋'), it.x, -9.5);
         else if (it.type === 'bench') {
@@ -1264,7 +1323,8 @@
       const key = g.screen === 'start' ? 'dawn' : g.section;
       const pal = SKY[key] || SKY.trailhead;
       const fx = g.fx || { fog: 0, rain: 0, wind: 0, cold: 0 };
-      const riskK = smooth(35, 100, g.riskView || 0);
+      /* 登頂那幾秒雲開：風險造成的陰沉先退開，天氣本身（霧、雨）照舊 */
+      const riskK = smooth(35, 100, g.riskView || 0) * (g.orbit > 0 ? 0.15 : 1);
       const storm = Math.max(fx.rain * 0.85, fx.fog * 0.7, riskK * 0.8);
       const top = new T.Color(pal.top).lerp(new T.Color(STORM.top), storm);
       const low = new T.Color(pal.low);
@@ -1368,6 +1428,12 @@
       } else {
         hero.rotation.y = this.yaw;
       }
+      /* 登頂：鏡頭繞到側前方時，角色轉過來面對鏡頭慶祝 */
+      if (g.orbit > 0 && onTrail && this.summitYaw != null) {
+        const w = Math.max(0, Math.min(1, g.orbit * 5, (1 - g.orbit) * 6));
+        const face = this.summitYaw;
+        hero.rotation.y += Math.atan2(Math.sin(face - hero.rotation.y), Math.cos(face - hero.rotation.y)) * w;
+      }
       /* 拍照：角色轉過來面對鏡頭比姿勢 */
       if (g.photo > 0 && onTrail) {
         const front = this.photoShot(heroX, p.d).yaw;
@@ -1392,6 +1458,7 @@
       this.clouds.group.position.x = Math.sin(t * 0.02) * 12;
       /* 爬得越高，遠方那座山就越低；到山頂時你已經站在最高處 */
       if (this.peak) this.peak.position.y = LANDMARK.y - LANDMARK.sink * smooth(1200, 4700, heroX);
+      if (this.rangeGroup) this.rangeGroup.position.y = -RANGE_SINK * smooth(3900, 5300, heroX) * (1 - smooth(5750, 6700, heroX));
       const still = A.reducedMotion();
       let flash = 0;
       (this.stageList || []).forEach((st) => {
@@ -1496,18 +1563,24 @@
         this.camPos.copy(cam).lerp(high, k);
         this.camLook.copy(lookAt).lerp(ahead, k);
       } else if (g.orbit > 0 && onTrail) {
-        /* 從身後順著繞到正面，才拍得到慶祝的表情；不走直線，免得穿過人物 */
-        const k = Math.min(1, Math.min(g.orbit, 1 - g.orbit) * 4);
+        /* 登頂：快速從身後繞到正面，停在「主角＋山頂碑」的紀念照構圖，標題退場前再回到身後。
+           鏡頭略高往下拍，背景是腳下的雲海與遠方稜線；不走直線，免得穿過人物 */
+        const k = Math.max(0, Math.min(1, g.orbit * 5, (1 - g.orbit) * 6));
         const blend = k * k * (3 - 2 * k);
+        const withStele = this.stele && this.stele.position.distanceTo(pos) < 30;
+        const center = withStele ? pos.clone().lerp(this.stele.position, narrow ? 0.42 : 0.3) : pos.clone();
+        center.y = pos.y;
         const rear = Math.atan2(-s.tx, -s.tz);
-        const front = Math.atan2(s.tx, s.tz) + (g.orbit - 0.5) * 1.1;
+        /* 鏡頭站在步道右側略前方，越過主角與碑往左拍：背景是山頂外側的雲海與遠方稜線 */
+        const front = Math.atan2(s.nx + s.tx * 0.55, s.nz + s.tz * 0.55) + (g.orbit - 0.5) * 0.2;
         const turn = Math.atan2(Math.sin(front - rear), Math.cos(front - rear));
         const a = rear + turn * blend;
-        const reach = (narrow ? 13 : 8.4) + blend * 0.6;
-        const around = pos.clone().add(new T.Vector3(Math.sin(a) * reach, (narrow ? 5.2 : 4.1) - blend * 2.3, Math.cos(a) * reach));
+        const reach = narrow ? 10.8 : 8.8;
+        const around = center.clone().add(new T.Vector3(Math.sin(a) * reach, (narrow ? 4.6 : 3.9) - blend * 1.6, Math.cos(a) * reach));
+        this.summitYaw = a;
         around.y = Math.max(around.y, this.heightAt(around.x, around.z) + 1.1);
         this.camPos.copy(cam).lerp(around, blend);
-        this.camLook.copy(lookAt).lerp(pos.clone().add(new T.Vector3(0, narrow ? 3.4 : 2.9, 0)), blend);
+        this.camLook.copy(lookAt).lerp(center.clone().add(new T.Vector3(0, narrow ? 2.2 : 2.0, 0)), blend);
       }
       if (g.photo > 0 && onTrail) {
         const shot = this.photoShot(heroX, p.d);
@@ -1518,8 +1591,14 @@
       /* 看現場時，鏡頭和角色之間的路牌、燈柱先讓開 */
       const shot = new T.Line3(this.camPos, pos);
       const near = new T.Vector3();
+      const clearing = V.stage > 0.2 || g.orbit > 0;
+      const reachOut = g.orbit > 0 ? 4.6 : 3.4;
+      const blocks = (o) => shot.closestPointToPoint(o.position, true, near).distanceTo(o.position) < reachOut;
       this.props.children.forEach((prop) => {
-        prop.visible = !(V.stage > 0.2 || g.orbit > 0) || shot.closestPointToPoint(prop.position, true, near).distanceTo(prop.position) > 3.2;
+        prop.visible = prop.userData.keep || !clearing || !blocks(prop);
+      });
+      this.npcs.children.forEach((n) => {
+        n.visible = !(g.orbit > 0) || !blocks(n);
       });
       this.clearShot(this.camPos, pos, g.photo > 0);
       /* 鏡頭不鑽進地裡 */
