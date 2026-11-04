@@ -1577,12 +1577,12 @@
       return;
     }
     if (file) {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(file);
-      a.download = file.name;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(a.href), 10000);
-      ui.toast('成績卡已下載', 'good');
+      try {
+        if ((await DH.saveImage(file, file.name)) === 'download') ui.toast('成績卡已下載', 'good');
+      } catch (e) {
+        console.warn('成績卡下載失敗', e);
+        ui.toast('成績卡存不下來，請再試一次或直接截圖', 'warn');
+      }
       return;
     }
     try {

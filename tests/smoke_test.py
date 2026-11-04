@@ -834,6 +834,8 @@ def art_rules_flow(browser, errors):
     # 同時只有一則 Toast，且貼著 HUD
     page.evaluate("window.DH.ui.toast('一'); window.DH.ui.toast('二');")
     check(page.locator(".toast").count() == 1, "同時只顯示一則 Toast")
+    # toast 等排版完成的下一幀才貼齊 HUD，量之前先等一幀
+    page.evaluate("new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))")
     gap = page.evaluate("document.querySelector('.toast').getBoundingClientRect().top - document.getElementById('hud').getBoundingClientRect().bottom")
     check(abs(gap - 8) < 12, f"Toast 位於 HUD 底緣下方（{gap:.0f}px）")
 

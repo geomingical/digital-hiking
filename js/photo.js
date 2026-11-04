@@ -137,23 +137,9 @@
   function fileName(photo) {
     return `數位登山-${photo.info.mountain}-${Math.round(photo.info.altitude)}m.png`.replace(/[\\/:*?"<>|\s]+/g, '');
   }
-  function download(photo) {
-    return new Promise((resolve, reject) => {
-      photo.canvas.toBlob((blob) => {
-        if (!blob) {
-          reject(new Error('無法輸出圖片'));
-          return;
-        }
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = fileName(photo);
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-        resolve();
-      }, 'image/png');
-    });
+  async function download(photo) {
+    const blob = await DH.saveImage.canvasToBlob(photo.canvas);
+    return DH.saveImage(blob, fileName(photo));
   }
 
   const altLabel = (photo) => `${photo.info.mountain}，${altText(photo.info.altitude)}`;
@@ -238,7 +224,10 @@
       });
       thumbs.hidden = photos.length < 2;
       pick(current);
-      $('album-save').onclick = () => download(current).catch(() => DH.ui.toast('照片下載失敗，請再試一次', 'warn'));
+      $('album-save').onclick = () => download(current).catch((e) => {
+        console.warn('照片下載失敗', e);
+        DH.ui.toast(`照片存不下來：${e && /[\u4e00-\u9fff]/.test(e.message) ? e.message : '請再試一次'}，也可以直接截圖保存`, 'warn');
+      });
     },
   };
 })();

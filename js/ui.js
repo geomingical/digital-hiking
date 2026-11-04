@@ -891,7 +891,7 @@
       c.font = font(26, 500);
       /* 本機網址給別人也開不了，不印在卡片上 */
       if (!/^https?:\/\/(localhost|127\.|\[::1\])/.test(url)) c.fillText(url, 70, 1312);
-      const blob = await new Promise((resolve, reject) => cv.toBlob((b) => (b ? resolve(b) : reject(new Error('無法輸出圖片'))), 'image/png'));
+      const blob = await DH.saveImage.canvasToBlob(cv);
       return new File([blob], '數位登山成績卡.png', { type: 'image/png' });
     },
 
