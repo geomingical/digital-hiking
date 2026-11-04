@@ -6,3 +6,6 @@ node_modules/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Internal research notes and CLI logs (kept locally, not published)
+research/
