@@ -110,6 +110,23 @@
     return 'overlay';
   }
 
+  /* 存出去的圖角落壓一行很淡的網址；畫在複本上，畫面上的照片保持乾淨 */
+  const WATERMARK = 'hiking.aimingdata.com';
+  function watermark(canvas, { size = 22, margin = 28, color = 'rgba(90, 76, 64, .42)' } = {}) {
+    const cv = document.createElement('canvas');
+    cv.width = canvas.width;
+    cv.height = canvas.height;
+    const c = cv.getContext('2d');
+    c.drawImage(canvas, 0, 0);
+    const font = getComputedStyle(document.documentElement).getPropertyValue('--font').trim() || 'sans-serif';
+    c.font = `600 ${size}px ${font}`;
+    c.fillStyle = color;
+    c.textAlign = 'right';
+    c.textBaseline = 'alphabetic';
+    c.fillText(WATERMARK, cv.width - margin, cv.height - margin);
+    return cv;
+  }
+
   async function saveImage(blob, filename) {
     if (!blob || !blob.size) throw new Error('圖片是空的');
     if (!isMobile()) {
@@ -120,5 +137,5 @@
   }
 
   DH.saveImage = saveImage;
-  Object.assign(saveImage, { isMobile, canvasToBlob, close: closeOverlay });
+  Object.assign(saveImage, { isMobile, canvasToBlob, watermark, WATERMARK, close: closeOverlay });
 })();

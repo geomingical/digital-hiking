@@ -158,6 +158,7 @@
       $('btn-howto').addEventListener('click', () => this.showHelp());
       $('btn-help').addEventListener('click', () => this.showHelp());
       $('btn-records').addEventListener('click', () => this.showRecords());
+      $('btn-about').addEventListener('click', () => this.showAbout());
       $('btn-retry').addEventListener('click', handlers.retryLoad);
       $('btn-share').addEventListener('click', handlers.share);
       $('modal-close').addEventListener('click', () => this.closeModal());
@@ -891,13 +892,15 @@
       c.font = font(26, 500);
       /* 本機網址給別人也開不了，不印在卡片上 */
       if (!/^https?:\/\/(localhost|127\.|\[::1\])/.test(url)) c.fillText(url, 70, 1312);
-      const blob = await DH.saveImage.canvasToBlob(cv);
+      const blob = await DH.saveImage.canvasToBlob(DH.saveImage.watermark(cv));
       return new File([blob], '數位登山成績卡.png', { type: 'image/png' });
     },
 
     get modalOpen() { return !$('modal').hidden; },
 
-    openModal(title, body) {
+    openModal(title, body, variant = '') {
+      this.modalBack = document.activeElement;
+      $('modal').dataset.variant = variant;
       $('modal-title').textContent = title;
       const box = $('modal-body');
       box.textContent = '';
@@ -911,6 +914,24 @@
       if ($('modal').hidden) return;
       $('modal').hidden = true;
       this.handlers.modalChange(false);
+      const back = this.modalBack;
+      this.modalBack = null;
+      if (back && back.isConnected && !back.closest('[hidden]')) back.focus({ preventScroll: true });
+    },
+
+    showAbout() {
+      const wrap = el('div', 'about');
+      wrap.appendChild(el('p', '', '操控 Q 版登山客走一趟台灣山徑，在一路上的選擇裡學會登山安全。由 AIMing Data 製作。'));
+      const links = el('p', 'about-links');
+      const site = el('a', 'about-link', '前往網站');
+      site.href = 'https://aimingdata.com';
+      site.target = '_blank';
+      site.rel = 'noopener';
+      const mail = el('a', 'about-link', '意見回饋');
+      mail.href = 'mailto:geomingical@gmail.com?subject=' + encodeURIComponent('數位登山 意見回饋');
+      links.append(site, mail);
+      wrap.appendChild(links);
+      this.openModal('關於數位登山', wrap, 'about');
     },
 
     showHelp() {

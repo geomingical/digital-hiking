@@ -138,7 +138,7 @@
     return `數位登山-${photo.info.mountain}-${Math.round(photo.info.altitude)}m.png`.replace(/[\\/:*?"<>|\s]+/g, '');
   }
   async function download(photo) {
-    const blob = await DH.saveImage.canvasToBlob(photo.canvas);
+    const blob = await DH.saveImage.canvasToBlob(DH.saveImage.watermark(photo.canvas));
     return DH.saveImage(blob, fileName(photo));
   }
 
