@@ -1,5 +1,9 @@
+.git
 research/
 tests/
 screenshots/
-final_tmp/
+final_tmp
 README.md
+*.md
+*.py
+*.cjs

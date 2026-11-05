@@ -1596,7 +1596,7 @@
   /* 測試鉤子 -------------------------------------------------------- */
   const GRADE_RISK = { good: 10, normal: 60, bad: 100 };
 
-  window.__game = {
+  const debugHooks = {
     state,
     view,
     takePhoto: () => doAction('photo'),
@@ -1649,6 +1649,8 @@
       return state.ending;
     },
   };
+  /* 只在 localhost／127.0.0.1／[::1]／file: 或帶 ?debug=1 時掛到 window.__game */
+  if (core.debugHooksEnabled()) window.__game = debugHooks;
 
   /* 準備流程的進出與出發 */
   const prepHandlers = {

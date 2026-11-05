@@ -1,4 +1,4 @@
-final_tmp/
+final_tmp
 screenshots/*
 !screenshots/final/
 .vercel/

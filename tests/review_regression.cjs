@@ -39,7 +39,7 @@ function env() {
   const storage = new Map();
   context = vm.createContext({ console, URL, URLSearchParams, Set, Map, Math, JSON, Date, performance,
     document, localStorage: { getItem: k => storage.get(k), setItem: (k, v) => storage.set(k, v) },
-    location: { search: '', protocol: 'http:', href: 'http://test/' }, navigator: {},
+    location: { search: '', protocol: 'http:', hostname: 'localhost', href: 'http://localhost/' }, navigator: {},
     matchMedia: () => ({ matches: false }), getComputedStyle: () => ({ getPropertyValue: () => 'sans-serif', overflowY: 'auto' }),
     requestAnimationFrame: () => 1, cancelAnimationFrame() {}, setTimeout: () => 1, clearTimeout() {},
     Path2D: class {}, MutationObserver: class { observe() {} }, Element: Object,

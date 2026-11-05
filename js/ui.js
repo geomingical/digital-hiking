@@ -926,7 +926,7 @@
       const site = el('a', 'about-link', '前往網站');
       site.href = 'https://aimingdata.com';
       site.target = '_blank';
-      site.rel = 'noopener';
+      site.rel = 'noopener noreferrer';
       const mail = el('a', 'about-link', '意見回饋');
       mail.href = 'mailto:geomingical@gmail.com?subject=' + encodeURIComponent('數位登山 意見回饋');
       links.append(site, mail);

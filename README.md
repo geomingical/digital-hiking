@@ -77,7 +77,7 @@ python3 -m http.server 8000
 
 - `?seed=123` 固定預報、亂數與題序（換裝不影響題序）。抽題也會參考 localStorage 的作答紀錄，要完全重現請用乾淨的瀏覽器資料。
 - `?classic=1` 跳過準備流程，直接走原版模式（不顯示載入提示）；舊有的版面與流程測試靠它。
-- `window.__game`：`state`、`startGame()`、`teleportToNextEvent()`、`teleportToFinish()`、`triggerNextEvent()`、`answer(i)`（i 為畫面上的選項順序）、`correctIndex()`、`wrongIndex()`、`continue()`、`skipToEnding(['good'|'normal'|'bad'|風險值])`、`prep`（準備流程）、`logic`（`prepLogic`）、`getBank()`。`startGame()` 走原版流程。
+- `window.__game`（只在 `localhost`／`127.0.0.1`／`file://` 或網址帶 `?debug=1` 時掛載，正式站不會有；`window.__renderAudioPreview` 同樣受此條件限制）：`state`、`startGame()`、`teleportToNextEvent()`、`teleportToFinish()`、`triggerNextEvent()`、`answer(i)`（i 為畫面上的選項順序）、`correctIndex()`、`wrongIndex()`、`continue()`、`skipToEnding(['good'|'normal'|'bad'|風險值])`、`prep`（準備流程）、`logic`（`prepLogic`）、`getBank()`。`startGame()` 走原版流程。
 - 流程測試：`python3 tests/flow_test.py`，從玩家操作確認逐項換裝的放行規則，以及 3D 畫面的移動、點地面、開題與再玩一次。
 - 邏輯回歸：`node tests/review_regression.cjs`，只驗邏輯，沒有真的 WebGL 與版面。
 - 測試伺服器：`tests/serve.py`，內建 `http.server` 連續開頁會偶爾斷線。

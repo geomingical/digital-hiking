@@ -444,10 +444,22 @@
     },
   };
 
+  /* 測試鉤子（window.__game、window.__renderAudioPreview）只在本機或帶 ?debug=1 時掛載，正式版不暴露 */
+  function debugHooksEnabled() {
+    try {
+      const host = location.hostname;
+      if (location.protocol === 'file:' || host === 'localhost' || host === '127.0.0.1' || host === '[::1]') return true;
+      const d = new URLSearchParams(location.search).get('debug');
+      return d === '1' || d === 'true';
+    } catch (e) {
+      return false;
+    }
+  }
+
   DH.core = {
     SECTIONS, FINISH_X, STAGE_KEYS, BADGES, GRADES,
     altitudeAt, setAltitudeProfile, sectionAt, makeRng, hash32, cleanBank, byFreshness, pickScenarios, buildEvents,
     KEY_TABLE, KEY_POOLS, MIN_KEY, reserveKeyScenarios, logKeyShortage, SLOGANS,
-    gradeFor, riskColor, store,
+    gradeFor, riskColor, store, debugHooksEnabled,
   };
 })();

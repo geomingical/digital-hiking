@@ -1729,3 +1729,7 @@ body.touch .act-btn kbd { display: none; }
   user-select: none;
 }
 .save-sheet-close { min-width: 140px; }
+
+/* 原本寫在 index.html 的 style 屬性，搬進來讓 CSP style-src 不需 'unsafe-inline' */
+.icon-sprite { position: absolute; }
+.noscript-notice { position: fixed; top: 40%; left: 0; right: 0; text-align: center; }

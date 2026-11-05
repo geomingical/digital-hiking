@@ -340,8 +340,8 @@
     PREVIEWS[k] = { seconds: k === 'siren' ? 3.2 : k === 'fanfare' ? 2.4 : 1.2, draw: (ac, out) => SFX[k](ac, out, 0.02) };
   });
 
-  /* 回傳 { sampleRate, data: base64(Float32 PCM 單聲道) } */
-  window.__renderAudioPreview = async function (name) {
+  /* 回傳 { sampleRate, data: base64(Float32 PCM 單聲道) }。只在本機或帶 ?debug=1 時掛到 window */
+  const renderAudioPreview = async function (name) {
     if (!name) return Object.keys(PREVIEWS);
     const p = PREVIEWS[name];
     if (!p) throw new Error('unknown preview ' + name);
@@ -354,4 +354,5 @@
     for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
     return { sampleRate: sr, data: btoa(bin) };
   };
+  if (DH.core && DH.core.debugHooksEnabled()) window.__renderAudioPreview = renderAudioPreview;
 })();
