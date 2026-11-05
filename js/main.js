@@ -1691,6 +1691,8 @@
     },
   });
 
+  /* 上次開著音效就照記憶顯示（實際發聲要等第一次點擊） */
+  ui.setSound(audio.enabled);
   if (matchMedia('(pointer: coarse)').matches) document.body.classList.add('touch');
 
   window.addEventListener('resize', resize);
